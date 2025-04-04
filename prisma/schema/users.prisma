@@ -1,0 +1,7 @@
+enum Role {
+    ADMIN
+    STORE_OWNER
+    USER
+}
+
+

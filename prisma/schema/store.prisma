@@ -1,0 +1,27 @@
+model Store {
+  id              String              @id @default(cuid())
+  name            String
+  slug            String              @unique
+  ownerId         String
+  logo            String              @default("")
+  address         Address             @relation("StoreToAddress", fields: [addressId], references: [id], onDelete: Cascade)
+  addressId       String              @unique
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}
+
+model Address {
+  id                String  @id @default(cuid())
+  recipientName     String?
+  formatted         String
+  street            String
+  additional        String?
+  city              String
+  state             String
+  postalCode        String
+  country           String
+  store             Store?  @relation("StoreToAddress")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
