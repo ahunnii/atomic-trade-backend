@@ -1,0 +1,161 @@
+enum OrderType {
+  ONLINE
+  IN_STORE
+  PHONE
+  CUSTOM
+  DRAFT
+}
+
+model Order {
+  id              String @id @default(cuid())
+  storeId         String
+  store           Store  @relation("StoreToOrder", fields: [storeId], references: [id])
+
+  orderItems      OrderItem[]
+  timeline        TimeLineEntry[]
+
+  orderNumber       String @default(cuid()) @unique
+  authorizationCode String @default("")
+
+  couponId    String?
+  coupon      Coupon? @relation(fields: [couponId], references: [id])
+
+  note String?
+
+  paymentStatus     PaymentStatus     @default(PENDING)
+  fulfillmentStatus FulfillmentStatus @default(PENDING)
+  paymentMethod     PaymentMethod     @default(STRIPE)
+
+  subtotal Int @default(0)
+  tax      Int @default(0)
+  shipping Int @default(0)
+  total    Int @default(0)
+  discount Int @default(0)
+  fee      Int @default(0)
+
+  referenceLink     String @default("")
+  referenceNumber   String @default("")
+  referenceProvider String @default("")
+
+  receiptLink String @default("")
+
+  refunds Refund[]
+
+  billingAddress  Address? @relation("BillingAddressToOrder")
+  shippingAddress Address? @relation("ShippingAddressToOrder")
+  
+  email     String      @default("")
+  phone     String?     @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  invoices    Invoice[]
+  fulfillments Fulfillment[]
+
+  request   Request? @relation(fields: [requestId], references: [id])
+  requestId String?
+
+
+  isPickup Boolean @default(false)
+
+  userId String?
+  user   User?   @relation("UserToOrder", fields: [userId], references: [id])
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  @@index([storeId])
+  @@index([userId])
+  @@index([couponId])
+  @@index([customerId])
+  @@index([requestId])
+}
+
+// Intermediary for a many-to-many relationship
+model OrderItem {
+  id            String        @id @default(cuid())
+  orderId       String
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  name              String        @default("")    //Name of the item (i.e. "T-Shirt")
+  description       String?       @db.Text        //Description of the item (i.e. "Blue, Medium")
+  quantity          Int           @default(1)
+
+  unitPrice       Int           @default(0)  // 1000 = 10.00
+  totalPrice      Int           @default(0)  // 1000 = 10.00
+  itemTotal       Int           @default(0)
+  discountAmount  Int?
+  discountName    String?
+
+  requestItem   RequestItem? @relation(fields: [requestItemId], references: [id])
+  requestItemId String?
+
+  fulfillment   Fulfillment? @relation(fields: [fulfillmentId], references: [id])
+  fulfillmentId String?
+
+  saleId        String?
+  sale          Sale?         @relation(fields: [saleId], references: [id])
+
+  variantId     String?
+  variant       Variation?    @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([variantId])
+  @@index([saleId])
+  @@index([fulfillmentId])
+  @@index([requestItemId])
+}
+
+model TimeLineEntry {
+  id          String            @id @default(cuid())
+  title       String
+  isEditable  Boolean           @default(false)
+  description String?           @db.Text
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  order       Order?            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId     String?
+
+  @@index([orderId])
+}
+
+model Refund {
+  id            String   @id @default(cuid())
+  orderId       String // Foreign Key to Order
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount        Int
+  reason        String
+  referenceLink String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([orderId])
+}
+
+
+enum FulfillmentStatus {
+  PENDING
+  AWAITING_SHIPMENT
+  AWAITING_PICKUP
+  FULFILLED
+  CANCELLED
+  RESTOCKED
+  PARTIAL
+  DRAFT
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  AUTHORIZED
+  FAILED
+  REFUNDED
+  PARTIAL_REFUND
+  VOIDED
+  CANCELLED
+  DRAFT
+  MARKED_AS_PAID
+  OPEN
+}

@@ -7,12 +7,12 @@
  * need to use are documented accordingly near the end.
  */
 
-import { initTRPC, TRPCError } from "@trpc/server";
+import { auth } from "~/server/auth";
+import { db } from "~/server/db";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { auth } from "~/server/auth";
-import { db } from "~/server/db";
+import { initTRPC, TRPCError } from "@trpc/server";
 
 /**
  * 1. CONTEXT
@@ -146,6 +146,33 @@ export const adminProcedure = t.procedure
     }
     return next({
       ctx: {
+        session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
+export const developmentProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    // Check if user is authenticated
+    if (!ctx.session?.user) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Not authenticated",
+      });
+    }
+
+    // Check if we're in development environment
+    if (process.env.NODE_ENV !== "development") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "This endpoint is only available in development environment",
+      });
+    }
+
+    return next({
+      ctx: {
+        // infers the `session` as non-nullable
         session: { ...ctx.session, user: ctx.session.user },
       },
     });

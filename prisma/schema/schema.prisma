@@ -2,76 +2,102 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
-    previewFeatures = ["prismaSchemaFolder"]
+  provider = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
 }
 
 datasource db {
-    provider = "postgresql"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
-
+  provider     = "postgresql"
+  // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+  // Further reading:
+  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+  url          = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
 
-    @@index([name])
+
+model Store {
+  id              String               @id @default(cuid())
+  name            String
+  slug            String?              @unique
+  ownerId         String
+  logo            String?
+ 
+
+  addressId       String?              @unique
+  address         Address?             @relation("StoreToAddress", fields: [addressId], references: [id], onDelete: Cascade)
+
+  products    Product[]    @relation("StoreToProduct")
+  orders      Order[]      @relation("StoreToOrder")
+
+  sales       Sale[]
+  coupons     Coupon[]
+  invoices    Invoice[]    @relation("StoreToInvoice")
+  cart        Cart[]       @relation("StoreToCart")
+  collections Collection[] @relation("StoreToCollection")
+  requests    Request[]    @relation("StoreToRequest")
+
+  hasFreeShipping         Boolean @default(true)
+  minFreeShipping         Float?  @default(0)
+
+  hasPickup               Boolean @default(false)
+  pickupInstructions      String? @db.Text
+
+  hasFlatRate             Boolean @default(false)
+  flatRateAmount          Float?  @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  socialMedia SocialMediaLink[]
+
+  contactEmail    String?
+  contactPhone    String?
+  showFullAddress Boolean @default(false)
+
+  customProductTypes String[]
 }
 
-// Necessary for Next auth
-model Account {
-    id                       String  @id @default(cuid())
-    userId                   String
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String? // @db.Text
-    session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
+model Image {
+  id        String   @id @default(cuid())
+  productId String? // Foreign Key to Product
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-    @@unique([provider, providerAccountId])
+
+
+  reviewId String?
+  review   Review? @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  url       String // URL of the image
+  alt       String?
+  caption   String?
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+
+  @@index([reviewId])
 }
 
-model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+enum SocialMediaType {
+  FACEBOOK
+  INSTAGRAM
+  TWITTER
+  TIKTOK
+  YOUTUBE
+  LINKEDIN
 }
 
-model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
-    role          Role    @default(USER)
-}
+model SocialMediaLink {
+  id String @id @default(cuid())
+  storeId String
+  store Store @relation(fields: [storeId], references: [id])
+  url String
+  platform SocialMediaType
 
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
-
-    @@unique([identifier, token])
+  @@index([storeId])
 }

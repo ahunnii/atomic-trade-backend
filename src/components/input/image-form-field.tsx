@@ -1,7 +1,14 @@
+import type {
+  FieldValues,
+  Path,
+  PathValue,
+  UseFormReturn,
+} from "react-hook-form";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useState } from "react";
-import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
+import { Trash2 } from "lucide-react";
 
+import { cn } from "~/lib/utils";
 import {
   FormControl,
   FormDescription,
@@ -11,7 +18,6 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { cn } from "~/lib/utils";
 
 type Props<CurrentForm extends FieldValues> = {
   form: UseFormReturn<CurrentForm>;
@@ -42,6 +48,16 @@ export const ImageFormField = <CurrentForm extends FieldValues>({
   inputId,
 }: Props<CurrentForm>) => {
   const [preview, setPreview] = useState<string | null>(null);
+  const [imageCleared, setImageCleared] = useState(false);
+
+  const handleClearImage = () => {
+    setPreview(null);
+    setImageCleared(true);
+    form.setValue(name, null as PathValue<CurrentForm, Path<CurrentForm>>);
+    if (onChange) {
+      onChange(null);
+    }
+  };
 
   return (
     <FormField
@@ -68,6 +84,7 @@ export const ImageFormField = <CurrentForm extends FieldValues>({
                     onChange(file);
                   }
                   if (file) {
+                    setImageCleared(false);
                     const reader = new FileReader();
                     reader.onloadend = () => {
                       setPreview(reader.result as string);
@@ -80,24 +97,44 @@ export const ImageFormField = <CurrentForm extends FieldValues>({
                 onKeyDown={onKeyDown}
                 id={inputId}
               />
-              {!preview && currentImageUrl && (
-                <div className="relative mt-2 h-48 w-48 overflow-hidden rounded">
+              {!preview && currentImageUrl && !imageCleared && (
+                <div className="group relative mt-2 h-48 w-48 overflow-hidden rounded">
                   <Image
                     src={currentImageUrl}
                     alt="Preview"
                     className="rounded border object-cover"
                     fill={true}
                   />
+                  <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center bg-black opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      title="Clear image"
+                      type="button"
+                      onClick={handleClearImage}
+                      className="rounded-full bg-red-500 p-2 text-white hover:bg-red-600"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 </div>
               )}
               {preview && (
-                <div className="relative mt-2 h-48 w-48 overflow-hidden rounded">
+                <div className="group relative mt-2 h-48 w-48 overflow-hidden rounded">
                   <Image
                     src={preview}
                     alt="Preview"
                     className="rounded border object-cover"
                     fill={true}
                   />
+                  <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center bg-black opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={handleClearImage}
+                      className="rounded-full bg-red-500 p-2 text-white hover:bg-red-600"
+                      title="Clear image"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

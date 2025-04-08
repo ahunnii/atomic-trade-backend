@@ -1,32 +1,9 @@
-import Link from "next/link";
-import { ContentLayout } from "~/components/layout/content-layout";
 import PlaceholderContent from "~/components/layout/placeholder-content";
-
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
+import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 export default function DashboardPage() {
   return (
     <ContentLayout title="Dashboard">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/">Home</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Dashboard</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
       <PlaceholderContent />
     </ContentLayout>
   );

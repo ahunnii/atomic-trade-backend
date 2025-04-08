@@ -1,7 +1,7 @@
 "use client";
 
-import { useUploadFile } from "better-upload/client";
 import { useEffect, useRef } from "react";
+import { useUploadFile } from "better-upload/client";
 
 type Props = {
   route: string;

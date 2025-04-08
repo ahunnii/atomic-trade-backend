@@ -1,0 +1,107 @@
+model Sale {
+  id String @id @default(cuid())
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  name    String
+
+  type    SaleDiscount @default(PERCENTAGE)
+  variant SaleType     @default(STANDARD)
+
+  products        Product[]
+  collections     Collection[]
+  orderItems      OrderItem[]
+
+  amount Int
+
+  
+  usesPerOrder Int?
+
+  quantityX Int?
+  amountX Int?
+
+  quantityY Int?
+  amountY Int?
+
+
+  minimumSubtotal Int? @default(0)
+  minimumItems    Int? @default(0)
+
+  startsAt  DateTime?
+  endsAt    DateTime?
+  deletedAt DateTime?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+}
+
+model Coupon {
+  id                String @id @default(cuid())
+  storeId           String
+  store             Store  @relation(fields: [storeId], references: [id])
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+  startsAt          DateTime?
+  endsAt            DateTime?
+
+  totalUses         Int? 
+  limitPerCustomer  Int?
+  uses              Int? @default(0)
+  
+  useWithSale       Boolean @default(true)
+
+  isActive          Boolean @default(true)
+
+  code              String     @unique
+  name              String
+  discountAmount    Int        @default(0)
+  discountType      CouponType @default(PERCENTAGE)
+
+  allProducts       Boolean @default(false)
+  details           String? @db.Text
+  minimumSubtotal   Int?
+  amountX           Int?
+  amountY           Int?
+
+  oncePerOrder      Boolean @default(false)
+
+  orders            Order[]
+  
+  product           Product? @relation(fields: [productId], references: [id])
+  productId         String?
+
+  collection        Collection? @relation(fields: [collectionId], references: [id])
+  collectionId      String?
+
+  @@index([storeId])
+  @@index([productId])
+  @@index([collectionId])
+}
+
+
+enum SaleType {
+  STANDARD
+  BUY_X_GET_Y
+}
+
+enum SaleDiscount {
+  PERCENTAGE
+  FIXED
+  EXACT
+  FREE
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+  FREE_SHIPPING
+  SALE_PRICE
+  BUY_X_GET_Y
+}

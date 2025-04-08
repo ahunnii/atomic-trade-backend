@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { useSidebarToggle } from "~/hooks/use-sidebar-toggle";
 import { cn } from "~/lib/utils";
-
-import { Button } from "~/components/ui/button";
+import { useSidebarToggle } from "~/hooks/use-sidebar-toggle";
 import { useStore } from "~/hooks/use-store";
+import { Button } from "~/components/ui/button";
+
 import { Menu } from "./menu";
 import { SidebarToggle } from "./sidebar-toggle";
 
@@ -33,8 +33,8 @@ export function Sidebar() {
         >
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/logo-ui.png"
-              alt="Ubuntu AI Logo"
+              src="/logo-mobile.png"
+              alt="logo"
               width={76}
               height={76}
               className={cn(
@@ -43,8 +43,8 @@ export function Sidebar() {
             />
 
             <Image
-              src="/logo-long.png"
-              alt="Ubuntu AI Logo"
+              src="/logo.png"
+              alt="logo"
               width={375}
               height={76}
               className={cn(

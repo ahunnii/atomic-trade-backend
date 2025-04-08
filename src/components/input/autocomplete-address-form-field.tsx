@@ -5,6 +5,8 @@ import type {
   UseFormReturn,
 } from "react-hook-form";
 
+import type { Address } from "~/lib/validators/geocoding";
+import { cn } from "~/lib/utils";
 import {
   FormDescription,
   FormField,
@@ -12,8 +14,6 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { cn } from "~/lib/utils";
-import type { Address } from "~/lib/validators/geocoding";
 
 import { AddressAutoComplete } from "../shared/address-auto-complete";
 
@@ -54,6 +54,8 @@ export const AutoCompleteAddressFormField = <CurrentForm extends FieldValues>({
       address as PathValue<CurrentForm, Path<CurrentForm>>,
     );
     onSelectAdditional?.(address);
+
+    console.log("address", address);
   };
 
   return (

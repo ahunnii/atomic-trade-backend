@@ -1,0 +1,107 @@
+model Product {
+  id        String        @id @default(cuid())
+
+  status    ProductStatus @default(DRAFT)
+  type      ProductType   @default(PHYSICAL)
+  slug      String?       @unique
+
+  storeId   String
+  store     Store         @relation("StoreToProduct", fields: [storeId], references: [id])
+
+  name       String
+  description String  @db.Text
+  attributes Attribute[] @relation("AttributeToProduct")
+
+  
+
+
+  infoSections  InfoSection[]
+
+  inventoryPolicy InventoryPolicy @default(DENY)
+  isFeatured      Boolean         @default(false)
+
+  featuredImage String
+  images        Image[] // Relation to Image model
+
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  deletedAt DateTime?
+
+  variants    Variation[]
+  collections Collection[]
+
+  weight    Float?   @default(0) // in grams
+  length    Float?   @default(0) // in in
+  width     Float?   @default(0) // in in
+  height    Float?   @default(0) // in in
+  materials String[]
+  tags      String[]
+
+  estimatedCompletion Int    @default(0)
+  shippingCost        Float? @default(0)
+
+
+  coupons   Coupon[]
+  sales     Sale[]
+  reviews   Review[]
+  invoiceItems InvoiceItem[]
+  requestItems RequestItem[]
+
+  @@index([storeId])
+  @@index([slug])
+}
+
+model Variation {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  name     String   @default("Variation")
+  values   String[]
+  quantity Int
+  price    Int
+  sku      String?  @unique
+  imageUrl String?
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([productId])
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  SOLD_OUT
+  CUSTOM
+}
+
+enum InventoryPolicy {
+  CONTINUE
+  DENY
+}
+
+enum ProductType {
+  PHYSICAL
+  DIGITAL
+  SERVICE
+}
+
+
+
+model InfoSection {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  title String
+  description String @db.Text
+
+  @@index([productId])
+}

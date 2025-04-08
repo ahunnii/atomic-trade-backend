@@ -1,5 +1,13 @@
 import type { LucideIcon } from "lucide-react";
-import { BellRing, LayoutGrid, Settings, ShirtIcon, Users } from "lucide-react";
+import {
+  BellRing,
+  LayoutGrid,
+  Settings,
+  ShirtIcon,
+  StarsIcon,
+  TruckIcon,
+  Users,
+} from "lucide-react";
 
 import type { Role } from "@prisma/client";
 
@@ -24,7 +32,7 @@ type Group = {
   menus: Menu[];
 };
 
-export function getMenuList(pathname: string): Group[] {
+export function getMenuList(pathname: string, slug: string): Group[] {
   return [
     {
       groupLabel: "",
@@ -79,11 +87,19 @@ export function getMenuList(pathname: string): Group[] {
           submenus: [],
         },
         {
-          href: "/admin/broadcast",
-          label: "Broadcast Messages",
-          active: pathname.includes("/admin/broadcast"),
+          href: `/${slug}/settings/store/branding`,
+          label: "Branding",
+          active: pathname.includes(`/${slug}/settings/store/branding`),
           restrictedAccess: [],
-          icon: BellRing,
+          icon: StarsIcon,
+          submenus: [],
+        },
+        {
+          href: `/${slug}/settings/store/shipping`,
+          label: "Shipping",
+          active: pathname.includes(`/${slug}/settings/store/shipping`),
+          restrictedAccess: [],
+          icon: TruckIcon,
           submenus: [],
         },
         {

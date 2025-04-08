@@ -1,14 +1,14 @@
 "use client";
 
+import Link from "next/link";
+import { useParams, usePathname } from "next/navigation";
 import { Ellipsis, LogOut } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import { Role } from "@prisma/client";
 
-import { getMenuList } from "~/app/[storeSlug]/_utils/sidebar-menu-list";
-import { CollapseMenuButton } from "~/components/layout/collapse-menu-button";
+import { cn } from "~/lib/utils";
+import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
@@ -17,19 +17,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-
-import { cn } from "~/lib/utils";
-import { api } from "~/trpc/react";
+import { CollapseMenuButton } from "~/components/layout/collapse-menu-button";
+import { getMenuList } from "~/app/[storeSlug]/_utils/sidebar-menu-list";
 
 type Props = {
   isOpen: boolean | undefined;
 };
 
 export function Menu({ isOpen }: Props) {
-  const { data: session } = api.post.getSession.useQuery();
+  const { data: session } = api.users.getSession.useQuery();
+  const { storeSlug } = useParams();
   const role = session?.user?.role ?? Role.USER;
   const pathname = usePathname();
-  const menuList = getMenuList(pathname);
+  const menuList = getMenuList(pathname, storeSlug as string);
   const filteredMenuList = menuList
     .map((group) => ({
       ...group,

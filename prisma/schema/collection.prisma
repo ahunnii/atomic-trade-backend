@@ -1,0 +1,30 @@
+model Collection {
+  id              String    @id @default(cuid())
+  storeId         String
+  store           Store     @relation("StoreToCollection", fields: [storeId], references: [id])
+  imageUrl        String    @default("/placeholder-image.webp")
+  isFeatured      Boolean   @default(false)
+  name            String    @unique
+  description     String?   @db.Text
+  slug            String    @unique
+  products        Product[]
+  sales           Sale[]
+  coupons         Coupon[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  archivedAt      DateTime?
+
+  @@index([storeId])
+}
+
+model Attribute {
+  id            String        @id @default(cuid())
+  storeId       String
+  products      Product[]     @relation("AttributeToProduct")
+  name          String        @default("Attribute")
+  values        String[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  archivedAt    DateTime?
+}

@@ -1,26 +1,22 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import type { WelcomeFormData } from "../_validators/schema";
+import { useFileUpload } from "~/lib/file-upload/hooks/use-file-upload";
+import { api } from "~/trpc/react";
+import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
+import { Form } from "~/components/ui/form";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import { AutoCompleteAddressFormField } from "~/components/input/autocomplete-address-form-field";
 import { ImageFormField } from "~/components/input/image-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
 import { LoadButton } from "~/components/shared/load-button";
 
-import { Form } from "~/components/ui/form";
-import { ScrollArea } from "~/components/ui/scroll-area";
-
-import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
-
-import { useFileUpload } from "~/lib/file-upload/hooks/use-file-upload";
-
-import { api } from "~/trpc/react";
-
-import { useRouter } from "next/navigation";
-import type { WelcomeFormData } from "../_validators/schema";
 import { welcomeFormValidator } from "../_validators/schema";
 
 export const WelcomeForm = () => {

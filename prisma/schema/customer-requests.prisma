@@ -1,0 +1,80 @@
+model Request {
+  id            String            @id @default(cuid())
+  storeId       String
+  store         Store             @relation("StoreToRequest", fields: [storeId], references: [id], onDelete: Cascade)
+
+  status        RequestStatus     @default(PENDING)
+
+  notes         String?           @db.Text
+
+  customerId    String?
+  customer      Customer?         @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  name          String?
+  email         String
+  details       String            @db.Text
+  images        String[]
+  invoices      Invoice[]
+  payments      RequestPayment[]
+ 
+  orders        Order[]
+  items         RequestItem[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  paidInFullAt  DateTime?
+  archivedAt    DateTime?
+
+
+  estimatedCompletionAt DateTime?
+
+  @@index([storeId])
+  @@index([customerId])
+
+}
+
+model RequestPayment {
+  id            String          @id @default(cuid())
+  requestId     String
+  request       Request         @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  type          InvoiceType     @default(DEPOSIT)
+  provider      PaymentProvider @default(STRIPE)
+  status        PaymentStatus   @default(PENDING)
+  amount        Int
+  providerId    String?
+  providerUrl   String?
+  issuedAt      DateTime?
+  dueAt         DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  paidAt        DateTime?
+
+  @@index([requestId])
+}
+
+model RequestItem {
+  id            String      @id @default(cuid())
+  requestId     String
+  request       Request     @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  quantity      Int
+  totalPrice    Int
+  unitPrice     Int?
+  name          String
+  description   String?     @db.Text
+  productId     String?
+  product       Product?    @relation(fields: [productId], references: [id], onDelete: SetNull)
+  orderItems    OrderItem[]
+
+  @@index([requestId])
+  @@index([productId])
+}
+
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}

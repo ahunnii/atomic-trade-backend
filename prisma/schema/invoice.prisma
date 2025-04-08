@@ -1,0 +1,124 @@
+model Invoice {
+  id String @id @default(cuid())
+
+  storeId  String
+  store    Store           @relation("StoreToInvoice", fields: [storeId], references: [id])
+
+  status   InvoiceStatus   @default(OPEN)
+  type     InvoiceType     @default(FULL)
+
+  amount          Int             @default(0)
+  remainingAmount Int             @default(0)
+
+  payments    PaymentDetail[]
+  providerId  String? @unique
+  providerUrl String?
+
+  paymentId String?
+  notes     String?   @db.Text
+
+  issuedAt          DateTime  @default(now())
+  dueAt             DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  items InvoiceItem[]
+
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+
+  orderId     String?
+  order       Order?   @relation(fields: [orderId], references: [id])
+
+  request     Request? @relation(fields: [requestId], references: [id])
+  requestId   String?
+
+  @@index([storeId])
+  @@index([requestId])
+  @@index([customerId])
+  @@index([orderId])
+}
+
+model InvoiceItem {
+  id          String          @id @default(cuid())
+  invoiceId   String 
+  invoice     Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  unitPrice   Int
+  totalPrice  Int
+  productId   String?
+  product     Product?        @relation(fields: [productId], references: [id])
+  quantity    Int             @default(0)
+  description String  @db.Text
+  notes       String? @db.Text
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  type        LineItemType    @default(PRODUCT)
+
+  @@index([invoiceId])
+  @@index([productId])
+}
+
+model PaymentDetail {
+  id          String              @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice             @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount      Float
+  method      PaymentMethod       @default(CASH)
+  status      PaymentDetailStatus @default(PENDING)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  referenceId String?
+
+  @@index([invoiceId])
+}
+
+
+enum PaymentMethod {
+  CASH
+  INVOICE
+  STRIPE
+  PAYPAL
+  OTHER
+}
+
+enum PaymentDetailStatus {
+  PENDING
+  PAID
+  REJECTED
+  CANCELLED
+  REFUNDED
+  MARKED_AS_PAID
+}
+
+enum PaymentProvider {
+  STRIPE
+  PAYPAL
+  MANUAL
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PENDING
+  PAID
+  PARTIAL
+  REFUND
+  CANCELLED
+  VOID
+  UNCOLLECTABLE
+  OPEN
+}
+
+enum InvoiceType {
+  DEPOSIT
+  FULL
+  PARTIAL
+  REMAINDER
+}
+
+enum LineItemType {
+  PRODUCT
+  CUSTOM_ITEM
+  SERVICE
+  WRITE_IN
+}
