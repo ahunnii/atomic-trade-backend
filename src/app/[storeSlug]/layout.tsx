@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
-import SidebarWrapper from "~/components/layout/sidebar-wrapper";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
+
+import SidebarWrapper from "~/components/layout/sidebar-wrapper";
 
 export default async function StoreLayout({
   children,
@@ -14,7 +15,9 @@ export default async function StoreLayout({
   const { storeSlug } = await params;
 
   if (!session || !session.user) {
-    redirect(`/sign-in?redirect=${encodeURIComponent(`/stores/${storeSlug}`)}`);
+    redirect(
+      `/sign-in?redirect=${encodeURIComponent(`/${storeSlug}/dashboard`)}`,
+    );
   }
 
   if (session.user.role !== "ADMIN") {

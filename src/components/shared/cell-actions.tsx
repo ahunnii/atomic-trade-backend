@@ -1,7 +1,8 @@
+"use client";
+
+import { forwardRef } from "react";
 import Link from "next/link";
-
-import { forwardRef, useEffect, useState } from "react";
-
+import { usePathname, useRouter } from "next/navigation";
 import {
   Archive,
   Check,
@@ -13,6 +14,8 @@ import {
   X,
 } from "lucide-react";
 
+import { toastService } from "@dreamwalker-studios/toasts";
+
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -22,8 +25,6 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 
-import { toastService } from "@dreamwalker-studios/toasts";
-import { useRouter } from "next/router";
 import { DeleteDialog } from "./delete-dialog";
 
 type Props = {
@@ -60,7 +61,7 @@ export const CellActions = forwardRef<HTMLDivElement, Props>(
     ref,
   ) => {
     const router = useRouter();
-    const currentPath = router.asPath;
+    const currentPath = usePathname();
 
     const baseUrl = `${currentPath}/${slug ?? id}`;
 
@@ -148,17 +149,18 @@ export const CellActions = forwardRef<HTMLDivElement, Props>(
             )}
 
             {handleOnDelete && (
-              <DropdownMenuItem className="cursor-pointer">
-                <DeleteDialog
-                  onConfirm={() => {
-                    handleOnDelete(slug ?? id);
-                  }}
+              <DeleteDialog
+                onConfirm={() => {
+                  handleOnDelete(slug ?? id);
+                }}
+              >
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onSelect={(e) => e.preventDefault()}
                 >
-                  <span>
-                    <Trash className="mr-2 h-4 w-4" /> Delete
-                  </span>
-                </DeleteDialog>
-              </DropdownMenuItem>
+                  <Trash className="mr-2 h-4 w-4" /> Delete
+                </DropdownMenuItem>
+              </DeleteDialog>
             )}
           </DropdownMenuContent>
         </DropdownMenu>

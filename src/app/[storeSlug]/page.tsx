@@ -7,5 +7,5 @@ export default async function StorePage({
 }) {
   const { storeSlug } = await params;
 
-  redirect(`/stores/${storeSlug}`);
+  redirect(`/${storeSlug}/dashboard`);
 }

@@ -17,7 +17,10 @@ type Props = {
   redirectPath?: string;
 };
 
-export const useDefaultMutationActions = ({ invalidateEntities }: Props) => {
+export const useDefaultMutationActions = ({
+  invalidateEntities,
+  redirectPath,
+}: Props) => {
   const apiContext = api.useUtils();
   const router = useRouter();
 
@@ -40,8 +43,15 @@ export const useDefaultMutationActions = ({ invalidateEntities }: Props) => {
     console.error(error);
   };
 
-  const defaultSuccess = (props: { message: string }) => {
+  const defaultSuccess = (props: {
+    message: string;
+    cancelRedirect?: boolean;
+  }) => {
     toastService.success(props.message);
+
+    if (redirectPath && !props.cancelRedirect) {
+      void router.push(redirectPath);
+    }
   };
 
   const defaultActions = {

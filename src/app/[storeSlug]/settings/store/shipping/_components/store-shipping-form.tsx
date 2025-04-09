@@ -30,8 +30,8 @@ import { NumericFormField } from "~/components/input/numeric-form-field";
 import { SingleCheckboxFormField } from "~/components/input/single-checkbox-form-field";
 import { SwitchFormField } from "~/components/input/switch-form-field";
 import { TextareaFormField } from "~/components/input/textarea-form-field";
-import { AdminFormBody } from "~/components/layout/admin-form-body";
-import { AdminFormHeader } from "~/components/layout/admin-form-header";
+import { FormDiscardButton } from "~/components/shared/form-discard-button";
+import { FormHeader } from "~/components/shared/form-header";
 import { FormSection } from "~/components/shared/form-section";
 import { LoadButton } from "~/components/shared/load-button";
 
@@ -125,26 +125,22 @@ export const StoreShippingForm = ({ initialData, slug }: Props) => {
       <Form {...form}>
         <form
           onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
-          onChange={() => console.log(form.formState)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.preventDefault();
+          }}
         >
-          <AdminFormHeader
-            title="Shipping Settings"
-            description="Manage store shipping settings for your customers"
-            contentName="Store Settings"
-            link={`/${slug}/store`}
-          >
-            <LoadButton
+          <FormHeader title="Shipping Settings" link={`/${slug}/dashboard`}>
+            <FormDiscardButton
               isLoading={loading}
-              className="ml-auto"
-              type="submit"
-              loadingText="Saving..."
-            >
+              redirectPath={`/${slug}/dashboard`}
+            />
+            <LoadButton isLoading={loading} type="submit">
               Save changes
             </LoadButton>
-          </AdminFormHeader>
+          </FormHeader>
 
-          <AdminFormBody className="mx-auto w-full max-w-6xl flex-col space-y-0">
-            <div className="flex w-full flex-col space-y-4 lg:w-8/12">
+          <section className="form-body">
+            <div className={cn("flex w-full flex-col space-y-4")}>
               <FormSection
                 title="Business Address"
                 hasError={highlightErrors}
@@ -277,7 +273,7 @@ export const StoreShippingForm = ({ initialData, slug }: Props) => {
                 </div>
               </FormSection>
             </div>
-          </AdminFormBody>
+          </section>
         </form>
       </Form>
     </>

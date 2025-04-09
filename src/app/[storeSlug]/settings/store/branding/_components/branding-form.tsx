@@ -9,6 +9,7 @@ import type { BrandingFormData } from "~/lib/validators/store";
 import type { Store } from "~/types/store";
 import { env } from "~/env";
 import { useFileUpload } from "~/lib/file-upload/hooks/use-file-upload";
+import { cn } from "~/lib/utils";
 import { brandingSettingsValidator } from "~/lib/validators/store";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
@@ -16,8 +17,8 @@ import { Form } from "~/components/ui/form";
 import { ImageFormField } from "~/components/input/image-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
 import { PhoneFormField } from "~/components/input/phone-form-field";
-import { AdminFormBody } from "~/components/layout/admin-form-body";
-import { AdminFormHeader } from "~/components/layout/admin-form-header";
+import { FormDiscardButton } from "~/components/shared/form-discard-button";
+import { FormHeader } from "~/components/shared/form-header";
 import { FormSection } from "~/components/shared/form-section";
 import { LoadButton } from "~/components/shared/load-button";
 
@@ -78,27 +79,26 @@ export const BrandingForm = ({ initialData, slug }: Props) => {
   return (
     <>
       <Form {...form}>
-        <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}>
-          <AdminFormHeader
-            title="Branding Settings"
-            description="Manage store branding settings for your customers"
-            contentName="Store Settings"
-            link={`/admin/${slug}/store`}
-          >
-            <LoadButton
+        <form
+          onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.preventDefault();
+          }}
+        >
+          <FormHeader title="Branding Settings" link={`/${slug}/dashboard`}>
+            <FormDiscardButton
               isLoading={loading}
-              className="ml-auto"
-              type="submit"
-              loadingText="Saving..."
-            >
+              redirectPath={`/${slug}/dashboard`}
+            />
+            <LoadButton isLoading={loading} type="submit">
               Save changes
             </LoadButton>
-          </AdminFormHeader>
+          </FormHeader>
 
-          <AdminFormBody className="mx-auto w-full max-w-6xl flex-col space-y-0">
-            <div className="flex w-full flex-col space-y-4 lg:w-8/12">
+          <section className="form-body">
+            <div className={cn("flex w-full flex-col space-y-4")}>
               <FormSection
-                title="Business Information"
+                title="Public Information"
                 description="Set up your store's name and contact information."
                 bodyClassName="space-y-4"
               >
@@ -136,7 +136,7 @@ export const BrandingForm = ({ initialData, slug }: Props) => {
                 />
               </FormSection>
             </div>
-          </AdminFormBody>
+          </section>
         </form>
       </Form>
     </>

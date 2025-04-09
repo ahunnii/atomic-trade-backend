@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-
 import { auth } from "~/server/auth";
+
 import { api } from "~/trpc/server";
 
 export default async function Home() {
@@ -14,7 +14,7 @@ export default async function Home() {
     const store = await api.store.getFirst();
 
     if (store) {
-      void redirect(`/stores/${store.slug}`);
+      void redirect(`/${store.slug}/dashboard`);
     } else {
       void redirect(`/welcome`);
     }

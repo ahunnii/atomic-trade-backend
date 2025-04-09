@@ -21,6 +21,7 @@ type Props = {
     href: string;
   }>;
   currentPage?: string;
+  breadcrumbClassName?: string;
 };
 
 export function ContentLayout({
@@ -29,6 +30,7 @@ export function ContentLayout({
   className,
   breadcrumbs,
   currentPage,
+  breadcrumbClassName,
 }: Props) {
   return (
     <div>
@@ -41,7 +43,7 @@ export function ContentLayout({
         )}
       >
         {!!breadcrumbs && breadcrumbs?.length > 0 && (
-          <Breadcrumb>
+          <Breadcrumb className={breadcrumbClassName}>
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>

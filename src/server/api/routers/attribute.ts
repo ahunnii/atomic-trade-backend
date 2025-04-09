@@ -1,11 +1,11 @@
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-
 import {
   adminProcedure,
   createTRPCRouter,
   publicProcedure,
 } from "~/server/api/trpc";
+import { z } from "zod";
+
+import { TRPCError } from "@trpc/server";
 
 import { attributeValidator } from "~/lib/validators/attribute";
 
@@ -58,7 +58,7 @@ export const attributeRouter = createTRPCRouter({
     .input(
       attributeValidator.extend({
         storeId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { storeId, name, values } = input;
@@ -81,7 +81,7 @@ export const attributeRouter = createTRPCRouter({
     .input(
       attributeValidator.extend({
         attributeId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { attributeId: id, name, values } = input;

@@ -1,6 +1,5 @@
-import type { FC } from "react";
-import { FormDescription, FormLabel } from "~/components/ui/form";
 import { cn } from "~/lib/utils";
+import { FormDescription, FormLabel } from "~/components/ui/form";
 
 type Props = {
   children: React.ReactNode;
@@ -11,7 +10,7 @@ type Props = {
   hasError?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-export const FormSection: FC<Props> = ({
+export const FormSection = ({
   children,
   title,
   description,
@@ -19,7 +18,7 @@ export const FormSection: FC<Props> = ({
   headerClassName,
   bodyClassName,
   hasError,
-}) => {
+}: Props) => {
   return (
     <div
       className={cn(

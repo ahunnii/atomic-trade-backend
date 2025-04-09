@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const attributeSchema = z.object({
+export const attributeValidator = z.object({
   name: z.string().min(2),
   values: z.array(z.object({ content: z.string() })).refine(
     (input) => {
@@ -12,3 +12,4 @@ export const attributeSchema = z.object({
     },
   ),
 });
+export type AttributeFormData = z.infer<typeof attributeValidator>;

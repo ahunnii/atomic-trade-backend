@@ -1,4 +1,7 @@
-import { auth } from "~/server/auth";
+"use client";
+
+import { api } from "~/trpc/react";
+
 import { ModeToggle } from "./mode-toggle";
 import { SheetMenu } from "./sheet-menu";
 import { UserNav } from "./user-nav";
@@ -7,8 +10,8 @@ type Props = {
   title: string;
 };
 
-export async function Navbar({ title }: Props) {
-  const session = await auth();
+export function Navbar({ title }: Props) {
+  const { data: session } = api.users.getSession.useQuery();
   return (
     <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 dark:shadow-secondary sticky top-0 z-10 w-full shadow backdrop-blur">
       <div className="mx-4 flex h-14 items-center sm:mx-8">
@@ -18,7 +21,7 @@ export async function Navbar({ title }: Props) {
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <ModeToggle />
-          <UserNav sessionData={session} />
+          {session && <UserNav sessionData={session} />}
         </div>
       </div>
     </header>
