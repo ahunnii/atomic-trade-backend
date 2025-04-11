@@ -10,9 +10,9 @@ import { AdvancedDataTable } from "~/components/shared/tables/advanced-data-tabl
 import { ContentLayout } from "../../_components/content-layout";
 import { attributeColumns } from "./attributes-column-data";
 
-type IProps = { storeId: string; storeSlug: string };
+type Props = { storeId: string; storeSlug: string };
 
-export const AttributeClient = ({ storeId, storeSlug }: IProps) => {
+export const AttributeClient = ({ storeId, storeSlug }: Props) => {
   const router = useRouter();
 
   const { defaultActions } = useDefaultMutationActions({
@@ -41,7 +41,7 @@ export const AttributeClient = ({ storeId, storeSlug }: IProps) => {
         isLoading: deleteAttribute.isPending || duplicateAttribute.isPending,
       })) ?? []
     );
-  }, [storeAttributes?.data, deleteAttribute, duplicateAttribute]);
+  }, [storeAttributes?.data, deleteAttribute, duplicateAttribute, storeSlug]);
 
   return (
     <ContentLayout title={`Attributes (${storeAttributes?.data?.length ?? 0})`}>

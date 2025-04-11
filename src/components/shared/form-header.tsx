@@ -7,8 +7,7 @@ import { Separator } from "~/components/ui/separator";
 
 type Props = {
   link: string;
-
-  title: string;
+  title: string | React.ReactNode;
   children: React.ReactNode;
 };
 export const FormHeader = ({ title, children, link }: Props) => {

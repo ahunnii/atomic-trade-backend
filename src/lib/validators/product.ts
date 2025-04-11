@@ -1,7 +1,12 @@
 import { z } from "zod";
 
+// import { ProductStatus, ProductType } from "@prisma/client";
+import { ProductStatus, ProductType } from "@prisma/client";
+
+import { attributeValidator, productAttributeValidator } from "./attribute";
+
 // Enum validators
-const ProductStatusEnum = z.enum([
+export const ProductStatusEnum = z.enum([
   "DRAFT",
   "ACTIVE",
   "ARCHIVED",
@@ -9,18 +14,16 @@ const ProductStatusEnum = z.enum([
   "CUSTOM",
 ]);
 
-const ProductTypeEnum = z.enum(["PHYSICAL", "DIGITAL", "SERVICE"]);
+export const ProductTypeEnum = z.enum(["PHYSICAL", "DIGITAL", "SERVICE"]);
 
 const StockStatusEnum = z.enum(["IN_STOCK", "OUT_OF_STOCK", "PRE_ORDER"]);
 
 // Dimension validator
 export const dimensionValidator = z.object({
-  id: z.string().optional(),
-  productId: z.string().optional(),
-  weight: z.number().nullable().default(0),
-  length: z.number().nullable().default(0),
-  width: z.number().nullable().default(0),
-  height: z.number().nullable().default(0),
+  weight: z.coerce.number().optional(),
+  length: z.coerce.number().optional(),
+  width: z.coerce.number().optional(),
+  height: z.coerce.number().optional(),
 });
 
 export type Dimension = z.infer<typeof dimensionValidator>;
@@ -43,7 +46,7 @@ export type Variation = z.infer<typeof variationValidator>;
 
 // Additional Info validator
 export const additionalInfoValidator = z.object({
-  id: z.string().optional(),
+  id: z.string(),
   productId: z.string().optional(),
   title: z.string(),
   description: z.string(),
@@ -63,11 +66,56 @@ export const productValidator = z.object({
   isFeatured: z.boolean().default(false),
   featuredImage: z.string(),
   images: z.array(z.string()),
-  dimensions: dimensionValidator.optional(),
-  variants: z.array(variationValidator).optional(),
-  additionalInfo: z.array(additionalInfoValidator).optional(),
+  dimensions: dimensionValidator,
+  variants: z.array(variationValidator).min(1),
+  additionalInfo: z.array(additionalInfoValidator),
   materials: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
+  attributes: z.array(attributeValidator).default([]),
+});
+
+export const productFormValidator = z.object({
+  name: z.string().min(1),
+  description: z.string(),
+  additionalInfo: z.any(),
+  isFeatured: z.boolean().default(false).optional(),
+  status: z.nativeEnum(ProductStatus),
+  attributes: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      values: z.array(z.string()),
+    }),
+  ),
+  variants: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        values: z.array(z.string()),
+        priceInCents: z.coerce.number(),
+        stock: z.coerce.number(),
+        sku: z.string().optional().nullish(),
+        imageUrl: z.string().optional().nullish(),
+        manageStock: z.boolean().default(false).optional(),
+      }),
+    )
+    .min(1),
+
+  tempImages: z.array(z.any().optional().nullable()),
+  images: z.array(z.string()),
+
+  featuredImage: z.string().optional(),
+  tempFeaturedImage: z.any().optional().nullable(),
+
+  // type: z.nativeEnum(ProductType),
+  // estimatedCompletion: z.coerce.number().min(0).optional(),
+  // shippingCost: z.coerce.number().min(0).optional(),
+  // dimensions: dimensionValidator,
+  // tags: z.array(z.object({ id: z.string(), text: z.string() })),
+  // materials: z.array(z.object({ id: z.string(), text: z.string() })),
 });
 
 export type Product = z.infer<typeof productValidator>;
+
+export type ProductFormData = z.infer<typeof productFormValidator>;

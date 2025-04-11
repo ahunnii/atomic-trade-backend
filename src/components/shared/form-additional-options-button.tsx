@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   ArchiveIcon,
   FileStackIcon,
@@ -6,7 +5,6 @@ import {
   TrashIcon,
 } from "lucide-react";
 
-import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -26,12 +24,17 @@ type Props = {
   onDelete: () => void;
 };
 
-export function FormAdditionalOptionsButton(props: Props) {
+export const FormAdditionalOptionsButton = (props: Props) => {
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="" type="button">
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer"
+            type="button"
+          >
             <MoreHorizontal className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>
@@ -40,14 +43,20 @@ export function FormAdditionalOptionsButton(props: Props) {
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             {props?.onDuplicate && (
-              <DropdownMenuItem onClick={props.onDuplicate}>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={props.onDuplicate}
+              >
                 <FileStackIcon className="mr-2 h-4 w-4" />
                 <span>Save and duplicate</span>
               </DropdownMenuItem>
             )}
 
             {props?.onArchive && (
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={props.onArchive}
+              >
                 <ArchiveIcon className="mr-2 h-4 w-4" />
                 <span>Archive</span>
               </DropdownMenuItem>
@@ -59,9 +68,7 @@ export function FormAdditionalOptionsButton(props: Props) {
           )}
           <DeleteDialog onConfirm={props.onDelete}>
             <DropdownMenuItem
-              className={cn(
-                "text-destructive focus:bg-destructive/90 focus:text-destructive-foreground",
-              )}
+              className="text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive cursor-pointer"
               onSelect={(e) => e.preventDefault()}
             >
               <TrashIcon className="mr-2 h-4 w-4" />
@@ -72,4 +79,4 @@ export function FormAdditionalOptionsButton(props: Props) {
       </DropdownMenu>
     </>
   );
-}
+};

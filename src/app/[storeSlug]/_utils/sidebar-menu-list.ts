@@ -39,9 +39,9 @@ export function getMenuList(pathname: string, slug: string): Group[] {
       groupLabel: "",
       menus: [
         {
-          href: "/admin/dashboard",
+          href: `/${slug}/dashboard`,
           label: "Dashboard",
-          active: pathname.includes("/admin/dashboard"),
+          active: pathname.includes(`/${slug}/dashboard`),
           icon: LayoutGrid,
           submenus: [],
           restrictedAccess: [],
@@ -53,9 +53,9 @@ export function getMenuList(pathname: string, slug: string): Group[] {
       groupLabel: "Inventory",
       menus: [
         {
-          href: "/admin/products",
+          href: `/${slug}/products`,
           label: "Products",
-          active: pathname.includes("/admin/products"),
+          active: pathname.includes(`/${slug}/products`),
           icon: ShirtIcon,
           submenus: [],
           restrictedAccess: [],
@@ -75,31 +75,10 @@ export function getMenuList(pathname: string, slug: string): Group[] {
         },
       ],
     },
-    {
-      groupLabel: "Guides",
-      menus: [
-        {
-          href: "/admin/guides/project-management",
-          label: "Project Management",
-          active: pathname.includes("/admin/guides/project-management"),
-          restrictedAccess: [],
 
-          icon: Users,
-          submenus: [],
-        },
-      ],
-    },
     {
       groupLabel: "Settings",
       menus: [
-        {
-          href: "/admin/users",
-          label: "Users",
-          active: pathname.includes("/admin/users"),
-          restrictedAccess: [],
-          icon: Users,
-          submenus: [],
-        },
         {
           href: `/${slug}/settings/store/branding`,
           label: "Branding",
@@ -114,14 +93,6 @@ export function getMenuList(pathname: string, slug: string): Group[] {
           active: pathname.includes(`/${slug}/settings/store/shipping`),
           restrictedAccess: [],
           icon: TruckIcon,
-          submenus: [],
-        },
-        {
-          href: "/profile",
-          label: "Account",
-          active: pathname.includes("/admin/account"),
-          restrictedAccess: [],
-          icon: Settings,
           submenus: [],
         },
       ],

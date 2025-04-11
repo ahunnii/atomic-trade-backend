@@ -1,46 +1,45 @@
+model Attribute {
+  id            String        @id @default(cuid())
+  storeId       String
+  store         Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name          String        @default("Attribute")
+  values        String[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+
+
 model Product {
   id        String        @id @default(cuid())
-
   status    ProductStatus @default(DRAFT)
   type      ProductType   @default(PHYSICAL)
-  slug      String?       @unique
+
+  slug      String       @unique
 
   storeId   String
   store     Store         @relation("StoreToProduct", fields: [storeId], references: [id])
 
-  name       String
-  description String  @db.Text
-  attributes Attribute[] @relation("AttributeToProduct")
+  name            String
+  description     String  @db.Text
+  additionalInfo  Json?
 
-  
+  attributes      Attribute[]
 
-
-  infoSections  InfoSection[]
-
-  inventoryPolicy InventoryPolicy @default(DENY)
   isFeatured      Boolean         @default(false)
 
-  featuredImage String
-  images        Image[] // Relation to Image model
+  featuredImage   String
+  images          String[]
 
-
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  deletedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
 
   variants    Variation[]
   collections Collection[]
-
-  weight    Float?   @default(0) // in grams
-  length    Float?   @default(0) // in in
-  width     Float?   @default(0) // in in
-  height    Float?   @default(0) // in in
-  materials String[]
-  tags      String[]
-
-  estimatedCompletion Int    @default(0)
-  shippingCost        Float? @default(0)
-
 
   coupons   Coupon[]
   sales     Sale[]
@@ -53,16 +52,17 @@ model Product {
 }
 
 model Variation {
-  id        String  @id @default(cuid())
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id          String      @id @default(cuid())
+  productId   String
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  name     String   @default("Variation")
-  values   String[]
-  quantity Int
-  price    Int
-  sku      String?  @unique
-  imageUrl String?
+  name          String    @default("Default")
+  values        String[]
+  stock         Int       @default(1)
+  manageStock   Boolean   @default(false)
+  priceInCents  Int
+  sku           String?  @unique
+  imageUrl      String?
 
   cartItems  CartItem[]
   orderItems OrderItem[]
@@ -91,17 +91,4 @@ enum ProductType {
   PHYSICAL
   DIGITAL
   SERVICE
-}
-
-
-
-model InfoSection {
-  id        String  @id @default(cuid())
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  title String
-  description String @db.Text
-
-  @@index([productId])
 }

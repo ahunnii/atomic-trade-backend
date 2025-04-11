@@ -1,16 +1,16 @@
 import { api } from "~/trpc/server";
 
-import { AttributeClient } from "./_components/attribute-client";
+import { ProductClient } from "./_components/product-client";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
 export const metadata = {
-  title: "Attributes",
+  title: "Products",
 };
 
-export default async function AttributesPage({ params }: Props) {
+export default async function ProductsPage({ params }: Props) {
   const { storeSlug } = await params;
   const store = await api.store.getBySlug(storeSlug);
 
@@ -18,5 +18,5 @@ export default async function AttributesPage({ params }: Props) {
     return <div>Store not found</div>;
   }
 
-  return <AttributeClient storeId={store.id} storeSlug={storeSlug} />;
+  return <ProductClient storeId={store.id} storeSlug={storeSlug} />;
 }

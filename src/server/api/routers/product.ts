@@ -1,22 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ProductStatus, ProductType, SaleType } from "@prisma/client";
-
-import { TRPCError } from "@trpc/server";
-import { uniqueId } from "lodash";
-import { z } from "zod";
-import { env } from "~/env.mjs";
-import { productValidator } from "~/lib/validators/product";
 import {
   adminProcedure,
   createTRPCRouter,
   publicProcedure,
 } from "~/server/api/trpc";
-
 import {
   extractQueryString,
   filterProductsByVariantsAlt,
   parseQueryString,
-} from "~/utils/filtering";
+} from "~/utils/product-filtering";
+import { uniqueId } from "lodash";
+import { z } from "zod";
+
+import { ProductStatus, ProductType, SaleType } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
+
+import type { Product } from "~/types/product";
+import { env } from "~/env";
+import {
+  productFormValidator,
+  productValidator,
+} from "~/lib/validators/product";
 
 export const productsRouter = createTRPCRouter({
   // Queries for the frontend
@@ -37,7 +41,7 @@ export const productsRouter = createTRPCRouter({
           })
           .optional(),
         test: z.record(z.string(), z.array(z.string())).optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const results = extractQueryString(input.queryString ?? "");
@@ -62,7 +66,7 @@ export const productsRouter = createTRPCRouter({
             : {}),
           variants: {
             some: {
-              price: {
+              priceInCents: {
                 gte:
                   priceRangeMin === undefined
                     ? 0
@@ -76,7 +80,6 @@ export const productsRouter = createTRPCRouter({
           },
         },
         include: {
-          infoSections: true,
           reviews: {
             include: {
               user: {
@@ -108,7 +111,7 @@ export const productsRouter = createTRPCRouter({
           collections: true,
           variants: true,
           attributes: true,
-          images: true,
+
           store: {
             select: {
               id: true,
@@ -123,9 +126,9 @@ export const productsRouter = createTRPCRouter({
       });
 
       const filteredProductsAlt = filterProductsByVariantsAlt(
-        products,
+        products as Product[],
         results.names,
-        results.values
+        results.values,
       );
 
       // if(!input.test)
@@ -138,7 +141,7 @@ export const productsRouter = createTRPCRouter({
       const variants = await ctx.db.variation.findMany({
         where: {
           product: { storeId },
-          quantity: { gt: 0 },
+          stock: { gt: 0 },
         },
         include: { product: true },
       });
@@ -155,12 +158,12 @@ export const productsRouter = createTRPCRouter({
         collectionId: z.string().optional(),
         isArchived: z.boolean().optional(),
         includeCustom: z.boolean().optional(),
-      })
+      }),
     )
     .query(({ ctx, input }) => {
       return ctx.db.product.findMany({
         where: {
-          storeId: input.storeId ?? env.NEXT_PUBLIC_STORE_ID,
+          storeId: input.storeId,
           isFeatured: input.isFeatured ?? undefined,
           NOT: { status: "CUSTOM" },
           collections: input.collectionId
@@ -170,7 +173,7 @@ export const productsRouter = createTRPCRouter({
         include: {
           collections: true,
           attributes: true,
-          images: true,
+
           variants: true,
           store: true,
           reviews: {
@@ -196,7 +199,7 @@ export const productsRouter = createTRPCRouter({
       z.object({
         productId: z.string(),
         status: z.nativeEnum(ProductStatus).optional(),
-      })
+      }),
     )
     .query(({ ctx, input }) => {
       return ctx.db.product.findUnique({
@@ -211,10 +214,10 @@ export const productsRouter = createTRPCRouter({
               minFreeShipping: true,
             },
           },
-          infoSections: true,
+
           attributes: true,
           collections: true,
-          images: true,
+
           sales: {
             where: {
               isActive: true,
@@ -253,20 +256,26 @@ export const productsRouter = createTRPCRouter({
     }),
 
   create: adminProcedure
-    .input(productValidator.extend({ storeId: z.string() }))
+    .input(
+      productFormValidator
+        .extend({ storeId: z.string(), featuredImage: z.string() })
+        .omit({ tempFeaturedImage: true, tempImages: true }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const { slug, ...rest } = input;
-
-      const formattedSlug = slug
-        ? slug
-        : input.name.toLowerCase().replace(/ /g, "-");
-
+      let slug = input.name.toLowerCase().replace(/ /g, "-");
       const checkForUniqueSlug = await ctx.db.product.count({
-        where: { slug: formattedSlug },
+        where: { slug },
       });
 
+      if (checkForUniqueSlug > 0) slug = `${slug}-${checkForUniqueSlug + 1}`;
+
       const duplicateSKUs = input.variants
-        .filter((variant) => variant.sku !== undefined)
+        .filter(
+          (variant) =>
+            variant.sku !== undefined &&
+            variant.sku !== null &&
+            variant.sku !== "",
+        )
         .map((variant) => variant.sku!);
 
       const checkForDuplicateSKUs = await ctx.db.variation.count({
@@ -283,20 +292,14 @@ export const productsRouter = createTRPCRouter({
 
       const product = await ctx.db.product.create({
         data: {
-          ...rest,
-          tags: input.tags.map((tag) => tag.name),
-          materials: input.materials.map((materials) => materials.name),
+          ...input,
+          slug,
           attributes: {
-            connect: input.attributes.map((att) => ({ id: att.id })),
-          },
-          images: {
-            createMany: { data: input.images.map((url) => ({ url })) },
-          },
-          infoSections: {
             createMany: {
-              data: input.infoSections.map((section) => ({
-                title: section.title,
-                description: section.description,
+              data: input.attributes.map((att) => ({
+                name: att.name,
+                values: att.values,
+                storeId: input.storeId,
               })),
             },
           },
@@ -305,16 +308,13 @@ export const productsRouter = createTRPCRouter({
               data: [
                 ...input.variants.map((variant) => ({
                   ...variant,
-                  sku: variant.sku === "" ? null : variant.sku,
-                  imageUrl: variant.imageUrl === "" ? null : variant.imageUrl,
+                  sku: variant.sku === "" ? undefined : variant.sku,
+                  imageUrl:
+                    variant.imageUrl === "" ? undefined : variant.imageUrl,
                 })),
               ],
             },
           },
-          slug:
-            checkForUniqueSlug > 0
-              ? `${formattedSlug}-${uniqueId().slice(0, 3)}`
-              : formattedSlug,
         },
       });
 
@@ -325,142 +325,192 @@ export const productsRouter = createTRPCRouter({
     }),
 
   update: adminProcedure
-    .input(productValidator.extend({ productId: z.string() }))
+    .input(
+      productFormValidator
+        .extend({ productId: z.string(), featuredImage: z.string() })
+        .omit({ tempFeaturedImage: true, tempImages: true }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const slugProduct = await ctx.db.product.findUnique({
-        where: { id: input.productId },
-        select: {
-          name: true,
-          slug: true,
-        },
+      const { productId, variants, ...rest } = input;
+      const currentProduct = await ctx.db.product.findUnique({
+        where: { id: productId },
+        select: { name: true, slug: true, storeId: true },
       });
 
-      if (!slugProduct)
+      if (!currentProduct)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Product not found.",
         });
 
-      let slug = slugProduct.slug;
+      let slug = currentProduct.slug;
 
-      if (slugProduct.name !== input.name) {
+      if (currentProduct.name !== input.name) {
         slug = input.name.toLowerCase().replace(/ /g, "-");
-        // Ensure the slug is unique by appending a number if necessary
-        let unique = false;
-        let suffix = 1;
-        while (!unique) {
-          const slugToCheck: string = suffix > 1 ? `${slug}-${suffix}` : slug;
-          const existingSlug = await ctx.db.product.findUnique({
-            where: { slug: slugToCheck },
-          });
-          if (!existingSlug) {
-            unique = true;
-            slug = slugToCheck;
-          } else {
-            suffix++;
-          }
-        }
-      }
-
-      const filteredVariants = input.variants.filter(
-        (variant) => !!variant.sku
-      );
-
-      const existingVariantSkus = await ctx.db.variation.count({
-        where: {
-          sku: {
-            in: filteredVariants.map((variant) => variant.sku!),
-          },
-        },
-      });
-
-      if (existingVariantSkus > 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Duplicate SKUs found.",
+        const checkForUniqueSlug = await ctx.db.product.count({
+          where: { slug },
         });
+
+        if (checkForUniqueSlug > 0) slug = `${slug}-${checkForUniqueSlug + 1}`;
       }
-
-      const { productId, ...rest } = input;
-
-      // Fetch existing variants to determine which ones to mark as deleted
-      const existingVariants = await ctx.db.variation.findMany({
-        where: { productId },
-      });
-
-      const variantIdsToDelete = existingVariants
-        .filter(
-          (existingVariant) =>
-            !input.variants.some((variant) => variant.id === existingVariant.id)
-        )
-        .map((variant) => variant.id);
-
-      // Mark variants as deleted if they are associated with orderItems
-      await ctx.db.variation.updateMany({
-        where: {
-          id: { in: variantIdsToDelete },
-          orderItems: { some: {} },
-        },
-        data: { deletedAt: new Date() },
-      });
-
-      // Delete variants that are not associated with orderItems
-      await ctx.db.variation.deleteMany({
-        where: {
-          id: { in: variantIdsToDelete },
-          orderItems: { none: {} },
-        },
-      });
 
       const updatedProduct = await ctx.db.product.update({
-        where: {
-          id: productId,
-        },
+        where: { id: productId },
         data: {
           ...rest,
           slug,
           attributes: {
-            connect: input.attributes.map((att) => ({ id: att.id })),
-          },
-          images: {
             deleteMany: {},
-            createMany: {
-              data: input.images.map((url) => ({ url })),
-            },
-          },
-          variants: {
-            upsert: input.variants.map((variant) => ({
-              where: { id: variant.id },
-              update: {
-                ...variant,
-                sku: variant.sku === "" ? null : variant.sku,
-                imageUrl: variant.imageUrl === "" ? null : variant.imageUrl,
-              },
-              create: {
-                sku: variant.sku === "" ? null : variant.sku,
-                imageUrl: variant.imageUrl === "" ? null : variant.imageUrl,
-                price: variant.price,
-                quantity: variant.quantity,
-                name: variant.name,
-                values: variant.values,
-              },
+            create: input.attributes.map((att) => ({
+              name: att.name,
+              values: att.values,
+              storeId: currentProduct.storeId,
             })),
-          },
-          deletedAt:
-            input.status === ProductStatus.ARCHIVED ? new Date() : undefined,
-          tags: input.tags.map((tag) => tag.name),
-          materials: input.materials.map((materials) => materials.name),
-          infoSections: {
-            deleteMany: {},
-            createMany: {
-              data: input.infoSections.map((section) => ({
-                title: section.title,
-                description: section.description,
-              })),
-            },
           },
         },
       });
+
+      /////
+      // Normalize SKUs: treat "" as null
+      const normalizedVariants = variants.map((v) => ({
+        ...v,
+        sku: v.sku?.trim() ?? undefined,
+      }));
+
+      // Check for duplicate SKUs within the input
+      const skus = normalizedVariants
+        .map((v) => v.sku)
+        .filter((sku): sku is string => !!sku);
+
+      const skuSet = new Set(skus);
+      if (skuSet.size !== skus.length) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SKUs must be unique when provided.",
+        });
+      }
+
+      // Check for SKU conflicts with variants from other products
+      if (skus.length > 0) {
+        const existing = await ctx.db.variation.findMany({
+          where: {
+            sku: { in: skus },
+            productId: { not: productId },
+          },
+          select: {
+            id: true,
+            sku: true,
+            productId: true,
+          },
+        });
+
+        if (existing.length > 0) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: `The following SKUs already exist on other products: ${existing
+              .map((e) => e.sku)
+              .join(", ")}`,
+          });
+        }
+      }
+
+      ////
+      const existingVariants = await ctx.db.variation.findMany({
+        where: { productId, deletedAt: null },
+        select: { id: true },
+      });
+
+      const existingIds = new Set(existingVariants.map((v) => v.id));
+      const incomingIds = new Set(normalizedVariants.map((v) => v.id));
+
+      // Upsert all variants (create or update)
+      const upserts = normalizedVariants.map((v) =>
+        ctx.db.variation.upsert({
+          where: { id: v.id },
+          update: {
+            name: v.name,
+            priceInCents: v.priceInCents,
+            sku: v.sku === "" ? undefined : v.sku,
+            imageUrl: v.imageUrl === "" ? undefined : v.imageUrl,
+            stock: v.stock,
+            manageStock: v.manageStock,
+            values: v.values,
+          },
+          create: {
+            id: v.id,
+            name: v.name,
+            priceInCents: v.priceInCents,
+            sku: v.sku === "" ? undefined : v.sku,
+            imageUrl: v.imageUrl === "" ? undefined : v.imageUrl,
+            stock: v.stock,
+            manageStock: v.manageStock,
+            values: v.values,
+            productId: input.productId,
+          },
+        }),
+      );
+
+      // Soft delete any that were removed
+      const deletes = [...existingIds]
+        .filter((id) => !incomingIds.has(id))
+        .map((id) =>
+          ctx.db.variation.update({
+            where: { id },
+            data: { deletedAt: new Date() },
+          }),
+        );
+
+      await ctx.db.$transaction([...upserts, ...deletes]);
+
+      // const filteredVariants = variants.filter(
+      //   (variant) => !!variant.sku,
+      // );
+
+      // const existingVariantSkus = await ctx.db.variation.count({
+      //   where: { sku: { in: filteredVariants.map((variant) => variant.sku!) } },
+      // });
+
+      // if (existingVariantSkus > 0) {
+      //   throw new TRPCError({
+      //     code: "BAD_REQUEST",
+      //     message: "Duplicate SKUs found.",
+      //   });
+      // }
+
+      // const { productId, ...rest } = input;
+
+      // // Fetch existing variants to determine which ones to mark as deleted
+      // const existingVariants = await ctx.db.variation.findMany({
+      //   where: { productId },
+      // });
+
+      // const variantIdsToDelete = existingVariants
+      //   .filter(
+      //     (existingVariant) =>
+      //       !input.variants.some(
+      //         (variant) => variant.id === existingVariant.id,
+      //       ),
+      //   )
+      //   .map((variant) => variant.id);
+
+      // // Mark variants as deleted if they are associated with orderItems
+      // await ctx.db.variation.updateMany({
+      //   where: {
+      //     id: { in: variantIdsToDelete },
+      //     orderItems: { some: {} },
+      //   },
+      //   data: { deletedAt: new Date() },
+      // });
+
+      // // Delete variants that are not associated with orderItems
+      // await ctx.db.variation.deleteMany({
+      //   where: {
+      //     id: { in: variantIdsToDelete },
+      //     orderItems: { none: {} },
+      //   },
+      // });
+
+      // });
 
       return {
         data: updatedProduct,
@@ -491,61 +541,62 @@ export const productsRouter = createTRPCRouter({
       };
     }),
 
-  search: publicProcedure
-    .input(
-      z.object({
-        queryString: z.string(),
-        storeId: z.string(),
-      })
-    )
-    .query(async ({ ctx, input: { queryString, storeId } }) => {
-      if (queryString === "") return [];
+  // search: publicProcedure
+  //   .input(
+  //     z.object({
+  //       queryString: z.string(),
+  //       storeId: z.string(),
+  //     }),
+  //   )
+  //   .query(async ({ ctx, input: { queryString, storeId } }) => {
+  //     if (queryString === "") return [];
 
-      const products = await ctx.db.product.findMany({
-        where: {
-          storeId,
-          OR: [
-            { name: { contains: queryString } },
-            { description: { contains: queryString } },
-            { tags: { has: queryString } },
-            { materials: { has: queryString } },
-            { collections: { some: { name: { contains: queryString } } } },
-          ],
-        },
-        include: { collections: true },
-        orderBy: { createdAt: "desc" },
-      });
+  //     const products = await ctx.db.product.findMany({
+  //       where: {
+  //         storeId,
+  //         OR: [
+  //           { name: { contains: queryString } },
+  //           { description: { contains: queryString } },
+  //           { tags: { has: queryString } },
+  //           { materials: { has: queryString } },
+  //           { collections: { some: { name: { contains: queryString } } } },
+  //         ],
+  //       },
+  //       include: { collections: true },
+  //       orderBy: { createdAt: "desc" },
+  //     });
 
-      return products;
-    }),
+  //     return products;
+  //   }),
 
   duplicate: adminProcedure
     .input(z.string())
     .mutation(async ({ ctx, input: productId }) => {
       const product = await ctx.db.product.findUnique({
         where: { id: productId },
+        omit: { id: true },
         include: {
-          infoSections: true,
-          attributes: true,
-          images: true,
-          variants: true,
+          attributes: { select: { name: true, values: true } },
+          variants: {
+            select: {
+              name: true,
+              sku: true,
+              imageUrl: true,
+              priceInCents: true,
+              stock: true,
+              manageStock: true,
+              values: true,
+            },
+          },
         },
       });
-
       if (!product)
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Product not found.",
         });
 
-      const {
-        id: ignoreId,
-        infoSections,
-        attributes,
-        images,
-        variants,
-        ...rest
-      } = product;
+      const { attributes, variants, ...rest } = product;
 
       const duplicateProduct = await ctx.db.product.create({
         data: {
@@ -553,35 +604,25 @@ export const productsRouter = createTRPCRouter({
           name: `${product.name} (Copy)`,
           slug: `${product.slug}-copy`,
           status: ProductStatus.DRAFT,
-          infoSections: {
-            createMany: {
-              data: infoSections.map((section) => ({
-                title: section.title,
-                description: section.description,
-              })),
-            },
-          },
-          attributes: {
-            connect: attributes.map((att) => ({ id: att.id })),
-          },
-          images: {
-            createMany: {
-              data: images.map((image) => ({ url: image.url })),
-            },
-          },
+          additionalInfo: product?.additionalInfo ?? undefined,
           variants: {
             createMany: {
               data: variants.map((variant) => ({
-                name: `${variant.name} (Copy)`,
-                sku: `${variant.sku} (Copy)`,
-                imageUrl: variant.imageUrl,
-                price: variant.price,
-                quantity: variant.quantity,
-                values: variant.values,
+                ...variant,
+                sku: variant.sku ? `${variant.sku} (Copy)` : undefined,
               })),
             },
           },
         },
+      });
+
+      await ctx.db.attribute.createMany({
+        data: attributes.map((att) => ({
+          name: att.name,
+          values: att.values,
+          productId: duplicateProduct.id,
+          storeId: duplicateProduct.storeId,
+        })),
       });
 
       return {
@@ -589,4 +630,18 @@ export const productsRouter = createTRPCRouter({
         message: "Product successfully duplicated",
       };
     }),
+
+  // archive: adminProcedure
+  //   .input(z.string())
+  //   .mutation(async ({ ctx, input: productId }) => {
+  //     const product = await ctx.db.product.update({
+  //       where: { id: productId },
+  //       data: { status: ProductStatus.ARCHIVED, deletedAt: new Date() },
+  //     });
+
+  //     return {
+  //       data: product,
+  //       message: "Product successfully archived",
+  //     };
+  //   }),
 });

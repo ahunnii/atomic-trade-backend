@@ -11,8 +11,12 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 
+import { CurrencyInput } from "../ui/custom/currency-input";
+import { NumericInput } from "../ui/custom/numeric-input";
+
 type Props<CurrentForm extends FieldValues> = {
   form: UseFormReturn<CurrentForm>;
+  name: Path<CurrentForm>;
   label?: string;
   description?: string;
   className?: string;
@@ -22,10 +26,9 @@ type Props<CurrentForm extends FieldValues> = {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   inputId?: string;
   inputClassName?: string;
-  name: Path<CurrentForm>;
 };
 
-export const InputFormField = <CurrentForm extends FieldValues>({
+export const TestNumberFormField = <CurrentForm extends FieldValues>({
   form,
   name,
   label,
@@ -46,7 +49,8 @@ export const InputFormField = <CurrentForm extends FieldValues>({
         <FormItem className={cn("col-span-full", className)}>
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
-            <Input
+            <NumericInput
+              type="numeric"
               disabled={disabled}
               placeholder={placeholder ?? ""}
               {...field}

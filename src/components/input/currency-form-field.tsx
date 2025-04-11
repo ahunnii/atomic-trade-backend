@@ -9,23 +9,24 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
+
+import { CurrencyInput } from "../ui/custom/currency-input";
 
 type Props<CurrentForm extends FieldValues> = {
   form: UseFormReturn<CurrentForm>;
+  name: Path<CurrentForm>;
   label?: string;
   description?: string;
   className?: string;
   disabled?: boolean;
   placeholder?: string;
-  onChange?: (value: string) => void;
+  onChange?: (value: number) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   inputId?: string;
   inputClassName?: string;
-  name: Path<CurrentForm>;
 };
 
-export const InputFormField = <CurrentForm extends FieldValues>({
+export const CurrencyFormField = <CurrentForm extends FieldValues>({
   form,
   name,
   label,
@@ -46,15 +47,16 @@ export const InputFormField = <CurrentForm extends FieldValues>({
         <FormItem className={cn("col-span-full", className)}>
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
-            <Input
+            <CurrencyInput
+              type="currency"
               disabled={disabled}
               placeholder={placeholder ?? ""}
-              {...field}
-              onChange={(e) => {
-                if (!!onChange) {
-                  onChange(e.target.value);
+              value={field.value}
+              onChange={(value) => {
+                if (onChange) {
+                  onChange(value);
                 }
-                field.onChange(e.target.value);
+                field.onChange(value);
               }}
               onKeyDown={onKeyDown}
               id={inputId}

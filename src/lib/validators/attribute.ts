@@ -12,4 +12,11 @@ export const attributeValidator = z.object({
     },
   ),
 });
+
+export const productAttributeValidator = z.object({
+  id: z.string(),
+  name: z.string(),
+  values: z.array(z.string()),
+});
+
 export type AttributeFormData = z.infer<typeof attributeValidator>;

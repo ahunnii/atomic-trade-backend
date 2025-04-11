@@ -37,7 +37,7 @@ export function ContentLayout({
       <Navbar title={title} />
       <div
         className={cn(
-          "container px-4 pt-4 pb-8 sm:px-8",
+          "container mx-auto px-4 pt-4 pb-8 sm:px-8",
           className,
           breadcrumbs && breadcrumbs.length > 0 && "pt-8",
         )}

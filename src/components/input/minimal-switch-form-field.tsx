@@ -14,7 +14,7 @@ import { Switch } from "~/components/ui/switch";
 type Props<CurrentForm extends FieldValues> = {
   form: UseFormReturn<CurrentForm>;
   name: Path<CurrentForm>;
-  label?: string;
+  label: string;
   description?: string;
   className?: string;
   disabled?: boolean;
@@ -22,7 +22,7 @@ type Props<CurrentForm extends FieldValues> = {
   isFancy?: boolean;
 };
 
-export const SwitchFormField = <CurrentForm extends FieldValues>({
+export const MinimalSwitchFormField = <CurrentForm extends FieldValues>({
   form,
   name,
   label,
@@ -44,8 +44,8 @@ export const SwitchFormField = <CurrentForm extends FieldValues>({
               "flex w-full flex-row items-center justify-between rounded-lg border p-4",
           )}
         >
-          <div className={cn(label && "space-y-0.5")}>
-            {label && <FormLabel>{label}</FormLabel>}
+          <div className="space-y-0.5">
+            <FormLabel>{label}</FormLabel>
             {description && <FormDescription>{description}</FormDescription>}
           </div>
           <FormControl>

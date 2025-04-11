@@ -15,41 +15,14 @@ export const attributeRouter = createTRPCRouter({
     .query(({ ctx, input: attributeId }) => {
       return ctx.db.attribute.findUnique({
         where: { id: attributeId },
-        include: { products: true },
+        include: { product: true },
       });
-    }),
-
-  duplicate: adminProcedure
-    .input(z.string())
-    .mutation(async ({ ctx, input: attributeId }) => {
-      const attribute = await ctx.db.attribute.findUnique({
-        where: { id: attributeId },
-      });
-
-      if (!attribute)
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Attribute not found",
-        });
-
-      const copiedAttribute = await ctx.db.attribute.create({
-        data: {
-          storeId: attribute.storeId,
-          name: `${attribute.name} (Copy)`,
-          values: attribute.values,
-        },
-      });
-
-      return {
-        data: copiedAttribute,
-        message: "Attribute duplicated successfully",
-      };
     }),
 
   getAll: publicProcedure.input(z.string()).query(({ ctx, input: storeId }) => {
     return ctx.db.attribute.findMany({
-      where: { storeId, archivedAt: null },
-      include: { products: true },
+      where: { storeId },
+      include: { product: true },
       orderBy: { createdAt: "desc" },
     });
   }),
@@ -58,15 +31,17 @@ export const attributeRouter = createTRPCRouter({
     .input(
       attributeValidator.extend({
         storeId: z.string(),
+        productId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { storeId, name, values } = input;
+      const { storeId, productId, name, values } = input;
 
       const attributes = await ctx.db.attribute.create({
         data: {
           storeId,
           name,
+          productId,
           values: values.map((val) => val.content).filter((val) => val !== ""),
         },
       });
@@ -121,20 +96,6 @@ export const attributeRouter = createTRPCRouter({
       return {
         data: attribute,
         message: "Attribute deleted successfully",
-      };
-    }),
-
-  archive: adminProcedure
-    .input(z.string())
-    .mutation(async ({ ctx, input: attributeId }) => {
-      const attribute = await ctx.db.attribute.update({
-        where: { id: attributeId },
-        data: { archivedAt: new Date() },
-      });
-
-      return {
-        data: attribute,
-        message: "Attribute archived successfully",
       };
     }),
 });

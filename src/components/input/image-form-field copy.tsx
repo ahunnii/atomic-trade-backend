@@ -4,13 +4,10 @@ import type {
   PathValue,
   UseFormReturn,
 } from "react-hook-form";
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
 
-import { toastService } from "@dreamwalker-studios/toasts";
-
-import { useFileUpload } from "~/lib/file-upload/hooks/use-file-upload";
 import { cn } from "~/lib/utils";
 import {
   FormControl,
@@ -21,11 +18,6 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-
-export interface ImageFormFieldRef {
-  upload: () => Promise<string | null>;
-  isUploading: boolean;
-}
 
 type Props<CurrentForm extends FieldValues> = {
   form: UseFormReturn<CurrentForm>;
@@ -40,34 +32,21 @@ type Props<CurrentForm extends FieldValues> = {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   inputId?: string;
   resetPreview?: boolean;
-
-  isRequired?: boolean;
-  route: string;
-  apiUrl: string;
-
-  tempName: Path<CurrentForm>;
 };
 
-export const ImageFormFieldComponent = <CurrentForm extends FieldValues>(
-  {
-    form,
-    name,
-    currentImageUrl,
-    label,
-    description,
-    className,
-    disabled,
-    placeholder,
-    onChange,
-    onKeyDown,
-    inputId,
-    isRequired,
-    route,
-    apiUrl,
-    tempName,
-  }: Props<CurrentForm>,
-  ref: React.ForwardedRef<ImageFormFieldRef>,
-) => {
+export const ImageFormField = <CurrentForm extends FieldValues>({
+  form,
+  name,
+  currentImageUrl,
+  label,
+  description,
+  className,
+  disabled,
+  placeholder,
+  onChange,
+  onKeyDown,
+  inputId,
+}: Props<CurrentForm>) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [imageCleared, setImageCleared] = useState(false);
 
@@ -80,51 +59,10 @@ export const ImageFormFieldComponent = <CurrentForm extends FieldValues>(
     }
   };
 
-  const imageUpload = useFileUpload({
-    route,
-    api: apiUrl,
-  });
-
-  useImperativeHandle(ref, () => ({
-    upload: async () => {
-      const currentImage: string | null = form.watch(name) ?? null;
-      const tempFile = form.watch(tempName);
-
-      console.log("Current state:", {
-        currentImage,
-        tempFile,
-        isRequired,
-      });
-
-      if (!tempFile && !currentImage && isRequired) {
-        toastService.error("Please upload an image");
-        return null;
-      }
-
-      if (tempFile) {
-        const uploadedImage = await imageUpload.uploadFile(tempFile as File);
-
-        if (!uploadedImage) {
-          toastService.error("Error uploading image");
-          return null;
-        }
-
-        form.setValue(
-          name,
-          uploadedImage as PathValue<CurrentForm, Path<CurrentForm>>,
-        );
-        return uploadedImage;
-      }
-      return null;
-    },
-
-    isUploading: imageUpload.isUploading,
-  }));
-
   return (
     <FormField
       control={form.control}
-      name={tempName}
+      name={name}
       render={({
         field: { onChange: fieldOnChange, value: _value, ...fieldProps },
       }) => (
@@ -208,13 +146,3 @@ export const ImageFormFieldComponent = <CurrentForm extends FieldValues>(
     />
   );
 };
-
-ImageFormFieldComponent.displayName = "ImageFormField";
-
-export const ImageFormField = forwardRef(ImageFormFieldComponent) as <
-  CurrentForm extends FieldValues,
->(
-  props: Props<CurrentForm> & {
-    ref?: React.ForwardedRef<ImageFormFieldRef>;
-  },
-) => React.ReactElement;

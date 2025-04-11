@@ -4,7 +4,7 @@
 generator client {
   provider = "prisma-client-js"
   previewFeatures = ["prismaSchemaFolder"]
-  output = "../generated"
+
 }
 
 datasource db {
@@ -34,7 +34,7 @@ model Store {
 
   products    Product[]    @relation("StoreToProduct")
   orders      Order[]      @relation("StoreToOrder")
-
+  attributes  Attribute[]
   sales       Sale[]
   coupons     Coupon[]
   invoices    Invoice[]    @relation("StoreToInvoice")
@@ -65,8 +65,7 @@ model Store {
 
 model Image {
   id        String   @id @default(cuid())
-  productId String? // Foreign Key to Product
-  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
 
 
 
@@ -80,7 +79,7 @@ model Image {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([productId])
+
 
   @@index([reviewId])
 }
