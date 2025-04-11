@@ -1,21 +1,22 @@
-import { TRPCError } from "@trpc/server";
-
-import { z } from "zod";
-import { collectionValidator } from "~/lib/validators/collection";
-
 import {
   adminProcedure,
   createTRPCRouter,
   publicProcedure,
 } from "~/server/api/trpc";
+import { z } from "zod";
 
 import { SaleType } from "@prisma/client";
-import { getOrCreateSlug, getUniqueSlug } from "~/utils/handle-slug-creation";
+import { TRPCError } from "@trpc/server";
+
+import {
+  collectionFormValidator,
+  collectionValidator,
+} from "~/lib/validators/collection";
 
 export const collectionsRouter = createTRPCRouter({
   getAllReduced: publicProcedure
     .input(
-      z.object({ storeId: z.string(), isFeatured: z.boolean().optional() })
+      z.object({ storeId: z.string(), isFeatured: z.boolean().optional() }),
     )
     .query(async ({ ctx, input }) => {
       const data = await ctx.db.collection.findMany({
@@ -39,9 +40,9 @@ export const collectionsRouter = createTRPCRouter({
       return data;
     }),
 
-  getAll: publicProcedure
+  getAllValid: publicProcedure
     .input(
-      z.object({ storeId: z.string(), isFeatured: z.boolean().optional() })
+      z.object({ storeId: z.string(), isFeatured: z.boolean().optional() }),
     )
     .query(({ ctx, input }) => {
       return ctx.db.collection.findMany({
@@ -52,7 +53,6 @@ export const collectionsRouter = createTRPCRouter({
         include: {
           products: {
             include: {
-              images: true,
               variants: true,
             },
           },
@@ -61,6 +61,13 @@ export const collectionsRouter = createTRPCRouter({
       });
     }),
 
+  getAll: adminProcedure.input(z.string()).query(({ ctx, input: storeId }) => {
+    return ctx.db.collection.findMany({
+      where: { storeId },
+      include: { products: true },
+      orderBy: { createdAt: "desc" },
+    });
+  }),
   search: publicProcedure
     .input(z.object({ queryString: z.string(), storeId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -91,135 +98,88 @@ export const collectionsRouter = createTRPCRouter({
       return collections;
     }),
 
-  get: publicProcedure
+  get: adminProcedure
     .input(z.string())
     .query(({ ctx, input: collectionId }) => {
       return ctx.db.collection.findUnique({
         where: { id: collectionId },
-        include: {
-          products: {
-            include: {
-              infoSections: true,
-              attributes: true,
-              sales: {
-                where: {
-                  isActive: true,
-                  variant: SaleType.STANDARD,
-                  OR: [{ endsAt: { gte: new Date() } }, { endsAt: null }],
-                },
-                include: {
-                  products: true,
-                  collections: true,
-                },
-                orderBy: { endsAt: "desc" },
-                take: 1,
-              },
-              reviews: {
-                include: {
-                  user: {
-                    select: {
-                      id: true,
-                      name: true,
-                      image: true,
-                    },
-                  },
-                  images: true,
-                },
-              },
-
-              images: true,
-              variants: true,
-              store: true,
-            },
-          },
-        },
+        include: { products: true },
       });
     }),
 
   create: adminProcedure
-    .input(collectionValidator.extend({ storeId: z.string() }))
+    .input(
+      collectionFormValidator
+        .extend({ storeId: z.string() })
+        .omit({ tempImageUrl: true }),
+    )
     .mutation(async ({ ctx, input }) => {
-      try {
-        const initSlug = await getUniqueSlug("collection", input.name, ctx.db);
+      let slug = input.name.toLowerCase().replace(/ /g, "-");
+      const checkForUniqueSlug = await ctx.db.collection.count({
+        where: { slug },
+      });
 
-        const collection = await ctx.db.collection.create({
-          data: {
-            storeId: input.storeId,
-            name: input.name,
-            description: input.description,
-            slug: initSlug,
-            imageUrl: input.imageUrl,
-            isFeatured: input.isFeatured,
-            products: { connect: input.products },
-          },
-        });
+      if (checkForUniqueSlug > 0) slug = `${slug}-${checkForUniqueSlug + 1}`;
 
-        return {
-          data: collection,
-          message: "Collection created successfully",
-        };
-      } catch (e) {
-        console.error("Collection Creation Error:", e);
+      const collection = await ctx.db.collection.create({
+        data: {
+          ...input,
+          slug,
+          products: { connect: input.products },
+        },
+      });
 
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "An error occurred while creating the collection.",
-        });
-      }
+      return {
+        data: collection,
+        message: "Collection created successfully",
+      };
     }),
 
   update: adminProcedure
-    .input(collectionValidator.extend({ collectionId: z.string() }))
+    .input(collectionFormValidator.extend({ collectionId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      try {
-        const slug = await getOrCreateSlug(
-          "collection",
-          input.collectionId,
-          input.name,
-          ctx.db
-        );
+      const { products, collectionId, ...rest } = input;
 
-        const collection = await ctx.db.collection.update({
-          where: {
-            id: input.collectionId,
-          },
-          data: {
-            name: input.name,
-            description: input.description,
-            isFeatured: input.isFeatured,
-            slug: slug,
-            imageUrl: input.imageUrl,
-            products: { set: [] },
-          },
-        });
+      const currentCollection = await ctx.db.collection.findUnique({
+        where: { id: collectionId },
+        select: { name: true, slug: true, storeId: true, products: true },
+      });
 
-        const updatedCollection = await ctx.db.collection.update({
-          where: { id: collection.id },
-          data: { products: { connect: input.products } },
-        });
-
-        return {
-          data: updatedCollection,
-          message: "Collection updated successfully",
-        };
-      } catch (error) {
-        console.error(error);
-
-        if ((error as { code: string })?.code === "P2002") {
-          // Db's error code for unique constraint
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Name: A product collection with this name already exists.",
-          });
-        }
-
+      if (!currentCollection)
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            "An error occurred while updating the collection. Please try again.",
+          message: "Collection not found.",
         });
+
+      let slug = currentCollection.slug;
+
+      if (currentCollection.name !== input.name) {
+        slug = input.name.toLowerCase().replace(/ /g, "-");
+        const checkForUniqueSlug = await ctx.db.collection.count({
+          where: { slug },
+        });
+
+        if (checkForUniqueSlug > 0) slug = `${slug}-${checkForUniqueSlug + 1}`;
       }
+
+      const collection = await ctx.db.collection.update({
+        where: { id: collectionId },
+        data: {
+          ...rest,
+          slug,
+          products: {
+            disconnect: currentCollection.products.map((product) => ({
+              id: product.id,
+            })),
+            connect: products.map((product) => ({ id: product.id })),
+          },
+        },
+      });
+
+      return {
+        data: collection,
+        message: "Collection updated successfully",
+      };
     }),
 
   delete: adminProcedure
@@ -242,8 +202,11 @@ export const collectionsRouter = createTRPCRouter({
         where: { id: collectionId },
         include: {
           products: true,
-          sales: true,
-          coupons: true,
+        },
+        omit: {
+          createdAt: true,
+          updatedAt: true,
+          id: true,
         },
       });
 
@@ -254,22 +217,17 @@ export const collectionsRouter = createTRPCRouter({
         });
       }
 
-      const initSlug = await getUniqueSlug(
-        "collection",
-        collection.name,
-        ctx.db
-      );
+      const { products, ...rest } = collection;
 
       const duplicatedCollection = await ctx.db.collection.create({
         data: {
+          ...rest,
           storeId: collection.storeId,
           name: `${collection.name} (Copy)`,
-          description: collection.description,
-          slug: initSlug,
-          imageUrl: collection.imageUrl,
-          isFeatured: collection.isFeatured,
+          slug: `${collection.slug}-${new Date().getTime()}`,
+          status: "DRAFT",
           products: {
-            connect: collection.products.map((product) => ({ id: product.id })),
+            connect: products.map((product) => ({ id: product.id })),
           },
         },
       });

@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BellRing,
+  BoxesIcon,
   FileJson,
   LayoutGrid,
   Settings,
@@ -60,16 +61,11 @@ export function getMenuList(pathname: string, slug: string): Group[] {
           submenus: [],
           restrictedAccess: [],
         },
-      ],
-    },
-    {
-      groupLabel: "Advanced",
-      menus: [
         {
-          href: `/${slug}/attributes`,
-          label: "Attributes",
-          active: pathname.includes(`/${slug}/attributes`),
-          icon: FileJson,
+          href: `/${slug}/collections`,
+          label: "Collections",
+          active: pathname.includes(`/${slug}/collections`),
+          icon: BoxesIcon,
           submenus: [],
           restrictedAccess: [],
         },

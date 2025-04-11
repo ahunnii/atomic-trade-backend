@@ -1,6 +1,6 @@
 import { attributeRouter } from "~/server/api/routers/attribute";
 // import { blogPostRouter } from "~/server/api/routers/blog-post";
-// import { collectionsRouter } from "~/server/api/routers/collection";
+import { collectionsRouter } from "~/server/api/routers/collection";
 // import { contentRouter } from "~/server/api/routers/content-page";
 // import { invoiceRouter } from "~/server/api/routers/invoice";
 // import { ordersRouter } from "~/server/api/routers/order";
@@ -33,7 +33,7 @@ export const appRouter = createTRPCRouter({
   store: storeRouter,
   // blogPosts: blogPostRouter,
 
-  // collections: collectionsRouter,
+  collection: collectionsRouter,
 
   // order: ordersRouter,
   product: productsRouter,

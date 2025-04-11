@@ -294,6 +294,11 @@ export const productsRouter = createTRPCRouter({
         data: {
           ...input,
           slug,
+          collections: {
+            connect: input.collections.map((collection) => ({
+              id: collection.id,
+            })),
+          },
           attributes: {
             createMany: {
               data: input.attributes.map((att) => ({
@@ -331,10 +336,10 @@ export const productsRouter = createTRPCRouter({
         .omit({ tempFeaturedImage: true, tempImages: true }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { productId, variants, ...rest } = input;
+      const { productId, variants, collections, ...rest } = input;
       const currentProduct = await ctx.db.product.findUnique({
         where: { id: productId },
-        select: { name: true, slug: true, storeId: true },
+        select: { name: true, slug: true, storeId: true, collections: true },
       });
 
       if (!currentProduct)
@@ -359,6 +364,14 @@ export const productsRouter = createTRPCRouter({
         data: {
           ...rest,
           slug,
+          collections: {
+            disconnect: currentProduct.collections.map((collection) => ({
+              id: collection.id,
+            })),
+            connect: collections?.map((collection) => ({
+              id: collection.id,
+            })),
+          },
           attributes: {
             deleteMany: {},
             create: input.attributes.map((att) => ({
@@ -577,6 +590,7 @@ export const productsRouter = createTRPCRouter({
         omit: { id: true },
         include: {
           attributes: { select: { name: true, values: true } },
+          collections: { select: { id: true } },
           variants: {
             select: {
               name: true,
@@ -596,15 +610,18 @@ export const productsRouter = createTRPCRouter({
           message: "Product not found.",
         });
 
-      const { attributes, variants, ...rest } = product;
+      const { attributes, variants, collections, ...rest } = product;
 
       const duplicateProduct = await ctx.db.product.create({
         data: {
           ...rest,
           name: `${product.name} (Copy)`,
-          slug: `${product.slug}-copy`,
+          slug: `${product.slug}-${new Date().getTime()}`,
           status: ProductStatus.DRAFT,
           additionalInfo: product?.additionalInfo ?? undefined,
+          collections: {
+            connect: collections.map((collection) => ({ id: collection.id })),
+          },
           variants: {
             createMany: {
               data: variants.map((variant) => ({

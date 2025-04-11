@@ -175,17 +175,11 @@ export function AdvancedDataTable<TData, TValue>({
       .filter((_, index) => selectedRowIds.includes(index.toString()))
       .map((item) => {
         const originalData = item as Record<string, unknown>;
-        const id = preSelectAccessor
-          ? String(originalData[preSelectAccessor])
-          : "";
-        const bundle = originalData[postSelectAccessor] as Record<
-          string,
-          unknown
-        >;
 
+        const id = preSelectAccessor ? originalData[preSelectAccessor] : "";
         return {
-          id,
-          ...bundle,
+          id: String(id),
+          ...originalData,
         };
       });
 
@@ -223,7 +217,7 @@ export function AdvancedDataTable<TData, TValue>({
           Export
         </Button>
       </div>
-      <div className="rounded-md border bg-background">
+      <div className="bg-background rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

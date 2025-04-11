@@ -108,6 +108,14 @@ export const productFormValidator = z.object({
   featuredImage: z.string().optional(),
   tempFeaturedImage: z.any().optional().nullable(),
 
+  collections: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      imageUrl: z.string().optional(),
+    }),
+  ),
+
   // type: z.nativeEnum(ProductType),
   // estimatedCompletion: z.coerce.number().min(0).optional(),
   // shippingCost: z.coerce.number().min(0).optional(),

@@ -13,6 +13,7 @@ import { ProductStatus } from "@prisma/client";
 import type { ImageFormFieldRef } from "~/components/input/image-form-field";
 import type { MultiImageFormFieldRef } from "~/components/input/multi-image-form-field";
 import type { ProductFormData } from "~/lib/validators/product";
+import type { Collection } from "~/types/collection";
 import type { Product } from "~/types/product";
 import { env } from "~/env";
 import { productFormValidator } from "~/lib/validators/product";
@@ -29,6 +30,7 @@ import { FormHeader } from "~/components/shared/form-header";
 import { FormSaveOptionsButton } from "~/components/shared/form-save-options-button";
 import { FormSection } from "~/components/shared/form-section";
 
+import { CollectionSelection } from "./collection-selection";
 import { ProductInventorySection } from "./inventory-section";
 import { ProductDetailsSection } from "./product-details-section";
 
@@ -37,9 +39,15 @@ type Props = {
   productId?: string;
   storeId: string;
   storeSlug: string;
+  collections: Collection[];
 };
 
-export const ProductForm = ({ initialData, storeId, storeSlug }: Props) => {
+export const ProductForm = ({
+  initialData,
+  storeId,
+  storeSlug,
+  collections,
+}: Props) => {
   const router = useRouter();
 
   const { defaultActions } = useDefaultMutationActions({
@@ -127,6 +135,8 @@ export const ProductForm = ({ initialData, storeId, storeSlug }: Props) => {
       images: initialData?.images ?? [],
       tempFeaturedImage: null,
       featuredImage: initialData?.featuredImage ?? "",
+
+      collections: initialData?.collections ?? [],
     },
   });
 
@@ -291,6 +301,59 @@ export const ProductForm = ({ initialData, storeId, storeSlug }: Props) => {
                   apiUrl="/api/upload-product"
                   currentImageUrls={currentImages}
                   imagePrefix={`${env.NEXT_PUBLIC_STORAGE_URL}/products/`}
+                />
+              </FormSection>
+
+              <FormSection
+                title="Collections"
+                description="Add this product to collections here."
+              >
+                {form.watch("collections")?.length > 0 && (
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    {form.watch("collections").map((collection) => (
+                      <div
+                        key={collection.id}
+                        className="bg-muted group flex items-center gap-2 rounded-md px-3 py-1.5 text-sm"
+                      >
+                        <span>{collection.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentCollections =
+                              form.getValues("collections");
+                            const filteredCollections =
+                              currentCollections.filter(
+                                (c) => c.id !== collection.id,
+                              );
+                            form.setValue("collections", filteredCollections);
+                          }}
+                          className="text-muted-foreground hover:text-foreground ml-1 inline-flex rounded-full p-0.5 transition-colors"
+                          aria-label={`Remove ${collection.name}`}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <CollectionSelection
+                  form={form}
+                  isLoading={isFormDisabled}
+                  collections={collections ?? []}
+                  storeSlug={storeSlug}
                 />
               </FormSection>
             </div>

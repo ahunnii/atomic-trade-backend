@@ -1,17 +1,16 @@
-import type { Collection } from "~/types/collection";
 import { api } from "~/trpc/server";
 
-import { ProductForm } from "../_components/product-form";
+import { CollectionForm } from "../_components/collection-form";
 import { ContentLayout } from "../../_components/content-layout";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
-export default async function NewProductAdminPage({ params }: Props) {
+export default async function NewCollectionAdminPage({ params }: Props) {
   const { storeSlug } = await params;
   const store = await api.store.getBySlug(storeSlug);
-  const collections = await api.collection.getAll(store?.id ?? "");
+  const products = await api.product.getAll({ storeId: store!.id });
 
   if (!store) {
     return <div>Store not found</div>;
@@ -19,20 +18,20 @@ export default async function NewProductAdminPage({ params }: Props) {
 
   return (
     <ContentLayout
-      title="New Product"
+      title="New Collection"
       breadcrumbs={[
         {
-          href: `/${storeSlug}/products`,
-          label: "Products",
+          href: `/${storeSlug}/collections`,
+          label: "Collections",
         },
       ]}
-      currentPage="New Product"
+      currentPage="New Collection"
     >
-      <ProductForm
+      <CollectionForm
         initialData={null}
+        products={products ?? []}
         storeId={store.id}
         storeSlug={storeSlug}
-        collections={(collections as Collection[]) ?? []}
       />
     </ContentLayout>
   );
