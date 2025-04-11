@@ -83,11 +83,11 @@ export const ProductDetailsSection = ({ form, loading }: Props) => {
                       type="button"
                       variant="secondary"
                       size="sm"
-                      onClick={() =>
+                      onClick={() => {
                         editorRef.current?.render(
-                          (form.watch("additionalInfo") ?? {}) as OutputData,
-                        )
-                      }
+                          (form.watch("additionalInfo") ?? null) as OutputData,
+                        );
+                      }}
                     >
                       Cancel
                     </Button>
@@ -100,7 +100,7 @@ export const ProductDetailsSection = ({ form, loading }: Props) => {
                       variant="outline"
                       onClick={() =>
                         editorRef.current?.render(
-                          (form.watch("additionalInfo") ?? {}) as OutputData,
+                          (form.watch("additionalInfo") ?? null) as OutputData,
                         )
                       }
                     >

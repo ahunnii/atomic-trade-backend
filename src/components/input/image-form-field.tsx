@@ -97,7 +97,7 @@ export const ImageFormFieldComponent = <CurrentForm extends FieldValues>(
       });
 
       if (!tempFile && !currentImage && isRequired) {
-        toastService.error("Please upload an image");
+        toastService.error("This image is required");
         return null;
       }
 

@@ -1,4 +1,5 @@
 import type { UseFormReturn } from "react-hook-form";
+import { useState } from "react";
 import { useFieldArray } from "react-hook-form";
 
 import type { Item } from "~/components/ui/custom/draggable-list";
@@ -16,6 +17,7 @@ import {
 } from "~/components/ui/dialog";
 
 import { generateVariants } from "../_utils/generate-variants";
+import { AttributeFilterDialog } from "./attribute-filter-dialog";
 import { ManageVariationsButton } from "./manage-variations-button";
 
 type Props = {
@@ -24,6 +26,9 @@ type Props = {
 };
 
 export const ProductAttributeDialog = ({ form, loading }: Props) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isAttributeFilterDialogOpen, setIsAttributeFilterDialogOpen] =
+    useState(false);
   const { fields, replace } = useFieldArray({
     control: form.control,
     name: `attributes` as const,
@@ -44,9 +49,16 @@ export const ProductAttributeDialog = ({ form, loading }: Props) => {
   const DialogButton =
     variantCount > 1 ? ManageAttributesButton : ManageVariationsButton;
 
+  const areAttributesValid = fields.every((field) => field.values.length > 0);
+
+  const filterInvalidAttributes = () => {
+    const validAttributes = fields.filter((field) => field.values.length > 0);
+    form.setValue("attributes", validAttributes);
+  };
+
   return (
     <div className="col-span-full">
-      <Dialog>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild disabled={loading}>
           <div>
             <DialogButton variantCount={variantCount} />
@@ -102,6 +114,11 @@ export const ProductAttributeDialog = ({ form, loading }: Props) => {
                     type="button"
                     size="sm"
                     onClick={() => {
+                      if (!areAttributesValid) {
+                        setIsAttributeFilterDialogOpen(true);
+                        return;
+                      }
+
                       const variants = generateVariants(
                         form.getValues("attributes"),
                         form.getValues("variants"),
@@ -125,14 +142,30 @@ export const ProductAttributeDialog = ({ form, loading }: Props) => {
             <DraggableList
               items={fields.map((field) => ({
                 id: field.id,
-                name: field.name || "",
-                values: field.values || [],
+                name: field.name ?? "",
+                values: field.values ?? [],
               }))}
               setItems={handleItemsChange}
             />
           </div>
         </DialogContent>
       </Dialog>
+      <AttributeFilterDialog
+        isOpen={isAttributeFilterDialogOpen}
+        setIsOpen={setIsAttributeFilterDialogOpen}
+        onContinue={() => {
+          filterInvalidAttributes();
+          const variants = generateVariants(
+            form.getValues("attributes"),
+            form.getValues("variants"),
+          );
+
+          form.setValue("variants", variants);
+        }}
+        onCancel={() => {
+          setIsOpen(true);
+        }}
+      />
     </div>
   );
 };

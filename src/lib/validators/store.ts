@@ -24,11 +24,9 @@ export const brandingValidator = z.object({
     .or(z.literal("")),
 });
 
-export const brandingSettingsValidator = brandingValidator
-  .extend({
-    image: z.any().optional().nullable(),
-  })
-  .omit({ businessLogo: true });
+export const brandingSettingsValidator = brandingValidator.extend({
+  tempBusinessLogo: z.any().optional().nullable(),
+});
 
 export const shippingSettingsValidator = z.object({
   address: addressValidator,

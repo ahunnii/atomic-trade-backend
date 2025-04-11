@@ -62,7 +62,7 @@ export function generateVariants(
       id: crypto.randomUUID(),
       name,
       values,
-      sku: sku ? `${"AT"}-${sku}` : null,
+      sku: sku ? `${"AT"}-${sku}` : "",
       manageStock: firstVariant.manageStock,
     };
   });

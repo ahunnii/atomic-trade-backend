@@ -1,14 +1,15 @@
 "use client";
 
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 
 import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import type { ImageFormFieldRef } from "~/components/input/image-form-field";
 import type { BrandingFormData } from "~/lib/validators/store";
 import type { Store } from "~/types/store";
 import { env } from "~/env";
-import { useFileUpload } from "~/lib/file-upload/hooks/use-file-upload";
 import { cn } from "~/lib/utils";
 import { brandingSettingsValidator } from "~/lib/validators/store";
 import { api } from "~/trpc/react";
@@ -25,10 +26,7 @@ import { LoadButton } from "~/components/shared/load-button";
 type Props = { initialData: Store; slug: string };
 
 export const BrandingForm = ({ initialData, slug }: Props) => {
-  const { uploadFile, isUploading } = useFileUpload({
-    route: "misc",
-    api: "/api/upload-misc",
-  });
+  const businessLogoRef = useRef<ImageFormFieldRef>(null);
 
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["store"],
@@ -40,7 +38,8 @@ export const BrandingForm = ({ initialData, slug }: Props) => {
       businessName: initialData?.name ?? "",
       businessEmail: initialData?.contactEmail ?? "",
       businessPhone: initialData?.contactPhone ?? "",
-      image: null,
+      businessLogo: initialData?.logo ?? "",
+      tempBusinessLogo: null,
     },
   });
 
@@ -48,34 +47,31 @@ export const BrandingForm = ({ initialData, slug }: Props) => {
     api.store.updateBrandingSettings.useMutation(defaultActions);
 
   const onSubmit = async (data: BrandingFormData) => {
-    let image_name: string | null = initialData?.logo ?? null;
+    const businessLogo = await businessLogoRef.current?.upload();
 
-    if (!data.image && !initialData?.logo) {
-      toastService.error("Please upload an image");
+    if (
+      (initialData && !businessLogo && !initialData?.logo) ||
+      (!initialData && !businessLogo)
+    ) {
+      toastService.error("Please upload a logo image");
       return;
     }
 
-    if (data.image) {
-      image_name = await uploadFile(data.image as File);
-
-      if (!image_name) {
-        toastService.error("Error uploading image");
-        return;
-      }
-    }
-
-    if (image_name) {
+    if (businessLogo) {
       updateBrandingSettings.mutate({
         storeId: initialData.id,
         businessName: data.businessName,
         businessEmail: data.businessEmail,
         businessPhone: data.businessPhone,
-        image: image_name ?? undefined,
+        businessLogo: businessLogo ?? initialData?.logo,
       });
     }
   };
 
-  const loading = updateBrandingSettings.isPending || isUploading;
+  const loading =
+    updateBrandingSettings.isPending ||
+    (businessLogoRef.current?.isUploading ?? false);
+
   return (
     <>
       <Form {...form}>
@@ -126,7 +122,13 @@ export const BrandingForm = ({ initialData, slug }: Props) => {
 
                 <ImageFormField
                   form={form}
-                  name="image"
+                  ref={businessLogoRef}
+                  route="misc"
+                  isRequired={true}
+                  disabled={loading}
+                  apiUrl="/api/upload-misc"
+                  name="businessLogo"
+                  tempName="tempBusinessLogo"
                   label="Store logo"
                   currentImageUrl={
                     initialData

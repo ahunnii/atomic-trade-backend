@@ -35,9 +35,9 @@ import { api } from "~/trpc/react";
 import { Label } from "../ui/label";
 
 export interface LargeMarkdownFormFieldRef {
-  clear: () => Promise<void>;
-  render: (data: OutputData) => Promise<void>;
-  save: () => Promise<void>;
+  clear: () => void;
+  render: (data: OutputData) => void;
+  save: () => void;
 }
 
 interface Props<CurrentForm extends FieldValues> {
@@ -74,27 +74,25 @@ const LargeMarkdownFormFieldComponent = <CurrentForm extends FieldValues>(
   const pathname = usePathname();
 
   useImperativeHandle(ref, () => ({
-    clear: () => {
+    clear: async () => {
       if (editorRef.current) {
-        void editorRef.current.clear();
-        form.setValue(
-          contentFieldName,
-          { blocks: [] } as PathValue<CurrentForm, Path<CurrentForm>>,
-          { shouldDirty: true },
-        );
+        editorRef.current.clear();
+        // form.setValue(
+        //   contentFieldName,
+        //   null as PathValue<CurrentForm, Path<CurrentForm>>,
+        //   { shouldDirty: true },
+        // );
       }
-      return Promise.resolve();
     },
-    render: (data: OutputData) => {
-      if (editorRef.current) {
-        void editorRef.current.render(data);
-        form.setValue(
-          contentFieldName,
-          data as PathValue<CurrentForm, Path<CurrentForm>>,
-          { shouldDirty: true },
-        );
+    render: async (data: OutputData) => {
+      if (editorRef.current && !!data) {
+        await editorRef.current.render(data);
+        // form.setValue(
+        //   contentFieldName,
+        //   data as PathValue<CurrentForm, Path<CurrentForm>>,
+        //   { shouldDirty: true },
+        // );
       }
-      return Promise.resolve();
     },
 
     save: async () => {
