@@ -38,11 +38,14 @@ export const userRouter = createTRPCRouter({
       });
     }),
 
-  getAllCustomers: adminProcedure.query(({ ctx }) => {
-    return ctx.db.customer.findMany({
-      include: { addresses: true },
-    });
-  }),
+  getAllCustomers: adminProcedure
+    .input(z.string())
+    .query(({ ctx, input: storeId }) => {
+      return ctx.db.customer.findMany({
+        where: { storeId },
+        include: { addresses: true },
+      });
+    }),
 
   getSession: protectedProcedure.query(({ ctx }) => {
     return ctx.session;

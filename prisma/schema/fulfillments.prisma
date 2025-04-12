@@ -1,0 +1,82 @@
+enum FulfillmentType {
+    MANUAL
+    EASYPOST
+    PICKUP
+}
+
+enum FulfillmentStatus {
+  PENDING
+  AWAITING_SHIPMENT
+  AWAITING_PICKUP
+  FULFILLED
+  CANCELLED
+  RESTOCKED
+  PARTIAL
+  DRAFT
+}
+
+
+model Fulfillment {
+  id                    String @id @default(cuid())
+  order                 Order?
+  shippingAddressId     String? @unique
+  shippingAddress       Address? @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
+
+  type                  FulfillmentType @default(EASYPOST)
+  packages              Package[]
+  status        FulfillmentStatus @default(PENDING)
+
+  timeEstimate   String?
+ 
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  metadata Json?
+
+
+}
+
+
+enum PackageStatus {
+  PENDING
+  LABEL_PRINTED
+  LABEL_PURCHASED
+  ATTEMPTED_DELIVERY
+  READY_FOR_PICKUP
+  CONFIRMED
+  PRE_TRANSIT
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILURE
+  UNKNOWN
+  CANCELLED
+  RETURNED
+  HELD
+  DELAYED
+  LOST
+  ARRIVED_AT_FACILITY
+}
+
+
+model Package {
+  id            String @id @default(cuid())
+  fulfillmentId String
+  fulfillment   Fulfillment @relation(fields: [fulfillmentId], references: [id], onDelete: Cascade)
+
+  status        PackageStatus @default(PENDING)
+
+  carrier       String?
+  trackingNumber String?
+  trackingUrl String?
+  labelUrl String?
+
+  costInCents Int?
+
+  items OrderItem[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  shippedAt     DateTime?
+  deliveredAt   DateTime?
+}

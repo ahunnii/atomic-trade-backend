@@ -41,7 +41,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   role          Role             @default(USER)
-  orders        Order[]          @relation("UserToOrder")
+  // orders        Order[]          @relation("UserToOrder")
   cart          Cart[]           @relation("UserToCart")
   reviews       Review[]
   addresses         Address[]
@@ -65,20 +65,32 @@ enum Role {
 
 model Customer {
   id          String    @id @default(cuid())
+
   firstName   String
   lastName    String
+
+
   email       String    @unique
-  providerId  String?
-  provider    String?
   phoneNumber String?
-  user        User?     @relation( fields: [userId], references: [id])
+
+
   userId      String?
+  storeId     String
+  user        User?     @relation( fields: [userId], references: [id])
+  store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  defaultAddressId String?
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  
   addresses   Address[]
   requests    Request[]
   invoices    Invoice[]
   orders      Order[]
+  payments    Payment[]
+
+  metadata    Json?
 
   @@index([userId])
 }

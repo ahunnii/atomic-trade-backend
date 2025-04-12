@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   InventoryPolicy,
   ProductStatus,
   ProductType,
 } from "@prisma/client";
+import type { JsonValue } from "@prisma/client/runtime/library";
 
 import type { Attribute } from "./attribute";
 import type { Collection } from "./collection";
@@ -30,7 +32,7 @@ export type Product = {
   storeId: string;
   name: string;
   description: string;
-  additionalInfo?: Record<string, unknown>;
+  additionalInfo?: Record<string, any> | JsonValue | null;
   attributes: Array<Attribute>; // Assuming Attribute type would be defined elsewhere
   isFeatured: boolean;
   featuredImage: string;
@@ -38,6 +40,16 @@ export type Product = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  variants: Array<Variation>;
-  collections: Array<Collection>; // Assuming Collection type would be defined elsewhere
+  variants: Variation[];
+  collections: Collection[];
+};
+
+export type PartialProduct = Omit<Product, "collections"> & {
+  variants: Variation[] | null;
+  collections: Partial<Collection>[] | null;
+};
+
+export type SelectedProduct = Variation & {
+  product: Product;
+  variations: Variation[];
 };

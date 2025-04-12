@@ -1,10 +1,26 @@
 enum OrderType {
-  ONLINE
-  IN_STORE
-  PHONE
-  CUSTOM
+  ONLINE_SHIP
+  ONLINE_PICKUP
+  IN_PERSON
   DRAFT
+  MANUAL_SHIP
+  MANUAL_PICKUP
 }
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  PARTIAL_REFUND
+}
+
+
+
 
 model Order {
   id              String @id @default(cuid())
@@ -12,19 +28,21 @@ model Order {
   store           Store  @relation("StoreToOrder", fields: [storeId], references: [id])
 
   orderItems      OrderItem[]
-  timeline        TimeLineEntry[]
+  notes           Note[]
+  payments        Payment[]
+
+
+  fulfillmentId   String? @unique
+  fulfillment     Fulfillment? @relation(fields: [fulfillmentId], references: [id], onDelete: SetNull)
+
+  paidInFull      Boolean @default(false)
+  paidInFullAt    DateTime?
 
   orderNumber       String @default(cuid()) @unique
-  authorizationCode String @default("")
+  authorizationCode String @default(cuid())
 
-  couponId    String?
-  coupon      Coupon? @relation(fields: [couponId], references: [id])
-
-  note String?
-
-  paymentStatus     PaymentStatus     @default(PENDING)
-  fulfillmentStatus FulfillmentStatus @default(PENDING)
-  paymentMethod     PaymentMethod     @default(STRIPE)
+  status     OrderStatus     @default(DRAFT)
+  type       OrderType       @default(ONLINE_SHIP)
 
   subtotal Int @default(0)
   tax      Int @default(0)
@@ -33,16 +51,12 @@ model Order {
   discount Int @default(0)
   fee      Int @default(0)
 
-  referenceLink     String @default("")
-  referenceNumber   String @default("")
-  referenceProvider String @default("")
-
   receiptLink String @default("")
 
-  refunds Refund[]
+  
 
-  billingAddress  Address? @relation("BillingAddressToOrder")
-  shippingAddress Address? @relation("ShippingAddressToOrder")
+  // 
+  // 
   
   email     String      @default("")
   phone     String?     @default("")
@@ -51,29 +65,14 @@ model Order {
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
 
-  invoices    Invoice[]
-  fulfillments Fulfillment[]
-
-  request   Request? @relation(fields: [requestId], references: [id])
-  requestId String?
-
-
-  isPickup Boolean @default(false)
-
-  userId String?
-  user   User?   @relation("UserToOrder", fields: [userId], references: [id])
-
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id])
 
+
   @@index([storeId])
-  @@index([userId])
-  @@index([couponId])
   @@index([customerId])
-  @@index([requestId])
 }
 
-// Intermediary for a many-to-many relationship
 model OrderItem {
   id            String        @id @default(cuid())
   orderId       String
@@ -83,17 +82,18 @@ model OrderItem {
   description       String?       @db.Text        //Description of the item (i.e. "Blue, Medium")
   quantity          Int           @default(1)
 
-  unitPrice       Int           @default(0)  // 1000 = 10.00
-  totalPrice      Int           @default(0)  // 1000 = 10.00
-  itemTotal       Int           @default(0)
-  discountAmount  Int?
-  discountName    String?
+  unitPriceInCents        Int
+  discountInCents         Int
+  totalPriceInCents       Int  // computed = (unitPrice * quantity) - discount
+
+  metadata Json?
+
 
   requestItem   RequestItem? @relation(fields: [requestItemId], references: [id])
   requestItemId String?
 
-  fulfillment   Fulfillment? @relation(fields: [fulfillmentId], references: [id])
-  fulfillmentId String?
+  package   Package? @relation(fields: [packageId], references: [id])
+  packageId String?
 
   saleId        String?
   sale          Sale?         @relation(fields: [saleId], references: [id])
@@ -104,58 +104,23 @@ model OrderItem {
   @@index([orderId])
   @@index([variantId])
   @@index([saleId])
-  @@index([fulfillmentId])
+  @@index([packageId])
   @@index([requestItemId])
 }
 
-model TimeLineEntry {
-  id          String            @id @default(cuid())
-  title       String
-  isEditable  Boolean           @default(false)
-  description String?           @db.Text
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  order       Order?            @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId     String?
-
-  @@index([orderId])
-}
-
-model Refund {
-  id            String   @id @default(cuid())
-  orderId       String // Foreign Key to Order
-  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  amount        Int
-  reason        String
-  referenceLink String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model Note {
+  id            String            @id @default(cuid())
+  title         String
+  isEditable    Boolean           @default(false)
+  description   String?           @db.Text
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  order         Order?            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId       String?
 
   @@index([orderId])
 }
 
 
-enum FulfillmentStatus {
-  PENDING
-  AWAITING_SHIPMENT
-  AWAITING_PICKUP
-  FULFILLED
-  CANCELLED
-  RESTOCKED
-  PARTIAL
-  DRAFT
-}
 
-enum PaymentStatus {
-  PENDING
-  PAID
-  AUTHORIZED
-  FAILED
-  REFUNDED
-  PARTIAL_REFUND
-  VOIDED
-  CANCELLED
-  DRAFT
-  MARKED_AS_PAID
-  OPEN
-}
+

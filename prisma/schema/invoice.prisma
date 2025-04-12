@@ -27,16 +27,13 @@ model Invoice {
   customerId  String
   customer    Customer @relation(fields: [customerId], references: [id])
 
-  orderId     String?
-  order       Order?   @relation(fields: [orderId], references: [id])
-
   request     Request? @relation(fields: [requestId], references: [id])
   requestId   String?
 
   @@index([storeId])
   @@index([requestId])
   @@index([customerId])
-  @@index([orderId])
+
 }
 
 model InvoiceItem {
@@ -73,13 +70,7 @@ model PaymentDetail {
 }
 
 
-enum PaymentMethod {
-  CASH
-  INVOICE
-  STRIPE
-  PAYPAL
-  OTHER
-}
+
 
 enum PaymentDetailStatus {
   PENDING

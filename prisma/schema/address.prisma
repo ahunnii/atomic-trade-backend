@@ -10,12 +10,8 @@ model Address {
   country       String
 
   store         Store?  @relation("StoreToAddress")
-
-  billingOrderId String? @unique
-  billingOrder   Order?  @relation("BillingAddressToOrder", fields: [billingOrderId], references: [id], onDelete: Cascade)
-
-  shippingOrderId String? @unique
-  shippingOrder   Order?  @relation("ShippingAddressToOrder", fields: [shippingOrderId], references: [id], onDelete: Cascade)
+  billingOrder   Payment?
+  shippingOrder   Fulfillment? 
 
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)

@@ -17,7 +17,7 @@ model Request {
   invoices      Invoice[]
   payments      RequestPayment[]
  
-  orders        Order[]
+
   items         RequestItem[]
 
   createdAt     DateTime      @default(now())

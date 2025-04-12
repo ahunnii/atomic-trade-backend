@@ -173,7 +173,6 @@ export const productsRouter = createTRPCRouter({
         include: {
           collections: true,
           attributes: true,
-
           variants: true,
           store: true,
           reviews: {

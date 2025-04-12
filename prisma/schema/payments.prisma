@@ -1,0 +1,58 @@
+enum PaymentMethod {
+  CASH
+  INVOICE
+  STRIPE
+  PAYPAL
+  OTHER
+}
+enum PaymentStatus {
+  PENDING
+  PAID
+  AUTHORIZED
+  FAILED
+  REFUNDED
+  PARTIAL_REFUND
+  VOIDED
+  CANCELLED
+  DRAFT
+  MARKED_AS_PAID
+  OPEN
+}
+
+model Payment {
+  id String @id @default(cuid())
+  orderId String
+  order Order @relation(fields: [orderId], references: [id])
+
+  amountInCents Int
+  status PaymentStatus @default(PENDING)
+  method PaymentMethod @default(STRIPE)
+
+  billingAddressId String? @unique
+  billingAddress Address? @relation(fields: [billingAddressId], references: [id], onDelete: SetNull)
+
+  customerId String?
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  refunds Refund[]
+  metadata Json?
+
+  @@index([customerId])
+}
+
+
+model Refund {
+  id                String   @id @default(cuid())
+  paymentId         String 
+  payment           Payment    @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  amountInCents     Int
+  reason            String
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([paymentId])
+}

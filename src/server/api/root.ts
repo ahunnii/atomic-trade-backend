@@ -3,7 +3,7 @@ import { attributeRouter } from "~/server/api/routers/attribute";
 import { collectionsRouter } from "~/server/api/routers/collection";
 // import { contentRouter } from "~/server/api/routers/content-page";
 // import { invoiceRouter } from "~/server/api/routers/invoice";
-// import { ordersRouter } from "~/server/api/routers/order";
+import { ordersRouter } from "~/server/api/routers/order";
 import { productsRouter } from "~/server/api/routers/product";
 // import { reviewRouter } from "~/server/api/routers/review";
 // import { shippingLabelRouter } from "~/server/api/routers/shipping";
@@ -35,7 +35,7 @@ export const appRouter = createTRPCRouter({
 
   collection: collectionsRouter,
 
-  // order: ordersRouter,
+  order: ordersRouter,
   product: productsRouter,
   users: userRouter,
   // invoices: invoiceRouter,

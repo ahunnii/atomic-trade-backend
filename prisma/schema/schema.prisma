@@ -41,6 +41,7 @@ model Store {
   cart        Cart[]       @relation("StoreToCart")
   collections Collection[] @relation("StoreToCollection")
   requests    Request[]    @relation("StoreToRequest")
+  customers   Customer[]  
 
   hasFreeShipping         Boolean @default(true)
   minFreeShipping         Float?  @default(0)
