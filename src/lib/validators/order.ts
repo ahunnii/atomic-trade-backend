@@ -8,15 +8,8 @@ import {
   PaymentStatus,
 } from "@prisma/client";
 
-export const addressValidator = z.object({
-  name: z.string(),
-  street: z.string(),
-  additional: z.string().optional(),
-  city: z.string(),
-  state: z.string(),
-  postal_code: z.string(),
-  country: z.string(),
-});
+import { addressValidator } from "./geocoding";
+
 export const orderItemValidator = z.object({
   variantId: z.string().nullish(),
   quantity: z.number().min(0),
@@ -183,12 +176,14 @@ export const productOrderFormValidator = z.object({
       discountType: z.enum(["amount", "percentage"]),
     }),
   ),
-
   customer: z.object({
     id: z.string(),
-    name: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
     email: z.string().email(),
-    phone: z.string(),
+    phone: z.string().optional(),
+    shippingAddress: addressValidator.optional(),
+    billingAddress: addressValidator.optional(),
   }),
 
   discountInCents: z.coerce.number(),

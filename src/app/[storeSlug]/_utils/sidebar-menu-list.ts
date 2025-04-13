@@ -3,6 +3,7 @@ import {
   BellRing,
   BoxesIcon,
   FileJson,
+  Files,
   LayoutGrid,
   Settings,
   ShirtIcon,
@@ -44,6 +45,28 @@ export function getMenuList(pathname: string, slug: string): Group[] {
           label: "Dashboard",
           active: pathname.includes(`/${slug}/dashboard`),
           icon: LayoutGrid,
+          submenus: [],
+          restrictedAccess: [],
+        },
+      ],
+    },
+
+    {
+      groupLabel: "Management",
+      menus: [
+        {
+          href: `/${slug}/orders`,
+          label: "Orders",
+          active: pathname.includes(`/${slug}/orders`),
+          icon: Files,
+          submenus: [],
+          restrictedAccess: [],
+        },
+        {
+          href: `/${slug}/customers`,
+          label: "Customers",
+          active: pathname.includes(`/${slug}/customers`),
+          icon: Users,
           submenus: [],
           restrictedAccess: [],
         },

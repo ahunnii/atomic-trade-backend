@@ -1,8 +1,9 @@
 import type { UseFormReturn } from "react-hook-form";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { Option } from "~/components/ui/custom/autocomplete-input";
 import type { ProductOrderFormData } from "~/lib/validators/order";
+import type { Customer } from "~/types/customer";
 import { cn } from "~/lib/utils";
 import { AutoComplete } from "~/components/ui/custom/autocomplete-input";
 import {
@@ -85,6 +86,7 @@ type Props = {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   inputId?: string;
   inputClassName?: string;
+  customers: Customer[];
 };
 
 export function CustomerFormField({
@@ -92,6 +94,7 @@ export function CustomerFormField({
   label,
   description,
   className,
+  customers,
   disabled,
   placeholder,
   onChange,
@@ -101,7 +104,16 @@ export function CustomerFormField({
 }: Props) {
   const [isLoading, setLoading] = useState(false);
   const [isDisabled, setDisbled] = useState(false);
-  const [value, setValue] = useState<Option>();
+  const [value, setValue] = useState<Option<Customer>>();
+
+  const formattedCustomers = useMemo(() => {
+    return customers.map((customer) => ({
+      value: customer.id,
+      label: `${customer.firstName} ${customer.lastName}`,
+      sublabel: customer.email,
+      data: customer,
+    })) as Option<Customer>[];
+  }, [customers]);
 
   return (
     <FormField
@@ -112,11 +124,26 @@ export function CustomerFormField({
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
             <AutoComplete
-              options={FRAMEWORKS}
+              options={formattedCustomers ?? []}
               emptyMessage="No results."
               placeholder="Find something"
               isLoading={isLoading}
-              onValueChange={setValue}
+              onValueChange={(value) => {
+                console.log(value);
+                setValue(value);
+
+                const address =
+                  value.data.addresses.find((address) => address.isDefault) ??
+                  value.data.addresses[0];
+
+                form.setValue("customer.firstName", value.data.firstName);
+                form.setValue("customer.lastName", value.data.lastName);
+                form.setValue("customer.email", value.data.email);
+                form.setValue("customer.phone", value.data.phone ?? undefined);
+                form.setValue("customer.shippingAddress", address ?? undefined);
+                form.setValue("customer.billingAddress", address ?? undefined);
+                form.setValue("customer.id", value.data.id);
+              }}
               value={value}
               disabled={isDisabled}
               createButtonLabel="Create new"

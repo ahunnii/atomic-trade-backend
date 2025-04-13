@@ -1,3 +1,5 @@
+import type { Customer } from "./customer";
+
 export type Order = {
   id: string;
   storeId: string;
@@ -187,17 +189,4 @@ export type Fulfillment = {
   createdAt: Date;
   updatedAt: Date;
   metadata?: Record<string, unknown>;
-};
-
-export type Customer = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  providerId?: string | null;
-  provider?: string | null;
-  phoneNumber?: string | null;
-  userId?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
 };

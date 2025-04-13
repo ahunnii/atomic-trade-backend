@@ -29,7 +29,7 @@ export const brandingSettingsValidator = brandingValidator.extend({
 });
 
 export const shippingSettingsValidator = z.object({
-  address: addressValidator,
+  address: addressValidator.omit({ id: true }),
   hasFreeShipping: z.boolean(),
   minFreeShipping: z.coerce.number().nonnegative().optional(),
   hasPickup: z.boolean(),

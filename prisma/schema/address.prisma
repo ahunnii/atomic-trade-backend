@@ -1,6 +1,8 @@
 model Address {
   id            String  @id @default(cuid())
-  name          String?
+  firstName     String?
+  lastName      String?
+  phone         String?
   formatted     String
   street        String
   additional    String?
@@ -9,9 +11,11 @@ model Address {
   postalCode    String
   country       String
 
-  store         Store?  @relation("StoreToAddress")
-  billingOrder   Payment?
+  store           Store?  @relation("StoreToAddress")
+  billingOrder    Payment?
   shippingOrder   Fulfillment? 
+
+  isDefault Boolean?
 
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)

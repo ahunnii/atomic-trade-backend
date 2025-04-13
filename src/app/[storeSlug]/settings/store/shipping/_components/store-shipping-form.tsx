@@ -41,7 +41,6 @@ type Props = {
 };
 
 export const StoreShippingForm = ({ initialData, slug }: Props) => {
-  console.log("initialData", initialData);
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["store"],
   });
@@ -51,7 +50,15 @@ export const StoreShippingForm = ({ initialData, slug }: Props) => {
     defaultValues: {
       address: {
         formatted: initialData?.address?.formatted ?? "",
-        name: initialData?.address?.name ?? initialData?.name ?? "",
+        firstName:
+          initialData?.address?.firstName ??
+          initialData?.name?.split(" ")[0] ??
+          "",
+        lastName:
+          initialData?.address?.lastName ??
+          initialData?.name?.split(" ")[1] ??
+          "",
+
         street: initialData?.address?.street ?? "",
         additional: initialData?.address?.additional ?? "",
         city: initialData?.address?.city ?? "",
@@ -149,7 +156,7 @@ export const StoreShippingForm = ({ initialData, slug }: Props) => {
               >
                 <InputFormField
                   form={form}
-                  name="address.name"
+                  name="address.firstName"
                   label="Return Address Name"
                   placeholder="Store name"
                   description="This is what goes on the packages when you send them to customers."
@@ -161,6 +168,7 @@ export const StoreShippingForm = ({ initialData, slug }: Props) => {
                   label="Store address"
                   description="This is where the store is located. Used for billing and shipping purposes."
                   defaultValue={{
+                    id: "temp",
                     formatted: form.getValues("address")?.formatted ?? "",
                     street: form.getValues("address")?.street ?? "",
                     city: form.getValues("address")?.city ?? "",

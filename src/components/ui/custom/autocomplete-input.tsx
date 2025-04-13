@@ -14,14 +14,15 @@ import {
 import { Button } from "../button";
 import { Skeleton } from "../skeleton";
 
-export type Option = Record<"value" | "label" | "sublabel", string> &
+export type Option<Tmp> = Record<"value" | "label" | "sublabel", string> &
+  Record<"data", Tmp> &
   Record<string, string>;
 
-type AutoCompleteProps = {
-  options: Option[];
+type AutoCompleteProps<Tmp> = {
+  options: Option<Tmp>[];
   emptyMessage: string;
-  value?: Option;
-  onValueChange?: (value: Option) => void;
+  value?: Option<Tmp>;
+  onValueChange?: (value: Option<Tmp>) => void;
   isLoading?: boolean;
   disabled?: boolean;
   placeholder?: string;
@@ -29,7 +30,7 @@ type AutoCompleteProps = {
   createButtonLabel?: string;
 };
 
-export const AutoComplete = ({
+export const AutoComplete = <Tmp,>({
   options,
   placeholder,
   emptyMessage,
@@ -39,12 +40,12 @@ export const AutoComplete = ({
   isLoading = false,
   createIfNotFound,
   createButtonLabel,
-}: AutoCompleteProps) => {
+}: AutoCompleteProps<Tmp>) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const [isOpen, setOpen] = useState(false);
-  const [selected, setSelected] = useState<Option | null>(value ?? null);
+  const [selected, setSelected] = useState<Option<Tmp> | null>(value ?? null);
   const [inputValue, setInputValue] = useState<string>(value?.label ?? "");
 
   const handleKeyDown = useCallback(
@@ -91,7 +92,7 @@ export const AutoComplete = ({
   }, [selected]);
 
   const handleSelectOption = useCallback(
-    (selectedOption: Option) => {
+    (selectedOption: Option<Tmp>) => {
       console.log(selectedOption);
       setInputValue(selectedOption.label);
 

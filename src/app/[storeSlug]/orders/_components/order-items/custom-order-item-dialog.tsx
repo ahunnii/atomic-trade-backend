@@ -114,7 +114,7 @@ export const CustomOrderItemDialog = ({
           {field ? "Edit" : "Add custom item"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]" withoutClose>
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>Add custom item</DialogTitle>

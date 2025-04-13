@@ -1,6 +1,7 @@
 "use server";
 
 import { Client } from "@googlemaps/google-maps-services-js";
+
 import { env } from "~/env";
 
 const client = new Client();
@@ -12,6 +13,7 @@ export const autocomplete = async (input: string) => {
       params: {
         input,
         key: env.GOOGLE_MAPS_API_KEY,
+        components: ["country:us"],
       },
     });
 

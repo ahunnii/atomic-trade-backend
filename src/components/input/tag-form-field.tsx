@@ -58,7 +58,10 @@ export const TagFormField = <CurrentForm extends FieldValues>({
             <TagInput
               {...field}
               disabled={disabled}
-              placeholder="Enter a topic"
+              styleClasses={{
+                input: "h-9",
+              }}
+              placeholder="Enter a tag"
               tags={tags}
               setTags={(newTags) => {
                 setTags(newTags);

@@ -61,7 +61,6 @@ export const DiscountDialog = ({
   }, [initialData, discountForm]);
 
   const handleSubmit = (data: DiscountFormData) => {
-    console.log("Submitting data:", data);
     if (orderItemIndex !== undefined) {
       const orderItem = form.getValues().orderItems[orderItemIndex];
       if (!orderItem) return;
@@ -102,7 +101,7 @@ export const DiscountDialog = ({
       <DialogTrigger asChild>
         <div>{children}</div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" withoutClose>
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>Add discount</DialogTitle>
@@ -125,7 +124,6 @@ export const DiscountDialog = ({
           }}
           className="space-y-6 py-4"
         >
-          {JSON.stringify(initialData)}
           <div className="space-y-4">
             <div className="flex w-full gap-4">
               <SelectFormField

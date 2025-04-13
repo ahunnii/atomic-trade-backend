@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MapPin } from "lucide-react";
+import { AlertTriangle, MapPin } from "lucide-react";
 
 import type { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 
@@ -22,6 +22,8 @@ import { Button } from "../ui/button";
 type Props = {
   onSelect: (address: Address) => void;
   initialAddress?: Address;
+  onUnverifiedAddress?: (isUnverified: boolean) => void;
+  isUnverified?: boolean;
 };
 type ParsedAddress = {
   street: string;
@@ -32,8 +34,12 @@ type ParsedAddress = {
   country: string;
 };
 
-export const AddressAutoComplete = ({ onSelect, initialAddress }: Props) => {
-  console.log("initialAddress", initialAddress);
+export const AddressAutoComplete = ({
+  onSelect,
+  initialAddress,
+  onUnverifiedAddress,
+  isUnverified,
+}: Props) => {
   const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<string>(
@@ -55,6 +61,7 @@ export const AddressAutoComplete = ({ onSelect, initialAddress }: Props) => {
   useEffect(() => {
     if (initialAddress) {
       setSelected(initialAddress.formatted);
+      setInput(initialAddress.formatted);
     }
   }, [initialAddress]);
 
@@ -121,16 +128,17 @@ export const AddressAutoComplete = ({ onSelect, initialAddress }: Props) => {
   }
 
   const handleSelect = async (prediction: PlaceAutocompleteResult) => {
-    console.log("prediction", prediction);
-
     const latLng = await getLatLng(prediction.place_id);
-    console.log("latLng", latLng);
 
     if (latLng.length > 0 && latLng[0]) {
       const parsedAddress = parseUSAddress(latLng[0].formatted_address);
+      const isUnverified = !parsedAddress;
+      onUnverifiedAddress?.(isUnverified);
+
       const address = {
         formatted: latLng[0].formatted_address,
         street: parsedAddress?.street ?? "",
+        additional: parsedAddress?.additionalInfo ?? "",
         city: parsedAddress?.city ?? "",
         state: parsedAddress?.state ?? "",
         postalCode: parsedAddress?.postalCode ?? "",
@@ -142,6 +150,41 @@ export const AddressAutoComplete = ({ onSelect, initialAddress }: Props) => {
     } else {
       console.warn("Geocoding given address returned nothing...");
     }
+  };
+
+  const handleManualAddress = () => {
+    const parsedAddress = parseUSAddress(input);
+    const isUnverified = !parsedAddress;
+    console.log("Manual address entered:", {
+      input,
+      parsedAddress,
+      isUnverified,
+    });
+    onUnverifiedAddress?.(isUnverified);
+
+    const address = parsedAddress
+      ? {
+          formatted: input,
+          street: parsedAddress.street,
+          additional: parsedAddress.additionalInfo,
+          city: parsedAddress.city,
+          state: parsedAddress.state,
+          postalCode: parsedAddress.postalCode,
+          country: parsedAddress.country,
+        }
+      : {
+          formatted: input,
+          street: input,
+          additional: "",
+          city: "",
+          state: "",
+          postalCode: "",
+          country: "USA",
+        };
+
+    setSelected(input);
+    onSelect(address);
+    setIsOpen(false);
   };
 
   return (
@@ -156,6 +199,29 @@ export const AddressAutoComplete = ({ onSelect, initialAddress }: Props) => {
         {selected ? selected : "Select an address..."}
       </Button>
 
+      {/* <div key={String(isUnverified)}>
+        {isUnverified === true && (
+          <div className="mt-2 rounded-md bg-yellow-50 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-yellow-400" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">
+                  Unverified Address
+                </h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p>
+                    This address could not be verified. Please ensure all fields
+                    are correct.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div> */}
+
       {isOpen && (
         <div className="absolute z-10 mt-1 w-full" ref={commandRef}>
           <Command>
@@ -166,7 +232,21 @@ export const AddressAutoComplete = ({ onSelect, initialAddress }: Props) => {
               autoFocus
             />
             <CommandList>
-              <CommandEmpty>No results found</CommandEmpty>
+              <CommandEmpty>
+                <div className="flex flex-col items-center gap-2 p-4">
+                  <p>No results found</p>
+                  {input && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleManualAddress}
+                      className="w-full"
+                    >
+                      Use &quot;{input}&quot; as address
+                    </Button>
+                  )}
+                </div>
+              </CommandEmpty>
               <CommandGroup heading="Suggestions">
                 {predictions.map((prediction) => (
                   <CommandItem

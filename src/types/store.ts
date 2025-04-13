@@ -51,7 +51,9 @@ export type SocialMediaLink = {
 
 export type Address = {
   id: string;
-  name?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
   formatted: string;
   street: string;
   additional?: string | null;
@@ -59,4 +61,5 @@ export type Address = {
   state: string;
   postalCode: string;
   country: string;
+  isDefault?: boolean | null;
 };
