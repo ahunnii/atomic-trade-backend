@@ -55,13 +55,29 @@ export function getMenuList(pathname: string, slug: string): Group[] {
       groupLabel: "Management",
       menus: [
         {
-          href: `/${slug}/orders`,
+          href: ``,
           label: "Orders",
-          active: pathname.includes(`/${slug}/orders`),
+          active:
+            pathname.includes(`/${slug}/orders`) ||
+            pathname.includes(`/${slug}/draft-orders`),
           icon: Files,
-          submenus: [],
+          submenus: [
+            {
+              href: `/${slug}/orders`,
+              label: "Store Orders",
+              active: pathname.includes(`/${slug}/orders`),
+              restrictedAccess: [],
+            },
+            {
+              href: `/${slug}/draft-orders`,
+              label: "Draft Orders",
+              active: pathname.includes(`/${slug}/draft-orders`),
+              restrictedAccess: [],
+            },
+          ],
           restrictedAccess: [],
         },
+
         {
           href: `/${slug}/customers`,
           label: "Customers",

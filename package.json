@@ -91,6 +91,7 @@
     "editorjs-react-renderer": "^3.5.1",
     "embla-carousel-react": "^8.5.2",
     "emblor": "^1.4.8",
+    "framer-motion": "^12.7.2",
     "input-otp": "^1.4.2",
     "libphonenumber-js": "^1.12.6",
     "lodash": "^4.17.21",

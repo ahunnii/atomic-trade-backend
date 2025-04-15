@@ -12,4 +12,7 @@ export type Customer = {
   addresses: Address[];
   createdAt: Date;
   updatedAt: Date;
+  _count?: {
+    orders?: number | null;
+  } | null;
 };

@@ -54,31 +54,22 @@ export const AttributeForm = ({ initialData, storeId, storeSlug }: Props) => {
   const updateAttribute = api.attribute.update.useMutation(defaultActions);
   const createAttribute = api.attribute.create.useMutation(defaultActions);
   const deleteAttribute = api.attribute.delete.useMutation(defaultActions);
-  const duplicateAttribute = api.attribute.duplicate.useMutation({
-    ...defaultActions,
-    onSuccess: ({ data, message }) => {
-      defaultActions.onSuccess({ message, cancelRedirect: true });
-      void router.push(`/${storeSlug}/attributes/${data.id}/edit`);
-    },
-  });
 
   const onSubmit = (data: AttributeFormData) => {
     if (initialData) updateAttribute.mutate({ ...data, attributeId });
-    else createAttribute.mutate({ ...data, storeId });
+    else createAttribute.mutate({ ...data, storeId, productId: "" });
   };
 
   const onDelete = () => deleteAttribute.mutate(attributeId);
 
   const onSaveAndDuplicate = async () => {
     await updateAttribute.mutateAsync({ ...form.watch(), attributeId });
-    await duplicateAttribute.mutateAsync(attributeId);
   };
 
   const isLoading =
     updateAttribute.isPending ||
     createAttribute.isPending ||
-    deleteAttribute.isPending ||
-    duplicateAttribute.isPending;
+    deleteAttribute.isPending;
 
   return (
     <>

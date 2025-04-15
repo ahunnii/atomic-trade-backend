@@ -1,44 +1,30 @@
 "use client";
 
 import type { Tag } from "emblor";
-import { useRef } from "react";
-import { useRouter } from "next/navigation";
 import { uniqueId } from "lodash";
 import { useForm } from "react-hook-form";
 
-import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import type { ImageFormFieldRef } from "~/components/input/image-form-field";
-import type { CollectionFormData } from "~/lib/validators/collection";
 import type { CustomerFormData } from "~/lib/validators/customer";
-import type { Collection } from "~/types/collection";
+import type { Address } from "~/lib/validators/geocoding";
 import type { Customer } from "~/types/customer";
-import type { Product } from "~/types/product";
-import type { Address } from "~/types/store";
-import { env } from "~/env";
-import { collectionFormValidator } from "~/lib/validators/collection";
 import { customerValidator } from "~/lib/validators/customer";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { Form } from "~/components/ui/form";
 import { AutoCompleteAddressFormField } from "~/components/input/autocomplete-address-form-field";
-import { ImageFormField } from "~/components/input/image-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
 import { PhoneFormField } from "~/components/input/phone-form-field";
-import { SingleCheckboxFormField } from "~/components/input/single-checkbox-form-field";
 import { TagFormField } from "~/components/input/tag-form-field";
 import { TextareaFormField } from "~/components/input/textarea-form-field";
 import { FormAdditionalOptionsButton } from "~/components/shared/form-additional-options-button";
 import { FormHeader } from "~/components/shared/form-header";
-import { FormSaveOptionsButton } from "~/components/shared/form-save-options-button";
 import { FormSection } from "~/components/shared/form-section";
+import { LoadButton } from "~/components/shared/load-button";
 
 type Props = {
   initialData: Customer | null;
-
   storeSlug: string;
   storeId: string;
   defaultAddress: Address | null;
@@ -46,13 +32,10 @@ type Props = {
 
 export const CustomerForm = ({
   initialData,
-
   storeSlug,
   storeId,
   defaultAddress,
 }: Props) => {
-  const router = useRouter();
-
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["customer"],
     redirectPath: `/${storeSlug}/customers`,
@@ -98,18 +81,10 @@ export const CustomerForm = ({
     void onSave(data);
   };
 
-  const onSave = async (data: CustomerFormData, publish = false) => {
-    if (initialData) {
-      updateCustomer.mutate({
-        ...data,
-        customerId: initialData.id,
-      });
-    } else {
-      createCustomer.mutate({
-        ...data,
-        storeId,
-      });
-    }
+  const onSave = async (data: CustomerFormData) => {
+    if (initialData)
+      updateCustomer.mutate({ ...data, customerId: initialData.id });
+    else createCustomer.mutate({ ...data, storeId });
   };
 
   const onDelete = () => deleteCustomer.mutate(initialData?.id ?? "");
@@ -124,29 +99,16 @@ export const CustomerForm = ({
       <Form {...form}>
         <form
           onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
-          onChange={(e) => {
-            console.log(form.watch());
-          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") e.preventDefault();
           }}
         >
           <FormHeader title={title} link={`/${storeSlug}/customers`}>
-            {initialData && (
-              <FormAdditionalOptionsButton
-                onDelete={onDelete}
-                // onDuplicate={onSaveAndDuplicate}
-              />
-            )}
+            {initialData && <FormAdditionalOptionsButton onDelete={onDelete} />}
 
-            {/* <FormSaveOptionsButton
-              onSave={() => onSave(form.getValues(), false)}
-              onPublish={() => onSave(form.getValues(), true)}
-              isLoading={isLoading}
-            /> */}
-            <Button type="submit" disabled={isLoading}>
+            <LoadButton isLoading={isLoading} type="submit">
               Save
-            </Button>
+            </LoadButton>
           </FormHeader>
 
           <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
@@ -219,13 +181,13 @@ export const CustomerForm = ({
                   label="Address"
                   defaultValue={{
                     id: form.getValues("address.id"),
-                    formatted: form.getValues("address")?.formatted ?? "",
-                    street: form.getValues("address")?.street ?? "",
-                    additional: form.getValues("address")?.additional ?? "",
-                    city: form.getValues("address")?.city ?? "",
-                    state: form.getValues("address")?.state ?? "",
-                    postalCode: form.getValues("address")?.postalCode ?? "",
-                    country: form.getValues("address")?.country ?? "",
+                    formatted: form.getValues("address.formatted") ?? "",
+                    street: form.getValues("address.street") ?? "",
+                    additional: form.getValues("address.additional") ?? "",
+                    city: form.getValues("address.city") ?? "",
+                    state: form.getValues("address.state") ?? "",
+                    postalCode: form.getValues("address.postalCode") ?? "",
+                    country: form.getValues("address.country") ?? "",
                   }}
                   onSelectAdditional={(address) => {
                     form.setValue("address", {

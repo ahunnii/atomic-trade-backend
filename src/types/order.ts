@@ -1,33 +1,46 @@
 import type { Customer } from "./customer";
+import type { Address } from "~/lib/validators/geocoding";
 
 export type Order = {
   id: string;
   storeId: string;
   orderItems: OrderItem[];
-  notes: Note[];
+  timeline: TimelineEvent[];
+  notes: string | null;
+  tags: string[];
   payments: Payment[];
   fulfillmentId?: string;
   fulfillment?: Fulfillment;
   paidInFull: boolean;
   paidInFullAt?: Date;
+  paymentStatus: OrderPaymentStatus;
+  fulfillmentStatus: OrderFulfillmentStatus;
+  isTaxExempt: boolean;
   orderNumber: string;
   authorizationCode: string;
   status: OrderStatus;
   type: OrderType;
-  subtotal: number;
-  tax: number;
-  shipping: number;
-  total: number;
-  discount: number;
-  fee: number;
+  subtotalInCents: number;
+  taxInCents: number;
+  shippingInCents: number;
+  totalInCents: number;
+  discountInCents: number;
+  feeInCents: number;
   receiptLink: string;
-  email: string;
-  phone?: string;
+  email: string | null;
+  phone: string | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
   customerId?: string;
   customer?: Customer;
+  shippingAddressId?: string;
+  shippingAddress?: Address;
+  billingAddressId?: string;
+  billingAddress?: Address;
+  areAddressesSame: boolean;
+  metadata?: Record<string, unknown>;
+  isRefundable: boolean;
 };
 
 export type OrderItem = {
@@ -40,14 +53,26 @@ export type OrderItem = {
   unitPriceInCents: number;
   discountInCents: number;
   totalPriceInCents: number;
+  isPhysical: boolean;
+  isTaxable: boolean;
   metadata?: Record<string, unknown>;
   requestItemId?: string;
   packageId?: string;
+  package?: Package;
   saleId?: string;
   variantId?: string;
+  variant?:
+    | {
+        id: string;
+        product?: {
+          id: string;
+          featuredImage: string;
+        };
+      }
+    | undefined;
 };
 
-export type Note = {
+export type TimelineEvent = {
   id: string;
   title: string;
   isEditable: boolean;
@@ -78,7 +103,24 @@ export enum OrderType {
   MANUAL_PICKUP = "MANUAL_PICKUP",
 }
 
-// Referenced types that would be defined elsewhere
+export enum OrderPaymentStatus {
+  PAID = "PAID",
+  PARTIAL_PAYMENT = "PARTIAL_PAYMENT",
+  PENDING = "PENDING",
+  REFUNDED = "REFUNDED",
+  VOIDED = "VOIDED",
+  EXPIRED = "EXPIRED",
+}
+
+export enum OrderFulfillmentStatus {
+  FULFILLED = "FULFILLED",
+  IN_PROGRESS = "IN_PROGRESS",
+  ON_HOLD = "ON_HOLD",
+  PARTIAL_FULFILLMENT = "PARTIAL_FULFILLMENT",
+  RESTOCKED = "RESTOCKED",
+  PENDING = "PENDING",
+}
+
 export enum PaymentMethod {
   CASH = "CASH",
   INVOICE = "INVOICE",
@@ -104,11 +146,12 @@ export enum PaymentStatus {
 export type Payment = {
   id: string;
   orderId: string;
+  order: Order;
   amountInCents: number;
   status: PaymentStatus;
   method: PaymentMethod;
-  billingAddressId?: string;
   customerId?: string;
+  customer?: Customer;
   createdAt: Date;
   updatedAt: Date;
   metadata?: Record<string, unknown>;
@@ -118,6 +161,7 @@ export type Payment = {
 export type Refund = {
   id: string;
   paymentId: string;
+  payment: Payment;
   amountInCents: number;
   reason: string;
   metadata?: Record<string, unknown>;
@@ -166,7 +210,10 @@ export enum PackageStatus {
 export type Package = {
   id: string;
   fulfillmentId: string;
+  fulfillment: Fulfillment;
   status: PackageStatus;
+  shippingAddressId?: string;
+  shippingAddress?: Address;
   carrier?: string;
   trackingNumber?: string;
   trackingUrl?: string;
@@ -181,7 +228,7 @@ export type Package = {
 
 export type Fulfillment = {
   id: string;
-  shippingAddressId?: string;
+  order?: Order;
   type: FulfillmentType;
   packages: Package[];
   status: FulfillmentStatus;

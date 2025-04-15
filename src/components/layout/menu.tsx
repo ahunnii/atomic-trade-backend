@@ -117,7 +117,8 @@ export function Menu({ isOpen }: Props) {
                         active={active}
                         submenus={submenus}
                         isOpen={isOpen}
-                      />
+                        href={href}
+                      />{" "}
                     </div>
                   ),
               )}

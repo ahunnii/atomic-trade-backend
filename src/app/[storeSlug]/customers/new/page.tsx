@@ -7,7 +7,11 @@ type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
-export default async function NewCollectionAdminPage({ params }: Props) {
+export const metadata = {
+  title: "New Customer",
+};
+
+export default async function NewCustomerAdminPage({ params }: Props) {
   const { storeSlug } = await params;
   const store = await api.store.getBySlug(storeSlug);
 

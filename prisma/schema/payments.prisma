@@ -4,6 +4,7 @@ enum PaymentMethod {
   STRIPE
   PAYPAL
   OTHER
+  MANUAL
 }
 enum PaymentStatus {
   PENDING
@@ -27,9 +28,6 @@ model Payment {
   amountInCents Int
   status PaymentStatus @default(PENDING)
   method PaymentMethod @default(STRIPE)
-
-  billingAddressId String? @unique
-  billingAddress Address? @relation(fields: [billingAddressId], references: [id], onDelete: SetNull)
 
   customerId String?
   customer Customer? @relation(fields: [customerId], references: [id])

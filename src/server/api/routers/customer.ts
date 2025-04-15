@@ -17,7 +17,12 @@ export const customersRouter = createTRPCRouter({
       return ctx.db.customer.findMany({
         where: { storeId },
         include: {
-          orders: { include: { orderItems: true } },
+          orders: true,
+          _count: {
+            select: {
+              orders: true,
+            },
+          },
           addresses: {
             where: { isDefault: true },
           },
@@ -35,6 +40,11 @@ export const customersRouter = createTRPCRouter({
           requests: true,
           invoices: true,
           user: true,
+          _count: {
+            select: {
+              orders: true,
+            },
+          },
           orders: {
             include: {
               orderItems: true,

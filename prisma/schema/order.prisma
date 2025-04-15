@@ -19,6 +19,23 @@ enum OrderStatus {
   PARTIAL_REFUND
 }
 
+enum OrderPaymentStatus {
+  PAID
+  PARTIAL_PAYMENT
+  PENDING
+  REFUNDED
+  VOIDED
+  EXPIRED
+}
+
+enum OrderFulfillmentStatus {
+  FULFILLED
+  IN_PROGRESS
+  ON_HOLD
+  PARTIAL_FULFILLMENT
+  RESTOCKED
+  PENDING
+}
 
 
 
@@ -27,8 +44,10 @@ model Order {
   storeId         String
   store           Store  @relation("StoreToOrder", fields: [storeId], references: [id])
 
+  notes           String? @db.Text
+  tags            String[]
   orderItems      OrderItem[]
-  notes           Note[]
+  timeline        TimelineEvent[]
   payments        Payment[]
 
 
@@ -38,27 +57,28 @@ model Order {
   paidInFull      Boolean @default(false)
   paidInFullAt    DateTime?
 
+  paymentStatus   OrderPaymentStatus @default(PENDING)
+  fulfillmentStatus OrderFulfillmentStatus @default(PENDING)
+
+  isTaxExempt     Boolean @default(false)
+  isRefundable    Boolean @default(false)
+
   orderNumber       String @default(cuid()) @unique
   authorizationCode String @default(cuid())
 
   status     OrderStatus     @default(DRAFT)
   type       OrderType       @default(ONLINE_SHIP)
 
-  subtotal Int @default(0)
-  tax      Int @default(0)
-  shipping Int @default(0)
-  total    Int @default(0)
-  discount Int @default(0)
-  fee      Int @default(0)
+  subtotalInCents Int @default(0)
+  taxInCents      Int @default(0)
+  shippingInCents Int @default(0)
+  totalInCents    Int @default(0)
+  discountInCents Int @default(0)
+  feeInCents      Int @default(0)
 
   receiptLink String @default("")
 
-  
-
-  // 
-  // 
-  
-  email     String      @default("")
+  email     String?      @default("")
   phone     String?     @default("")
 
   createdAt DateTime @default(now())
@@ -68,9 +88,20 @@ model Order {
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id])
 
+  shippingAddressId     String? @unique
+  shippingAddress       Address? @relation("OrderToShippingAddress", fields: [shippingAddressId], references: [id], onDelete: SetNull)
+
+  billingAddressId      String? @unique
+  billingAddress        Address? @relation("OrderToBillingAddress", fields: [billingAddressId], references: [id], onDelete: SetNull)
+
+  areAddressesSame      Boolean @default(false)
+
+  metadata   Json?
 
   @@index([storeId])
   @@index([customerId])
+  @@index([shippingAddressId])
+  @@index([billingAddressId])
 }
 
 model OrderItem {
@@ -88,6 +119,8 @@ model OrderItem {
 
   metadata Json?
 
+  isPhysical  Boolean @default(false)
+  isTaxable   Boolean @default(false)
 
   requestItem   RequestItem? @relation(fields: [requestItemId], references: [id])
   requestItemId String?
@@ -108,7 +141,7 @@ model OrderItem {
   @@index([requestItemId])
 }
 
-model Note {
+model TimelineEvent {
   id            String            @id @default(cuid())
   title         String
   isEditable    Boolean           @default(false)

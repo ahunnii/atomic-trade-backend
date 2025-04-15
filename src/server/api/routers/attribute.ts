@@ -37,6 +37,14 @@ export const attributeRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { storeId, productId, name, values } = input;
 
+      if (productId === "") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Product ID is required. Try creating the attributes from products instead.",
+        });
+      }
+
       const attributes = await ctx.db.attribute.create({
         data: {
           storeId,

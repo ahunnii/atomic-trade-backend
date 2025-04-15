@@ -1,12 +1,14 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, Dot } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ChevronDown, Dot } from "lucide-react";
 
 import { DropdownMenuArrow } from "@radix-ui/react-dropdown-menu";
 
+import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import {
   Collapsible,
@@ -27,7 +29,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { cn } from "~/lib/utils";
 
 type Submenu = {
   href: string;
@@ -41,6 +42,7 @@ type Props = {
   active: boolean;
   submenus: Submenu[];
   isOpen: boolean | undefined;
+  href?: string;
 };
 
 export function CollapseMenuButton({
@@ -49,10 +51,11 @@ export function CollapseMenuButton({
   active,
   submenus,
   isOpen,
+  href,
 }: Props) {
   const isSubmenuActive = submenus.some((submenu) => submenu.active);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(isSubmenuActive);
-
+  const router = useRouter();
   return isOpen ? (
     <Collapsible
       open={isCollapsed}
@@ -61,6 +64,13 @@ export function CollapseMenuButton({
     >
       <CollapsibleTrigger
         className="mb-1 [&[data-state=open]>div>div>svg]:rotate-180"
+        // onClick={(e) => {
+        //   e.preventDefault();
+        //   if (href) {
+        //     router.replace(href);
+        //     console.log(href);
+        //   }
+        // }}
         asChild
       >
         <Button

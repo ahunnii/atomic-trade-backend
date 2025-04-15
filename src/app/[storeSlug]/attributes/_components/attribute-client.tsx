@@ -21,14 +21,6 @@ export const AttributeClient = ({ storeId, storeSlug }: Props) => {
 
   const deleteAttribute = api.attribute.delete.useMutation(defaultActions);
 
-  const duplicateAttribute = api.attribute.duplicate.useMutation({
-    ...defaultActions,
-    onSuccess: ({ data, message }) => {
-      defaultActions.onSuccess({ message });
-      void router.push(`/${storeSlug}/attributes/${data.id}/edit`);
-    },
-  });
-
   const storeAttributes = api.attribute.getAll.useQuery(storeId);
 
   const columnData = useMemo(() => {
@@ -37,11 +29,11 @@ export const AttributeClient = ({ storeId, storeSlug }: Props) => {
         ...attr,
         storeSlug,
         onDelete: (id: string) => deleteAttribute.mutate(id),
-        onDuplicate: (id: string) => duplicateAttribute.mutate(id),
-        isLoading: deleteAttribute.isPending || duplicateAttribute.isPending,
+
+        isLoading: deleteAttribute.isPending,
       })) ?? []
     );
-  }, [storeAttributes?.data, deleteAttribute, duplicateAttribute, storeSlug]);
+  }, [storeAttributes?.data, deleteAttribute, storeSlug]);
 
   return (
     <ContentLayout title={`Attributes (${storeAttributes?.data?.length ?? 0})`}>

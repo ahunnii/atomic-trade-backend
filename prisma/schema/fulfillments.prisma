@@ -2,6 +2,7 @@ enum FulfillmentType {
     MANUAL
     EASYPOST
     PICKUP
+    
 }
 
 enum FulfillmentStatus {
@@ -13,18 +14,16 @@ enum FulfillmentStatus {
   RESTOCKED
   PARTIAL
   DRAFT
+  UNFULFILLED
 }
 
 
 model Fulfillment {
   id                    String @id @default(cuid())
   order                 Order?
-  shippingAddressId     String? @unique
-  shippingAddress       Address? @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
-
   type                  FulfillmentType @default(EASYPOST)
   packages              Package[]
-  status        FulfillmentStatus @default(PENDING)
+  status                FulfillmentStatus @default(PENDING)
 
   timeEstimate   String?
  
@@ -32,8 +31,6 @@ model Fulfillment {
   updatedAt      DateTime         @updatedAt
 
   metadata Json?
-
-
 }
 
 
@@ -65,6 +62,9 @@ model Package {
   fulfillment   Fulfillment @relation(fields: [fulfillmentId], references: [id], onDelete: Cascade)
 
   status        PackageStatus @default(PENDING)
+
+  shippingAddressId     String? @unique
+  shippingAddress       Address? @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
 
   carrier       String?
   trackingNumber String?

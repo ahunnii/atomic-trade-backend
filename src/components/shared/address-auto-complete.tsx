@@ -145,7 +145,10 @@ export const AddressAutoComplete = ({
         country: parsedAddress?.country ?? "",
       };
       setSelected(latLng[0].formatted_address);
-      onSelect(address);
+      onSelect({
+        ...address,
+        id: "",
+      });
       setIsOpen(false);
     } else {
       console.warn("Geocoding given address returned nothing...");
@@ -183,7 +186,10 @@ export const AddressAutoComplete = ({
         };
 
     setSelected(input);
-    onSelect(address);
+    onSelect({
+      ...address,
+      id: "",
+    });
     setIsOpen(false);
   };
 
@@ -251,7 +257,7 @@ export const AddressAutoComplete = ({
                 {predictions.map((prediction) => (
                   <CommandItem
                     key={prediction.place_id}
-                    onSelect={() => {
+                    onSelect={(e) => {
                       void handleSelect(prediction);
                     }}
                   >

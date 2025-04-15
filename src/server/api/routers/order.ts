@@ -1,5 +1,10 @@
 // import { type Item } from "~/providers/cart-provider";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
+import {
+  generateDraftOrderNumber,
+  generateOrderAuthNumber,
+  generateOrderNumber,
+} from "~/utils/generate-order-numbers";
 // import { getTotals } from "~/utils/calculate-prices";
 import { z } from "zod";
 
@@ -10,12 +15,14 @@ import { z } from "zod";
 // import { CustomerNotifyPickupEmail } from "~/lib/email/email-templates/customer.notify-pickup";
 // import { emailConfig } from "~/lib/email/email.config";
 // import { createOrderNumber } from "~/lib/orders/create-order-number";
+import { TRPCError } from "@trpc/server";
+
+import type { Address } from "~/lib/validators/geocoding";
 import {
-  // newOrderValidator,
-  orderFormValidator,
-  productOrderFormValidator,
-  // orderValidator,
-  updateOrderValidator,
+  draftOrderFormValidator,
+  draftOrderValidator,
+  updateDraftOrderValidator,
+  updateOrderCustomerInfoValidator,
 } from "~/lib/validators/order";
 
 // import { shoppingBagRouter } from "./shopping-bag";
@@ -381,10 +388,17 @@ export const ordersRouter = createTRPCRouter({
 
   getAll: adminProcedure.input(z.string()).query(({ ctx, input: storeId }) => {
     return ctx.db.order.findMany({
-      where: { storeId },
+      where: { storeId, status: { not: "DRAFT" } },
       include: {
         customer: true,
+
         fulfillment: true,
+        shippingAddress: {
+          select: {
+            city: true,
+            state: true,
+          },
+        },
         payments: true,
         orderItems: { include: { variant: { include: { product: true } } } },
       },
@@ -392,15 +406,43 @@ export const ordersRouter = createTRPCRouter({
     });
   }),
 
+  getAllDrafts: adminProcedure
+    .input(z.string())
+    .query(({ ctx, input: storeId }) => {
+      return ctx.db.order.findMany({
+        where: { storeId, status: "DRAFT" },
+        include: {
+          customer: true,
+          fulfillment: true,
+          shippingAddress: {
+            select: {
+              city: true,
+              state: true,
+            },
+          },
+          payments: true,
+          orderItems: { include: { variant: { include: { product: true } } } },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }),
+
   get: adminProcedure.input(z.string()).query(({ ctx, input: orderId }) => {
     return ctx.db.order.findUnique({
       where: { id: orderId },
       include: {
         store: true,
+        billingAddress: true,
+        shippingAddress: true,
         payments: { include: { refunds: true } },
         fulfillment: true,
-        notes: { orderBy: { createdAt: "desc" } },
-        customer: true,
+        timeline: { orderBy: { createdAt: "asc" } },
+        customer: {
+          include: {
+            addresses: true,
+            _count: { select: { orders: true } },
+          },
+        },
         orderItems: {
           include: {
             variant: { include: { product: true } },
@@ -412,35 +454,488 @@ export const ordersRouter = createTRPCRouter({
     });
   }),
 
-  create: adminProcedure
-    .input(productOrderFormValidator.extend({ storeId: z.string() }))
+  createDraft: adminProcedure
+    .input(
+      draftOrderValidator
+        .omit({ shippingAddressId: true, billingAddressId: true })
+        .extend({ storeId: z.string() }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const { notes, ...rest } = input;
+      const {
+        customerId,
+        orderItems,
+        discountReason,
+        discountType,
+        shippingAddress,
+        billingAddress,
+        ...rest
+      } = input;
 
-      // const order = await ctx.db.order.create({
-      //   data: {
-      //     ...rest,
-      //   //   billingAddress: { create: input.billingAddress },
-      //   //   shippingAddress: { create: input.shippingAddress },
-      //   //   timeline: { createMany: { data: timeline } },
-      //   //   orderItems: {
-      //   //     createMany: {
-      //   //       data: [
-      //   //         ...input.orderItems.map((orderItem) => {
-      //   //           return {
-      //   //             variantId: orderItem.variantId,
-      //   //             quantity: orderItem.quantity,
-      //   //           };
-      //   //         }),
-      //   //       ],
-      //   //     },
-      //   //   },
-      //   // },
-      // });
+      const numberOfOrders = await ctx.db.order.count({
+        where: {
+          storeId: input.storeId,
+          status: "DRAFT",
+          createdAt: {
+            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+          },
+        },
+      });
+
+      const orderNumber = generateDraftOrderNumber(numberOfOrders);
+      const authNumber = generateOrderAuthNumber();
+
+      const compareAddresses = (
+        address1: Omit<Address, "id"> | undefined,
+        address2: Omit<Address, "id"> | undefined,
+      ) => {
+        if (!address1 || !address2) return false;
+        if (address1.formatted === address2.formatted) return true;
+
+        return (
+          address1.street === address2.street &&
+          address1.city === address2.city &&
+          address1.state === address2.state &&
+          address1.postalCode === address2.postalCode &&
+          address1.country === address2.country
+        );
+      };
+
+      const order = await ctx.db.order.create({
+        data: {
+          ...rest,
+          customerId,
+          orderItems: {
+            createMany: {
+              data: orderItems.map((orderItem) => {
+                return {
+                  name: orderItem.name,
+                  description: orderItem.description,
+                  variantId:
+                    orderItem?.variantId === ""
+                      ? undefined
+                      : (orderItem?.variantId ?? undefined),
+                  quantity: orderItem.quantity,
+                  unitPriceInCents: orderItem.unitPriceInCents,
+                  discountInCents: orderItem.discountInCents,
+                  totalPriceInCents: orderItem.totalPriceInCents,
+                  isPhysical: orderItem.isPhysical,
+                  isTaxable: orderItem.isTaxable,
+                  metadata: {
+                    discountReason: orderItem.discountReason,
+                    discountType: orderItem.discountType,
+                  },
+                };
+              }),
+            },
+          },
+          discountInCents: input.discountInCents,
+          subtotalInCents: input.orderItems.reduce(
+            (acc, orderItem) =>
+              acc + orderItem.totalPriceInCents * orderItem.quantity,
+            0,
+          ),
+          totalInCents:
+            input.orderItems.reduce(
+              (acc, orderItem) =>
+                acc + orderItem.totalPriceInCents * orderItem.quantity,
+              0,
+            ) - input.discountInCents,
+          areAddressesSame: compareAddresses(
+            shippingAddress ?? undefined,
+            billingAddress ?? undefined,
+          ),
+          metadata: {
+            discountReason,
+            discountType,
+          },
+          status: "DRAFT",
+          orderNumber,
+          authorizationCode: authNumber,
+        },
+      });
+
+      const timeline = await ctx.db.timelineEvent.create({
+        data: {
+          orderId: order.id,
+          title: "Order created",
+          description: `Order created by admin on ${new Date().toLocaleString()} as draft`,
+          isEditable: false,
+        },
+      });
+
+      const orderShippingAddress = shippingAddress?.formatted
+        ? await ctx.db.address.create({
+            data: {
+              ...shippingAddress,
+              shippingOrder: { connect: { id: order.id } },
+            },
+          })
+        : null;
+
+      const orderBillingAddress = billingAddress?.formatted
+        ? await ctx.db.address.create({
+            data: {
+              ...billingAddress,
+              billingOrder: { connect: { id: order.id } },
+            },
+          })
+        : null;
 
       return {
-        data: "yeet",
+        data: {
+          order,
+          orderShippingAddress,
+          orderBillingAddress,
+          timeline,
+        },
         message: "Order created",
+      };
+    }),
+
+  updateDraft: adminProcedure
+    .input(updateDraftOrderValidator.extend({ orderId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const {
+        customerId,
+        orderItems,
+        discountReason,
+        discountType,
+        shippingAddress,
+        billingAddress,
+        shippingAddressId,
+        billingAddressId,
+        orderId,
+        ...rest
+      } = input;
+
+      const existingVariants = await ctx.db.orderItem.findMany({
+        where: { orderId },
+        select: { id: true },
+      });
+
+      const existingIds = new Set(existingVariants.map((v) => v.id));
+      const incomingIds = new Set(orderItems.map((v) => v.id));
+
+      const upserts = orderItems.map((orderItem) =>
+        ctx.db.orderItem.upsert({
+          where: { id: orderItem.id },
+          update: {
+            name: orderItem.name,
+            description: orderItem.description,
+            variantId:
+              orderItem?.variantId === ""
+                ? undefined
+                : (orderItem?.variantId ?? undefined),
+            quantity: orderItem.quantity,
+            unitPriceInCents: orderItem.unitPriceInCents,
+            discountInCents: orderItem.discountInCents,
+            totalPriceInCents: orderItem.totalPriceInCents,
+            isPhysical: orderItem.isPhysical,
+            isTaxable: orderItem.isTaxable,
+            metadata: {
+              discountReason: orderItem.discountReason,
+              discountType: orderItem.discountType,
+            },
+          },
+          create: {
+            id: orderItem.id,
+            orderId: input.orderId,
+            name: orderItem.name,
+            description: orderItem.description,
+            variantId:
+              orderItem?.variantId === ""
+                ? undefined
+                : (orderItem?.variantId ?? undefined),
+            quantity: orderItem.quantity,
+            unitPriceInCents: orderItem.unitPriceInCents,
+            discountInCents: orderItem.discountInCents,
+            totalPriceInCents: orderItem.totalPriceInCents,
+            isPhysical: orderItem.isPhysical,
+            isTaxable: orderItem.isTaxable,
+            metadata: {
+              discountReason: orderItem.discountReason,
+              discountType: orderItem.discountType,
+            },
+          },
+        }),
+      );
+
+      // Soft delete any that were removed
+      const deletes = [...existingIds]
+        .filter((id) => !incomingIds.has(id))
+        .map((id) =>
+          ctx.db.orderItem.delete({
+            where: { id },
+          }),
+        );
+
+      await ctx.db.$transaction([...upserts, ...deletes]);
+
+      // const currentOrder = await ctx.db.order.findUnique({
+      //   where: { id: input.orderId },
+      // });
+
+      // if (!currentOrder) {
+      //   throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+      // }
+
+      const compareAddresses = (
+        address1: Omit<Address, "id"> | undefined,
+        address2: Omit<Address, "id"> | undefined,
+      ) => {
+        if (!address1 || !address2) return false;
+        if (address1.formatted === address2.formatted) return true;
+
+        return (
+          address1.street === address2.street &&
+          address1.city === address2.city &&
+          address1.state === address2.state &&
+          address1.postalCode === address2.postalCode &&
+          address1.country === address2.country
+        );
+      };
+
+      const order = await ctx.db.order.update({
+        where: { id: orderId },
+        data: {
+          ...rest,
+          customerId,
+          status: "DRAFT",
+          discountInCents: input.discountInCents,
+          areAddressesSame: compareAddresses(
+            shippingAddress ?? undefined,
+            billingAddress ?? undefined,
+          ),
+          metadata: {
+            discountReason,
+            discountType,
+          },
+
+          totalInCents:
+            input.orderItems.reduce(
+              (acc, orderItem) =>
+                acc + orderItem.totalPriceInCents * orderItem.quantity,
+              0,
+            ) - input.discountInCents,
+        },
+      });
+
+      const timeline = await ctx.db.timelineEvent.create({
+        data: {
+          orderId: order.id,
+          title: "Order updated",
+          description: `Order updated by admin on ${new Date().toLocaleString()}`,
+          isEditable: false,
+        },
+      });
+
+      const orderShippingAddress =
+        shippingAddress?.formatted && shippingAddressId
+          ? await ctx.db.address.upsert({
+              where: { id: shippingAddressId },
+              update: {
+                ...shippingAddress,
+                shippingOrder: { connect: { id: order.id } },
+              },
+              create: {
+                ...shippingAddress,
+                shippingOrder: { connect: { id: order.id } },
+              },
+            })
+          : null;
+
+      const orderBillingAddress =
+        billingAddress?.formatted && billingAddressId
+          ? await ctx.db.address.upsert({
+              where: { id: billingAddressId },
+              update: {
+                ...billingAddress,
+                billingOrder: { connect: { id: order.id } },
+              },
+              create: {
+                ...billingAddress,
+                billingOrder: { connect: { id: order.id } },
+              },
+            })
+          : null;
+
+      return {
+        data: {
+          order,
+          orderShippingAddress,
+          orderBillingAddress,
+          timeline,
+        },
+        message: "Order updated",
+      };
+    }),
+
+  collectDraftPayment: adminProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input: orderId }) => {
+      const currentOrder = await ctx.db.order.findUnique({
+        where: { id: orderId },
+      });
+
+      if (!currentOrder) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+      }
+
+      if (currentOrder.status !== "DRAFT") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Order is not a draft",
+        });
+      }
+
+      const order = await ctx.db.order.update({
+        where: { id: orderId },
+        data: {
+          paymentStatus: "PAID",
+          status: "PENDING",
+          fulfillmentStatus: "IN_PROGRESS",
+          payments: {
+            create: {
+              amountInCents: currentOrder.totalInCents,
+              method: "OTHER",
+              status: "PAID",
+            },
+          },
+          fulfillment: { create: { status: "PENDING" } },
+        },
+      });
+      const timeline = await ctx.db.timelineEvent.create({
+        data: {
+          orderId: order.id,
+          title: "Order payment collected",
+          description: `Admin marked the order as PAID on ${new Date().toLocaleString()}`,
+          isEditable: false,
+        },
+      });
+      return {
+        data: { order, timeline },
+        message: "Order payment collected",
+      };
+    }),
+
+  addOrderTimelineEvent: adminProcedure
+    .input(
+      z.object({
+        orderId: z.string(),
+        title: z.string(),
+        description: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const timeline = await ctx.db.timelineEvent.create({
+        data: {
+          orderId: input.orderId,
+          title: input.title,
+          description: input.description,
+          isEditable: true,
+        },
+      });
+
+      return {
+        data: { timeline },
+        message: "Order timeline event added",
+      };
+    }),
+
+  updateOrderTimelineEvent: adminProcedure
+    .input(
+      z.object({
+        timelineEventId: z.string(),
+        title: z.string(),
+        description: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const timelineEvent = await ctx.db.timelineEvent.update({
+        where: { id: input.timelineEventId },
+        data: {
+          title: input.title,
+          description: input.description,
+        },
+      });
+
+      return {
+        data: { timelineEvent },
+        message: "Order timeline event updated",
+      };
+    }),
+
+  updateOrderCustomerInfo: adminProcedure
+    .input(updateOrderCustomerInfoValidator)
+    .mutation(async ({ ctx, input }) => {
+      const {
+        orderId,
+        shippingAddressId,
+        billingAddressId,
+        shippingAddress,
+        billingAddress,
+      } = input;
+
+      const orderShippingAddress =
+        shippingAddress?.formatted && shippingAddressId
+          ? await ctx.db.address.upsert({
+              where: { id: shippingAddressId },
+              update: {
+                ...shippingAddress,
+              },
+              create: {
+                ...shippingAddress,
+                shippingOrder: { connect: { id: orderId } },
+              },
+            })
+          : null;
+
+      const orderBillingAddress =
+        billingAddress?.formatted && billingAddressId
+          ? await ctx.db.address.upsert({
+              where: { id: billingAddressId },
+              update: {
+                ...billingAddress,
+              },
+              create: {
+                ...billingAddress,
+                billingOrder: { connect: { id: orderId } },
+              },
+            })
+          : null;
+
+      const compareAddresses = (
+        address1: Omit<Address, "id"> | undefined,
+        address2: Omit<Address, "id"> | undefined,
+      ) => {
+        if (!address1 || !address2) return false;
+        if (address1.formatted === address2.formatted) return true;
+
+        return (
+          address1.street === address2.street &&
+          address1.city === address2.city &&
+          address1.state === address2.state &&
+          address1.postalCode === address2.postalCode &&
+          address1.country === address2.country
+        );
+      };
+
+      const order = await ctx.db.order.update({
+        where: { id: input.orderId },
+        data: {
+          customerId: input.customerId,
+          email: input.email,
+          phone: input.phone,
+          areAddressesSame: compareAddresses(
+            shippingAddress ?? undefined,
+            billingAddress ?? undefined,
+          ),
+        },
+      });
+
+      return {
+        data: { order, orderShippingAddress, orderBillingAddress },
+        message: "Order customer updated",
       };
     }),
 
@@ -778,7 +1273,7 @@ export const ordersRouter = createTRPCRouter({
 
   update: adminProcedure
     .input(
-      productOrderFormValidator.extend({
+      draftOrderFormValidator.extend({
         storeId: z.string(),
         orderId: z.string(),
       }),

@@ -11,14 +11,12 @@ export type AttributeColumn = {
   id: string;
   storeSlug: string;
   name: string;
-  products: {
-    id: string;
-  }[];
+
   values: string[];
   createdAt: Date;
   updatedAt: Date;
   onDelete: (id: string) => void;
-  onDuplicate?: (id: string) => void;
+
   isLoading: boolean;
 };
 
@@ -34,11 +32,7 @@ export const attributeColumns: ColumnDef<AttributeColumn>[] = [
       />
     ),
   },
-  {
-    accessorKey: "products",
-    header: "Products",
-    cell: ({ row }) => <>{row.original.products?.length}</>,
-  },
+
   {
     accessorKey: "updatedAt",
     header: "Last updated at",
@@ -49,7 +43,6 @@ export const attributeColumns: ColumnDef<AttributeColumn>[] = [
     cell: ({ row }) => (
       <CellActions
         handleOnDelete={row.original.onDelete}
-        handleOnDuplicate={row.original.onDuplicate}
         id={row.original.id}
         copyText="Attribute ID"
         isLoading={row.original.isLoading}

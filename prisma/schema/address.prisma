@@ -12,8 +12,8 @@ model Address {
   country       String
 
   store           Store?  @relation("StoreToAddress")
-  billingOrder    Payment?
-  shippingOrder   Fulfillment? 
+  // billingOrder    Payment?
+  // shippingOrder   Fulfillment? 
 
   isDefault Boolean?
 
@@ -22,6 +22,12 @@ model Address {
 
   userId String?
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+
+  shippingOrder Order? @relation("OrderToShippingAddress")
+  billingOrder Order? @relation("OrderToBillingAddress")
+  package     Package?
+
 
   @@index([userId])
   @@index([customerId])

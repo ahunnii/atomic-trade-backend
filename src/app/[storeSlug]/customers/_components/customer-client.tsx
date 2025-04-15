@@ -28,9 +28,9 @@ export const CustomerClient = ({ storeId, storeSlug }: Props) => {
         ...customer,
         storeSlug,
         name: customer.firstName + " " + customer.lastName,
-        orderCount: customer.orders.length,
+        orderCount: customer._count.orders,
         totalSpentInCents: customer.orders.reduce(
-          (acc, order) => acc + order.total,
+          (acc, order) => acc + order.totalInCents,
           0,
         ),
         generalLocation:

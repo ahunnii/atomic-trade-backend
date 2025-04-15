@@ -274,7 +274,7 @@ export const storeRouter = createTRPCRouter({
           name: input.businessName,
           contactEmail: input.businessEmail,
           contactPhone: input.businessPhone,
-          logo: (input.image as string) ?? undefined,
+          logo: input.businessLogo ?? undefined,
           slug,
         },
       });

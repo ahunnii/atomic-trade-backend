@@ -150,6 +150,7 @@ export const AutoCompleteAddressFormField = <CurrentForm extends FieldValues>({
                   disabled={isLoading || !selectedAddress}
                   size="icon"
                   variant="outline"
+                  type="button"
                   className="shrink-0"
                 >
                   <Pencil className="size-4" />

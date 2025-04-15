@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
@@ -7,6 +8,7 @@ import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { WelcomeFormData } from "../_validators/schema";
+import type { ImageFormFieldRef } from "~/components/input/image-form-field";
 import { useFileUpload } from "~/lib/file-upload/hooks/use-file-upload";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
@@ -21,6 +23,9 @@ import { welcomeFormValidator } from "../_validators/schema";
 
 export const WelcomeForm = () => {
   const router = useRouter();
+
+  const businessLogoRef = useRef<ImageFormFieldRef>(null);
+
   const { uploadFile, isUploading } = useFileUpload({
     route: "misc",
     api: "/api/upload-misc",
@@ -42,7 +47,8 @@ export const WelcomeForm = () => {
         postalCode: "",
         country: "",
       },
-      logo: null,
+      logo: "",
+      tempLogo: null,
     },
   });
 
@@ -56,26 +62,17 @@ export const WelcomeForm = () => {
   });
 
   async function onSubmit(data: WelcomeFormData) {
-    let image_name: string | null = null;
+    const businessLogo = await businessLogoRef.current?.upload();
 
-    if (!data.logo) {
-      toastService.error("Please upload an image");
+    if (!businessLogo) {
+      toastService.error("Please upload a logo image");
       return;
     }
 
-    if (data.logo) {
-      image_name = await uploadFile(data.logo as File);
-
-      if (!image_name) {
-        toastService.error("Error uploading your logo");
-        return;
-      }
-    }
-
-    if (image_name) {
+    if (businessLogo) {
       createStore.mutate({
         ...data,
-        logo: image_name,
+        logo: businessLogo,
       });
     }
   }
@@ -104,6 +101,7 @@ export const WelcomeForm = () => {
               label="Store address"
               description="This is where the store is located. Used for billing and shipping purposes."
               defaultValue={{
+                id: "",
                 formatted: form.getValues("address")?.formatted ?? "",
                 street: form.getValues("address")?.street ?? "",
                 city: form.getValues("address")?.city ?? "",
@@ -115,7 +113,16 @@ export const WelcomeForm = () => {
                 form.setValue("address", address);
               }}
             />
-            <ImageFormField form={form} name="logo" label="Store logo" />{" "}
+            <ImageFormField
+              form={form}
+              name="logo"
+              label="Store logo"
+              route="misc"
+              apiUrl="/api/upload-misc"
+              ref={businessLogoRef}
+              tempName="tempLogo"
+              isRequired
+            />
           </div>
 
           <div className="mt-4 flex h-auto justify-end gap-2">
