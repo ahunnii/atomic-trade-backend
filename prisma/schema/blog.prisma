@@ -1,0 +1,22 @@
+enum BlogStatus {
+    DRAFT
+    PUBLISHED
+    SCHEDULED
+}
+
+model BlogPost {
+  id String @id @default(cuid())
+  title String
+  content Json
+  slug String @unique
+  status BlogStatus @default(DRAFT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  publishedAt DateTime?
+
+  storeId String
+  store Store @relation(fields: [storeId], references: [id])
+
+  tags String[]
+  cover String?
+}

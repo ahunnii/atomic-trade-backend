@@ -66,6 +66,8 @@ model Store {
   areItemsRefundable      Boolean @default(false)
   areItemsExchangeable    Boolean @default(false)
 
+  blogPosts BlogPost[]
+
 
 }
 

@@ -37,7 +37,7 @@ import { Label } from "../ui/label";
 export interface LargeMarkdownFormFieldRef {
   clear: () => void;
   render: (data: OutputData) => void;
-  save: () => void;
+  save: () => Promise<void>;
 }
 
 interface Props<CurrentForm extends FieldValues> {
@@ -63,7 +63,7 @@ const LargeMarkdownFormFieldComponent = <CurrentForm extends FieldValues>(
   } = props;
 
   const { uploadFile } = useFileUpload({
-    route: "post",
+    route: "image",
     api: "/api/upload-post",
   });
 

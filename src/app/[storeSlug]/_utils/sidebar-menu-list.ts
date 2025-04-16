@@ -4,6 +4,7 @@ import {
   BoxesIcon,
   FileJson,
   Files,
+  FileText,
   LayoutGrid,
   Settings,
   ShirtIcon,
@@ -105,6 +106,19 @@ export function getMenuList(pathname: string, slug: string): Group[] {
           label: "Collections",
           active: pathname.includes(`/${slug}/collections`),
           icon: BoxesIcon,
+          submenus: [],
+          restrictedAccess: [],
+        },
+      ],
+    },
+    {
+      groupLabel: "Content",
+      menus: [
+        {
+          href: `/${slug}/blog`,
+          label: "Blog",
+          active: pathname.includes(`/${slug}/blog`),
+          icon: FileText,
           submenus: [],
           restrictedAccess: [],
         },
