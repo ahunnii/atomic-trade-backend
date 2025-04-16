@@ -55,7 +55,7 @@ export const orderColumnData: ColumnDef<OrderColumn>[] = [
           <PrimaryCellLink
             id={row.original.id}
             name={`#${row.original.orderNumber}`}
-            link={`/${row.original.storeSlug}/orders/${row.original.id}/edit`}
+            link={`/${row.original.storeSlug}/orders/${row.original.id}`}
           />
         </div>
       );

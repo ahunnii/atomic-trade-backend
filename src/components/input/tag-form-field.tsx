@@ -18,8 +18,6 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 
-// import { type Tag, TagInput } from "~/components/ui/tags/tag-input";
-
 type Props<CurrentForm extends FieldValues> = {
   form: UseFormReturn<CurrentForm>;
   name: Path<CurrentForm>;
@@ -39,10 +37,6 @@ export const TagFormField = <CurrentForm extends FieldValues>({
   description,
   className,
 }: Props<CurrentForm>) => {
-  // const [tags, setTags] = useState<{ name: string; id: string }[]>(
-  //   (defaultTags as Tag[]) ?? [],
-  // );
-
   const [tags, setTags] = useState<Tag[]>(defaultTags ?? []);
   const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
   return (
@@ -53,19 +47,16 @@ export const TagFormField = <CurrentForm extends FieldValues>({
         <FormItem
           className={cn("col-span-full flex flex-col items-start", className)}
         >
-          <FormLabel className="text-left">{label ?? "Tags"}</FormLabel>
+          {label && <FormLabel className="text-left">{label}</FormLabel>}
           <FormControl>
             <TagInput
               {...field}
               disabled={disabled}
-              styleClasses={{
-                input: "h-9",
-              }}
-              placeholder="Enter a tag"
+              styleClasses={{ input: "h-9" }}
+              placeholder="Enter a tag, press enter to add"
               tags={tags}
               setTags={(newTags) => {
                 setTags(newTags);
-                // setValue("topics", newTags as [Tag, ...Tag[]]);
                 form.setValue(
                   name,
                   newTags as [Tag, ...Tag[]] as PathValue<
@@ -77,26 +68,6 @@ export const TagFormField = <CurrentForm extends FieldValues>({
               activeTagIndex={activeTagIndex}
               setActiveTagIndex={setActiveTagIndex}
             />
-            {/* ; */}
-            {/* <TagInput
-              {...field}
-              placeholder="Enter a tag name and press enter."
-              tags={tags}
-              disabled={disabled}
-              usePopoverForTags={false}
-              className="w-full"
-              setTags={(newTags) => {
-                setTags(newTags);
-                form.setValue(
-                  name,
-                  newTags as [Tag, ...Tag[]] as PathValue<
-                    CurrentForm,
-                    Path<CurrentForm>
-                  >,
-                );
-                field.onChange(newTags);
-              }}
-            /> */}
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}
 

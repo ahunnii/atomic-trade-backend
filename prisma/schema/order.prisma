@@ -112,6 +112,9 @@ model OrderItem {
   name              String        @default("")    //Name of the item (i.e. "T-Shirt")
   description       String?       @db.Text        //Description of the item (i.e. "Blue, Medium")
   quantity          Int           @default(1)
+  quantityFulfilled Int           @default(0)
+
+  isFulfilled Boolean @default(false)
 
   unitPriceInCents        Int
   discountInCents         Int
@@ -125,8 +128,9 @@ model OrderItem {
   requestItem   RequestItem? @relation(fields: [requestItemId], references: [id])
   requestItemId String?
 
-  package   Package? @relation(fields: [packageId], references: [id])
-  packageId String?
+  packageItems PackageItem[]
+
+
 
   saleId        String?
   sale          Sale?         @relation(fields: [saleId], references: [id])
@@ -137,7 +141,6 @@ model OrderItem {
   @@index([orderId])
   @@index([variantId])
   @@index([saleId])
-  @@index([packageId])
   @@index([requestItemId])
 }
 

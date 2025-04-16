@@ -29,8 +29,8 @@ export const OrderClient = ({ storeId, storeSlug }: Props) => {
       storeOrders?.data?.map((order) => ({
         ...order,
         storeSlug,
-        paymentStatus: order?.paidInFull ? "PAID" : "UNPAID",
-        fulfillmentStatus: order?.fulfillment?.status ?? "PENDING",
+        paymentStatus: order?.paymentStatus,
+        fulfillmentStatus: order?.fulfillmentStatus,
         deliveryMethod: order?.fulfillment?.type ?? "MANUAL",
         numberOfItems: order.orderItems.reduce(
           (acc, current) => current.quantity + acc,

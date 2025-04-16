@@ -73,10 +73,24 @@ model Package {
 
   costInCents Int?
 
-  items OrderItem[]
+  items PackageItem[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   shippedAt     DateTime?
   deliveredAt   DateTime?
+}
+
+model PackageItem {
+  id String @id @default(cuid())
+
+  packageId String
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  orderItemId String
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  quantity Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

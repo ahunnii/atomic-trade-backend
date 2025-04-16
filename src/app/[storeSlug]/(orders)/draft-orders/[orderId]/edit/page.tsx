@@ -11,10 +11,10 @@ type Props = {
 };
 
 export const metadata = {
-  title: "Edit Customer",
+  title: "Edit Draft Order",
 };
 
-export default async function EditCustomerPage({ params }: Props) {
+export default async function EditDraftOrderPage({ params }: Props) {
   const { storeSlug, orderId } = await params;
   const store = await api.store.getBySlug(storeSlug);
   const order = await api.order.get(orderId);

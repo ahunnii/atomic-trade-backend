@@ -11,7 +11,6 @@ import {
   CommandList,
 } from "~/components/ui/command";
 
-import { Button } from "../button";
 import { Skeleton } from "../skeleton";
 
 export type Option<Tmp> = Record<"value" | "label" | "sublabel", string> &
@@ -148,22 +147,24 @@ export const AutoComplete = <Tmp,>({
             {/* Create button is now always visible regardless of createIfNotFound value */}
 
             <CommandGroup forceMount>
-              <CommandItem
-                forceMount
-                className="my-2 w-full cursor-pointer"
-                value={"create new"}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
-                onSelect={() => {
-                  handleCreateOption();
-                }}
-                disabled={!createIfNotFound}
-              >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                {createButtonLabel ?? "Create new"}
-              </CommandItem>
+              {createIfNotFound && (
+                <CommandItem
+                  forceMount
+                  className="my-2 w-full cursor-pointer"
+                  value={"create new"}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onSelect={() => {
+                    handleCreateOption();
+                  }}
+                  disabled={!createIfNotFound}
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  {createButtonLabel ?? "Create new"}
+                </CommandItem>
+              )}
             </CommandGroup>
             {isLoading ? (
               <CommandPrimitive.Loading>

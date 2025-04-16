@@ -57,19 +57,31 @@ export const CustomerSection = ({ customers, order }: Props) => {
   const updateOrderCustomerInfo =
     api.order.updateOrderCustomerInfo.useMutation(defaultActions);
 
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    null,
-  );
+  const [selectedCustomer, setSelectedCustomer] =
+    useState<Partial<Customer> | null>({
+      id: order?.customerId ?? "",
+      firstName: order?.customer?.firstName ?? "",
+      lastName: order?.customer?.lastName ?? "",
+      email: order?.customer?.email ?? "",
+      phone: order?.customer?.phone ?? "",
+      addresses: order?.customer?.addresses ?? [],
+      _count: {
+        orders: order?.customer?._count?.orders ?? 0,
+      },
+    });
   const [shippingAddress, setShippingAddress] = useState(
     order?.shippingAddress,
   );
   const [billingAddress, setBillingAddress] = useState(order?.billingAddress);
   const [editingContact, setEditingContact] = useState(false);
 
+  console.log({
+    order,
+  });
   const customerForm = useForm<CustomerFormData>({
     defaultValues: {
-      email: order?.email ?? "",
-      phone: order?.phone ?? "",
+      email: !!order?.email ? order?.email : (order?.customer?.email ?? ""),
+      phone: !!order?.phone ? order?.phone : (order?.customer?.phone ?? ""),
       shippingAddress: order?.shippingAddress,
       billingAddress: order?.billingAddress,
       shippingAddressId: order?.shippingAddress?.id,
@@ -110,8 +122,8 @@ export const CustomerSection = ({ customers, order }: Props) => {
   const handleCancelContactEdit = () => {
     // Reset form to original values
     customerForm.reset({
-      email: order?.email ?? "",
-      phone: order?.phone ?? "",
+      email: !!order?.email ? order?.email : (order?.customer?.email ?? ""),
+      phone: !!order?.phone ? order?.phone : (order?.customer?.phone ?? ""),
 
       shippingAddress: order?.shippingAddress,
       billingAddress: order?.billingAddress,
@@ -239,10 +251,8 @@ export const CustomerSection = ({ customers, order }: Props) => {
                   </div>
                 ) : (
                   <div className="text-sm text-gray-600">
-                    <p>
-                      {customerForm.getValues().email || "No email address"}
-                    </p>
-                    <p>{customerForm.getValues().phone || "No phone number"}</p>
+                    <p>{customerForm.watch("email") ?? "No email address"}</p>
+                    <p>{customerForm.watch("phone") ?? "No phone number"}</p>
                   </div>
                 )}
               </div>
@@ -288,6 +298,8 @@ export const CustomerSection = ({ customers, order }: Props) => {
 
                 {(shippingAddress ?? order?.shippingAddress) ? (
                   <div className="text-sm text-gray-600">
+                    {" "}
+                    <p>{`${shippingAddress?.firstName} ${shippingAddress?.lastName}`}</p>
                     <p>
                       {shippingAddress?.formatted ??
                         order?.shippingAddress?.formatted}
@@ -335,6 +347,7 @@ export const CustomerSection = ({ customers, order }: Props) => {
 
                 {billingAddress?.formatted !== shippingAddress?.formatted ? (
                   <div className="text-sm text-gray-600">
+                    <p>{`${billingAddress?.firstName} ${billingAddress?.lastName}`}</p>
                     <p>
                       {billingAddress?.formatted ??
                         order?.billingAddress?.formatted}

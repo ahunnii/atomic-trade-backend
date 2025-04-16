@@ -182,6 +182,9 @@ export const draftOrderFormValidator = z.object({
     ordersCount: z.number().optional(),
   }),
 
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+
   shippingAddressId: z.string().optional(),
   billingAddressId: z.string().optional(),
   shippingAddress: addressValidator.optional(),

@@ -53,6 +53,7 @@ export const ProductSelectDialog = ({
       variant: Variation | null;
     }[]
   >(previousProducts ?? []);
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
@@ -127,6 +128,7 @@ export const ProductSelectDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className="sm:max-w-[600px]"
+        withoutClose
         onInteractOutside={() => {
           setSelectedProducts(previousProducts);
         }}
@@ -141,7 +143,12 @@ export const ProductSelectDialog = ({
                 : ""}
             </DialogTitle>
             <DialogClose asChild>
-              <Button variant="ghost" size="icon" type="button">
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={() => setSelectedProducts(previousProducts)}
+              >
                 <XIcon className="h-4 w-4" />
               </Button>
             </DialogClose>

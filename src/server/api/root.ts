@@ -23,6 +23,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 // import { salesRouter } from "./routers/sale";
 // import { shoppingBagRouter } from "./routers/shopping-bag";
 // import { timelineRouter } from "./routers/timeline";
+import { fulfillmentRouter } from "./routers/fulfillment";
 import { userRouter } from "./routers/users";
 
 /**
@@ -42,6 +43,7 @@ export const appRouter = createTRPCRouter({
   // invoices: invoiceRouter,
   attribute: attributeRouter,
   customer: customersRouter,
+  fulfillment: fulfillmentRouter,
   // showcaseItems: showcaseItemRouter,
 
   // shoppingBag: shoppingBagRouter,

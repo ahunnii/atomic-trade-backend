@@ -4,4 +4,11 @@ export type Email<EmailData> = {
   subject: string;
   data: EmailData;
   template: React.FC<EmailData>;
+  cc?: string;
+  userEmail?: string | undefined | null;
+};
+
+export type EmailResponse = {
+  status: "success" | "error";
+  message: string;
 };

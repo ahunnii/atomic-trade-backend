@@ -16,7 +16,7 @@ export default async function NewDraftOrderAdminPage({ params }: Props) {
   const { storeSlug } = await params;
   const store = await api.store.getBySlug(storeSlug);
   const products = await api.product.getAll({ storeId: store!.id });
-  const customers = await api.users.getAllCustomers(store!.id);
+  const customers = await api.customer.getAll(store!.id);
 
   if (!store) {
     return <div>Store not found</div>;

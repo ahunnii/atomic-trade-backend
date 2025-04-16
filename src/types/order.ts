@@ -57,8 +57,9 @@ export type OrderItem = {
   isTaxable: boolean;
   metadata?: Record<string, unknown>;
   requestItemId?: string;
-  packageId?: string;
-  package?: Package;
+  packageItems: PackageItem[];
+  isFulfilled: boolean;
+  quantityFulfilled: number;
   saleId?: string;
   variantId?: string;
   variant?:
@@ -219,7 +220,7 @@ export type Package = {
   trackingUrl?: string;
   labelUrl?: string;
   costInCents?: number;
-  items: OrderItem[];
+  items: PackageItem[];
   createdAt: Date;
   updatedAt: Date;
   shippedAt?: Date;
@@ -236,4 +237,15 @@ export type Fulfillment = {
   createdAt: Date;
   updatedAt: Date;
   metadata?: Record<string, unknown>;
+};
+
+export type PackageItem = {
+  id: string;
+  packageId: string;
+  package: Package;
+  orderItemId: string;
+  orderItem: OrderItem;
+  quantity: number;
+  createdAt: Date;
+  updatedAt: Date;
 };

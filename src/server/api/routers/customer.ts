@@ -18,11 +18,7 @@ export const customersRouter = createTRPCRouter({
         where: { storeId },
         include: {
           orders: true,
-          _count: {
-            select: {
-              orders: true,
-            },
-          },
+          _count: { select: { orders: true } },
           addresses: {
             where: { isDefault: true },
           },

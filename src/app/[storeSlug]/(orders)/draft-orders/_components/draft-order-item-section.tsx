@@ -67,29 +67,17 @@ export const DraftOrderItemSection = ({ form, loading, products }: Props) => {
   return (
     <Card className="space-y-6 px-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Products</h2>
-        <div className="flex gap-4">
+        <h2 className="text-lg font-semibold">Products</h2>
+        <div className="flex gap-2">
           <CustomOrderItemDialog
             form={form}
             loading={loading}
             append={append}
-          />
+          />{" "}
+          <Button onClick={() => setIsDialogOpen(true)} type="button">
+            Add Products
+          </Button>
         </div>
-      </div>
-
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            className="w-full pl-10"
-            placeholder="Search products"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <Button onClick={() => setIsDialogOpen(true)} type="button">
-          Browse
-        </Button>
       </div>
 
       <div className="rounded-lg border">

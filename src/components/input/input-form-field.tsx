@@ -23,6 +23,7 @@ type Props<CurrentForm extends FieldValues> = {
   inputId?: string;
   inputClassName?: string;
   name: Path<CurrentForm>;
+  defaultValue?: string;
 };
 
 export const InputFormField = <CurrentForm extends FieldValues>({
@@ -37,6 +38,7 @@ export const InputFormField = <CurrentForm extends FieldValues>({
   onKeyDown,
   inputId,
   inputClassName,
+  defaultValue,
 }: Props<CurrentForm>) => {
   return (
     <FormField
@@ -50,6 +52,7 @@ export const InputFormField = <CurrentForm extends FieldValues>({
               disabled={disabled}
               placeholder={placeholder ?? ""}
               {...field}
+              {...(defaultValue && { value: defaultValue })}
               onChange={(e) => {
                 if (!!onChange) {
                   onChange(e.target.value);

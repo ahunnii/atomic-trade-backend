@@ -237,6 +237,7 @@ export const OrderForm = ({
                 form={form}
                 customers={customers ?? []}
                 isLoading={isLoading}
+                storeSlug={storeSlug}
               />
               <Card className="px-6">
                 <div className="space-y-6">

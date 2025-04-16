@@ -8,6 +8,7 @@ import {
 // import { getTotals } from "~/utils/calculate-prices";
 import { z } from "zod";
 
+import { FulfillmentType, PackageStatus } from "@prisma/client";
 // import { FulfillmentStatus, ShipmentStatus } from "@prisma/client";
 // import { TRPCError } from "@trpc/server";
 
@@ -435,7 +436,7 @@ export const ordersRouter = createTRPCRouter({
         billingAddress: true,
         shippingAddress: true,
         payments: { include: { refunds: true } },
-        fulfillment: true,
+        fulfillment: { include: { packages: { include: { items: true } } } },
         timeline: { orderBy: { createdAt: "asc" } },
         customer: {
           include: {
@@ -528,6 +529,7 @@ export const ordersRouter = createTRPCRouter({
               }),
             },
           },
+
           discountInCents: input.discountInCents,
           subtotalInCents: input.orderItems.reduce(
             (acc, orderItem) =>
@@ -777,6 +779,18 @@ export const ordersRouter = createTRPCRouter({
         where: { id: orderId },
       });
 
+      const numberOfOrders = await ctx.db.order.count({
+        where: {
+          storeId: currentOrder?.storeId,
+          status: { not: "DRAFT" },
+        },
+      });
+
+      const storeSlug = await ctx.db.store.findUnique({
+        where: { id: currentOrder?.storeId },
+        select: { slug: true },
+      });
+
       if (!currentOrder) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
       }
@@ -794,6 +808,10 @@ export const ordersRouter = createTRPCRouter({
           paymentStatus: "PAID",
           status: "PENDING",
           fulfillmentStatus: "IN_PROGRESS",
+          orderNumber: generateOrderNumber(
+            numberOfOrders,
+            storeSlug?.slug ?? "",
+          ),
           payments: {
             create: {
               amountInCents: currentOrder.totalInCents,
@@ -936,6 +954,105 @@ export const ordersRouter = createTRPCRouter({
       return {
         data: { order, orderShippingAddress, orderBillingAddress },
         message: "Order customer updated",
+      };
+    }),
+
+  createPackages: adminProcedure
+    .input(
+      z.object({
+        orderId: z.string(),
+        type: z.nativeEnum(FulfillmentType),
+        notifyCustomer: z.boolean(),
+        packages: z.array(
+          z.object({
+            carrier: z.string().optional(),
+            trackingNumber: z.string().optional(),
+            status: z.nativeEnum(PackageStatus),
+            items: z.array(
+              z.object({
+                itemId: z.string(),
+                quantity: z.number(),
+              }),
+            ),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const order = await ctx.db.order.findUnique({
+        where: { id: input.orderId },
+        include: { fulfillment: true },
+      });
+
+      if (!order) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+      }
+
+      const fulfillment = order.fulfillment;
+
+      // Create fulfillment if it doesn't exist
+      if (!fulfillment) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Fulfillment not found",
+        });
+      }
+
+      // Create packages and package items
+      const createdPackages = await Promise.all(
+        input.packages.map(async (pkg) => {
+          const createdPackage = await ctx.db.package.create({
+            data: {
+              fulfillmentId: fulfillment.id,
+              carrier: pkg.carrier,
+              trackingNumber: pkg.trackingNumber,
+              status: pkg.status,
+              items: {
+                create: pkg.items.map((item) => ({
+                  orderItemId: item.itemId,
+                  quantity: item.quantity,
+                })),
+              },
+            },
+            include: {
+              items: true,
+            },
+          });
+
+          await Promise.all(
+            pkg.items.map(async (item) => {
+              const orderItem = await ctx.db.orderItem.findUnique({
+                where: { id: item.itemId },
+                select: {
+                  quantity: true,
+                  quantityFulfilled: true,
+                  isFulfilled: true,
+                },
+              });
+
+              if (!orderItem) return;
+
+              const newQuantityFulfilled =
+                (orderItem.quantityFulfilled || 0) + item.quantity;
+              const isFulfilled = newQuantityFulfilled >= orderItem.quantity;
+
+              await ctx.db.orderItem.update({
+                where: { id: item.itemId },
+                data: {
+                  quantityFulfilled: newQuantityFulfilled,
+                  isFulfilled: isFulfilled,
+                },
+              });
+            }),
+          );
+
+          return createdPackage;
+        }),
+      );
+
+      return {
+        data: { createdPackages },
+        message: "Packages created successfully",
       };
     }),
 

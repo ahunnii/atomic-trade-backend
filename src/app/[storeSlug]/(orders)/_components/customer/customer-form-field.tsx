@@ -1,8 +1,6 @@
 import type { UseFormReturn } from "react-hook-form";
 import { useMemo, useState } from "react";
 
-import { toastService } from "@dreamwalker-studios/toasts";
-
 import type { Option } from "~/components/ui/custom/autocomplete-input";
 import type { DraftOrderFormData } from "~/lib/validators/order";
 import type { Customer } from "~/types/customer";
@@ -61,15 +59,16 @@ export function CustomerFormField({
             <AutoComplete
               options={formattedCustomers ?? []}
               emptyMessage="No results."
-              placeholder="Find something"
+              placeholder="Search for a customer..."
               isLoading={false}
               onValueChange={(value) => {
-                console.log(value);
                 setValue(value);
 
                 const address =
                   value.data.addresses.find((address) => address.isDefault) ??
                   value.data.addresses[0];
+
+                console.log(value.data);
 
                 form.setValue("customer.firstName", value.data.firstName);
                 form.setValue("customer.lastName", value.data.lastName);
@@ -79,13 +78,19 @@ export function CustomerFormField({
                 form.setValue("billingAddress", address ?? undefined);
                 form.setValue("customer.id", value.data.id);
                 form.setValue("customer.addresses", value.data.addresses);
+                form.setValue(
+                  "customer.ordersCount",
+                  value.data._count?.orders ?? 0,
+                );
+                form.setValue("email", value.data.email);
+                form.setValue("phone", value.data.phone ?? undefined);
               }}
               value={value}
               disabled={disabled}
               createButtonLabel="Create new"
-              createIfNotFound={() => {
-                toastService.inform("Not currently available yet. ");
-              }}
+              // createIfNotFound={() => {
+              //   toastService.inform("Not currently available yet. ");
+              // }}
             />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}

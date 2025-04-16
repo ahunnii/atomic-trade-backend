@@ -16,7 +16,6 @@ import { draftOrderFormValidator } from "~/lib/validators/order";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +30,7 @@ import { Separator } from "~/components/ui/separator";
 import { TagFormField } from "~/components/input/tag-form-field";
 import { TextareaFormField } from "~/components/input/textarea-form-field";
 import { FormAdditionalOptionsButton } from "~/components/shared/form-additional-options-button";
+import { FormCardSection } from "~/components/shared/form-card-section";
 import { FormHeader } from "~/components/shared/form-header";
 import { LoadButton } from "~/components/shared/load-button";
 
@@ -110,7 +110,7 @@ export const DraftOrderForm = ({
           }
         )?.discountReason ?? "",
 
-      isTaxExempt: false,
+      isTaxExempt: initialData?.isTaxExempt ?? false,
       tags:
         initialData?.tags && initialData?.tags.length > 0
           ? (initialData?.tags?.map((tag) => ({
@@ -128,6 +128,12 @@ export const DraftOrderForm = ({
         addresses: initialData?.customer?.addresses ?? [],
         ordersCount: initialData?.customer?._count?.orders ?? 0,
       },
+      email: !!initialData?.email
+        ? initialData?.email
+        : (initialData?.customer?.email ?? ""),
+      phone: !!initialData?.phone
+        ? initialData?.phone
+        : (initialData?.customer?.phone ?? ""),
       shippingAddressId:
         initialData?.shippingAddressId ??
         initialData?.customer?.addresses?.find((address) => address.isDefault)
@@ -207,7 +213,7 @@ export const DraftOrderForm = ({
             </LoadButton>
           </FormHeader>
           <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
-            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-7">
+            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-8">
               <DraftOrderItemSection
                 form={form}
                 loading={isLoading}
@@ -223,18 +229,16 @@ export const DraftOrderForm = ({
 
                 {initialData ? (
                   <>
-                    <Button>Send Invoice</Button>
+                    {/* <Button>Send Invoice</Button> */}
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline">Collect Payment</Button>
+                        <Button>Collect Payment</Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56">
                         <DropdownMenuLabel>Payment Methods</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                          <DropdownMenuItem>Payment link</DropdownMenuItem>
-
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.preventDefault();
@@ -255,41 +259,29 @@ export const DraftOrderForm = ({
                 )}
               </DraftPaymentsSection>
             </div>
-            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-5">
+            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-4">
               <DraftCustomerSection
                 form={form}
                 customers={customers ?? []}
                 isLoading={isLoading}
+                storeSlug={storeSlug}
               />
-              <Card className="px-6">
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Notes</h3>
-                    <TextareaFormField
-                      form={form}
-                      name="notes"
-                      label="Notes (optional)"
-                      placeholder="Notes for the order"
-                    />
-                  </div>
-                </div>
-              </Card>
+              <FormCardSection title="Notes (optional)">
+                <TextareaFormField
+                  form={form}
+                  name="notes"
+                  placeholder="e.g. Order notes, special instructions, etc."
+                />
+              </FormCardSection>
 
-              <Card className="px-6">
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Tags</h3>
-
-                    <TagFormField
-                      form={form}
-                      defaultTags={form.getValues("tags") ?? []}
-                      name="tags"
-                      label="Tags (optional)"
-                      description="Tags are used to categorize your orders. You can add multiple tags to an order."
-                    />
-                  </div>
-                </div>
-              </Card>
+              <FormCardSection title="Tags (optional)">
+                <TagFormField
+                  form={form}
+                  defaultTags={form.getValues("tags") ?? []}
+                  name="tags"
+                  description="Tags are used to categorize your orders. You can add multiple tags to an order."
+                />
+              </FormCardSection>
             </div>
           </section>
         </form>

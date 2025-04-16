@@ -23,12 +23,18 @@ export const generateOrderNumber = (
   const date = new Date();
   const year = date.getFullYear().toString().slice(-2);
   const month = (date.getMonth() + 1).toString().padStart(2, "0"); // +1 because months are 0-indexed
+  // Generate a random ID and take a random 3-character substring
+  const fullId = createId();
+  const randomStartIndex = Math.floor(Math.random() * (fullId.length - 3));
+  const uniqueNumber = fullId
+    .substring(randomStartIndex, randomStartIndex + 3)
+    .toUpperCase();
 
   // Format the sequential order number with padding
   const sequentialNumber = (numberOfOrders + 1).toString().padStart(3, "0");
 
   // Combine all parts into the final order number format
-  return `${prefix}-${year}${month}-1${sequentialNumber}`;
+  return `${prefix}-${year}${month}-${uniqueNumber}${sequentialNumber}`;
 };
 
 export const generateDraftOrderNumber = (numberOfOrders: number) => {
@@ -37,11 +43,17 @@ export const generateDraftOrderNumber = (numberOfOrders: number) => {
   const year = date.getFullYear().toString().slice(-2);
   const month = (date.getMonth() + 1).toString().padStart(2, "0"); // +1 because months are 0-indexed
 
+  // Generate a random ID and take a random 3-character substring
+  const fullId = createId();
+  const randomStartIndex = Math.floor(Math.random() * (fullId.length - 3));
+  const uniqueNumber = fullId
+    .substring(randomStartIndex, randomStartIndex + 3)
+    .toUpperCase();
   // Format the sequential order number with padding
   const sequentialNumber = (numberOfOrders + 1).toString().padStart(3, "0");
 
   // Combine all parts into the final order number format
-  return `DRAFT-${year}${month}-${sequentialNumber}`;
+  return `D${year}${month}-${uniqueNumber}${sequentialNumber}`;
 };
 
 export const generateOrderAuthNumber = () => {

@@ -1,5 +1,5 @@
-import type { Email } from "./types";
+import type { Email, EmailResponse } from "./types";
 
 export interface EmailProcessor {
-  sendEmail<EmailData>(props: Email<EmailData>): Promise<unknown>;
+  sendEmail<EmailData>(props: Email<EmailData>): Promise<EmailResponse>;
 }

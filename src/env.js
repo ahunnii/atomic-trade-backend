@@ -1,5 +1,6 @@
-import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
+
+import { createEnv } from "@t3-oss/env-nextjs";
 
 export const env = createEnv({
   /**
@@ -24,6 +25,9 @@ export const env = createEnv({
 
     // Google Maps (Address Lookup)
     GOOGLE_MAPS_API_KEY: z.string(),
+
+    //Email
+    RESEND_API_KEY: z.string(),
   },
 
   /**
@@ -34,6 +38,7 @@ export const env = createEnv({
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
     NEXT_PUBLIC_STORAGE_URL: z.string(),
+    NEXT_PUBLIC_HOSTNAME: z.string(),
   },
 
   /**
@@ -50,6 +55,8 @@ export const env = createEnv({
     MINIO_SECRET_KEY: process.env.MINIO_SECRET_KEY,
     NEXT_PUBLIC_STORAGE_URL: process.env.NEXT_PUBLIC_STORAGE_URL,
     GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
+    NEXT_PUBLIC_HOSTNAME: process.env.NEXT_PUBLIC_HOSTNAME,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

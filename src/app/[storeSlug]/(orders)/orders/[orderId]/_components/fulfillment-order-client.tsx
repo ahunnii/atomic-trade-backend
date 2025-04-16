@@ -13,7 +13,7 @@ import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { TimelineSection } from "../../_components/timeline-section";
 import { CustomerSection } from "./customer-section";
-import { ItemsFulfilledSection } from "./items-fulfilled-section";
+import { FulfillmentSection } from "./fulfillment-section";
 import { PaymentsSection } from "./payments-section";
 
 type Props = {
@@ -25,7 +25,11 @@ type Props = {
   customers: Customer[];
 };
 
-export const SingleOrderClient = ({ order, storeSlug, customers }: Props) => {
+export const FulfillmentSingleOrderClient = ({
+  order,
+  storeSlug,
+  customers,
+}: Props) => {
   const router = useRouter();
 
   const { defaultActions } = useDefaultMutationActions({
@@ -33,30 +37,36 @@ export const SingleOrderClient = ({ order, storeSlug, customers }: Props) => {
   });
 
   return (
-    <ContentLayout title={`Order #${order?.orderNumber}`}>
-      <section className="form-body grid w-full grid-cols-1 gap-4 lg:grid-cols-12">
-        <div className="col-span-12 flex w-full flex-col space-y-4 lg:col-span-8">
-          <ItemsFulfilledSection
-            fulfillment={order?.fulfillment}
+    <ContentLayout
+      title={`Order #${order?.orderNumber}`}
+      breadcrumbs={[
+        {
+          label: "Orders",
+          href: `/${storeSlug}/orders`,
+        },
+        {
+          label: `Order #${order?.orderNumber}`,
+          href: `/${storeSlug}/orders/${order?.id}`,
+        },
+      ]}
+      currentPage="Fulfill Order"
+    >
+      <section className="form-body mt-4 grid w-full grid-cols-1 gap-4 lg:grid-cols-12">
+        <div className="col-span-12 flex w-full flex-col space-y-4 lg:col-span-7">
+          <FulfillmentSection
+            orderId={order?.id ?? ""}
             orderItems={order?.orderItems ?? []}
+            onFulfill={async (data) => {
+              console.log(data);
+            }}
+            initialFulfillment={order?.fulfillment}
             orderNumber={order?.orderNumber ?? ""}
             storeSlug={storeSlug}
-            orderId={order?.id ?? ""}
           />
 
-          <PaymentsSection
-            subtotalInCents={order?.subtotalInCents ?? 0}
-            taxInCents={order?.taxInCents ?? 0}
-            shippingInCents={order?.shippingInCents ?? 0}
-            discountInCents={order?.discountInCents ?? 0}
-            feeInCents={order?.feeInCents ?? 0}
-            totalInCents={order?.totalInCents ?? 0}
-            metadata={order?.metadata ?? {}}
-            paidInFull={order?.paymentStatus === OrderPaymentStatus.PAID}
-          />
-          <TimelineSection timeline={order?.timeline ?? []} />
+          {/* <TimelineSection timeline={order?.timeline ?? []} /> */}
         </div>
-        <div className="col-span-12 flex w-full flex-col space-y-4 lg:col-span-4">
+        <div className="col-span-12 flex w-full flex-col space-y-4 lg:col-span-5">
           <CustomerSection customers={customers ?? []} order={order} />
         </div>
       </section>
