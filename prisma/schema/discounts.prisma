@@ -105,3 +105,66 @@ enum CouponType {
   SALE_PRICE
   BUY_X_GET_Y
 }
+
+
+
+model Discount {
+  id String @id @default(cuid())
+  code String @unique
+  description String? @db.Text
+
+  type DiscountType @default(PRODUCT)
+
+  amountType  DiscountAmountType @default(PERCENTAGE) // Fixed? Assume in cents
+  amount      Int
+
+  countryCodes      String[]
+
+  variants          Variation[]
+  collections       Collection[]
+  customers         Customer[]
+
+  minimumPurchaseInCents  Int?
+  minimumQuantity         Int?
+
+  isAutomatic                   Boolean @default(false)
+
+  combineWithProductDiscounts   Boolean @default(false)
+  combineWithOrderDiscounts     Boolean @default(false)
+  combineWithShippingDiscounts  Boolean @default(false)
+  limitOncePerCustomer          Boolean @default(false)
+
+  applyToOrder                  Boolean @default(false)  //If True, apply just to order. If false, apply to collection / product ids (if any)
+  applyToShipping               Boolean @default(false)
+  applyToAllProducts            Boolean @default(false)
+  applyToAllCountries           Boolean @default(false)
+
+  maximumUses Int?
+  maximumAmountForShippingInCents Int?
+
+  uses Int? @default(0)
+
+  startsAt DateTime
+  endsAt DateTime?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  @@index([storeId])
+}
+
+enum DiscountAmountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum DiscountType {
+  PRODUCT
+  ORDER
+  SHIPPING
+}

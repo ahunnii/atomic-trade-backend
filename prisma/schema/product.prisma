@@ -56,16 +56,18 @@ model Variation {
   productId   String
   product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  name          String    @default("Default")
-  values        String[]
-  stock         Int       @default(1)
-  manageStock   Boolean   @default(false)
-  priceInCents  Int
-  sku           String?  @unique
-  imageUrl      String?
+  name                  String    @default("Default")
+  values                String[]
+  stock                 Int       @default(1)
+  manageStock           Boolean   @default(false)
+  priceInCents          Int
+  compareAtPriceInCents Int?
+  sku                   String?  @unique
+  imageUrl              String?
 
-  cartItems  CartItem[]
-  orderItems OrderItem[]
+  discounts             Discount[]
+  cartItems             CartItem[]
+  orderItems            OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

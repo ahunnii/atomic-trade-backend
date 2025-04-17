@@ -89,6 +89,7 @@ model Customer {
   invoices    Invoice[]
   orders      Order[]
   payments    Payment[]
+  discounts   Discount[]
 
   tags        String[]
   notes       String? @db.Text
