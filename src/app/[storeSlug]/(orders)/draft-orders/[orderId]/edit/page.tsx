@@ -1,5 +1,5 @@
-import type { Customer } from "~/types/customer";
 import type { Order } from "~/types/order";
+import type { ProductRequest } from "~/types/product-request";
 import { api } from "~/trpc/server";
 import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
@@ -18,12 +18,12 @@ export default async function EditDraftOrderPage({ params }: Props) {
   const { storeSlug, orderId } = await params;
   const store = await api.store.getBySlug(storeSlug);
   const order = await api.order.get(orderId);
-  //   const customer = order?.customerId
-  //     ? await api.customer.get(order.customerId)
-  //     : null;
-  // //   const defaultAddress = customer?.addresses[0] ?? null;
   const products = await api.product.getAll({ storeId: store!.id });
   const customers = await api.customer.getAll(store!.id);
+  const productRequest =
+    order && order.productRequests.length > 0
+      ? await api.productRequest.get(order.productRequests[0]!.id)
+      : null;
 
   if (!store) {
     return <DataFetchErrorMessage message="This store does not exist." />;
@@ -31,14 +31,14 @@ export default async function EditDraftOrderPage({ params }: Props) {
 
   return (
     <ContentLayout
-      title="Update Order"
+      title="Update Draft Order"
       breadcrumbs={[
         {
-          href: `/${storeSlug}/orders`,
-          label: "Orders",
+          href: `/${storeSlug}/draft-orders`,
+          label: "Draft Orders",
         },
       ]}
-      currentPage="Update Order"
+      currentPage="Update Draft Order"
     >
       <DraftOrderForm
         initialData={order as Order | null}
@@ -46,6 +46,7 @@ export default async function EditDraftOrderPage({ params }: Props) {
         storeSlug={storeSlug}
         customers={customers}
         products={products}
+        productRequest={productRequest as ProductRequest | null}
       />
     </ContentLayout>
   );

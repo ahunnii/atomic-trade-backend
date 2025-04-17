@@ -3,6 +3,7 @@ import type { Address } from "~/lib/validators/geocoding";
 
 export type Order = {
   id: string;
+  productRequestId?: string;
   storeId: string;
   orderItems: OrderItem[];
   timeline: TimelineEvent[];

@@ -198,6 +198,8 @@ export const draftOrderFormValidator = z.object({
 
   tags: z.array(z.object({ id: z.string(), text: z.string() })),
   notes: z.string().optional(),
+
+  productRequestId: z.string().optional().nullish(),
 });
 
 export const draftOrderValidator = z.object({

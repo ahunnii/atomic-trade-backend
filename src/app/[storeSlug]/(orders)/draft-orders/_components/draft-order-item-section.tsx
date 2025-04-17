@@ -3,20 +3,19 @@
 import type { UseFormReturn } from "react-hook-form";
 import { useState } from "react";
 import Image from "next/image";
-import { Search, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 
-import type { PreviousProduct } from "../../_components/order-items/product-select-dialog";
+import type { PreviousProduct } from "../../_validators/types";
 import type { DraftOrderFormData } from "~/lib/validators/order";
 import type { Product } from "~/types/product";
 import { env } from "~/env";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
 
-import { CustomOrderItemDialog } from "../../_components/order-items/custom-order-item-dialog";
-import { ProductSelectDialog } from "../../_components/order-items/product-select-dialog";
-import { DiscountDialog } from "../../_components/payments/discount-dialog";
+import { ApplyDiscountDialog } from "../../_components/apply-discount-dialog";
+import { CustomOrderItemDialog } from "../../_components/custom-order-item-dialog";
+import { ProductSelectDialog } from "../../_components/product-select-dialog";
 
 type Props = {
   form: UseFormReturn<DraftOrderFormData>;
@@ -31,7 +30,6 @@ export const DraftOrderItemSection = ({ form, loading, products }: Props) => {
   });
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const total = fields.reduce(
     (sum, field) => sum + (field.totalPriceInCents || 0) * field.quantity,
@@ -142,7 +140,7 @@ export const DraftOrderItemSection = ({ form, loading, products }: Props) => {
                         <div className="mt-1 text-sm font-medium text-gray-600">
                           {field.discountInCents > 0 ? (
                             <div className="flex items-center gap-0.5">
-                              <DiscountDialog
+                              <ApplyDiscountDialog
                                 form={form}
                                 loading={loading}
                                 orderItemIndex={index}
@@ -162,7 +160,7 @@ export const DraftOrderItemSection = ({ form, loading, products }: Props) => {
                                       100,
                                   )}
                                 </span>
-                              </DiscountDialog>
+                              </ApplyDiscountDialog>
 
                               <span className="ml-2 text-gray-400 line-through">
                                 {new Intl.NumberFormat("en-US", {
@@ -172,7 +170,7 @@ export const DraftOrderItemSection = ({ form, loading, products }: Props) => {
                               </span>
                             </div>
                           ) : (
-                            <DiscountDialog
+                            <ApplyDiscountDialog
                               form={form}
                               loading={loading}
                               orderItemIndex={index}
@@ -188,7 +186,7 @@ export const DraftOrderItemSection = ({ form, loading, products }: Props) => {
                                   currency: "USD",
                                 }).format((field.totalPriceInCents || 0) / 100)}
                               </span>
-                            </DiscountDialog>
+                            </ApplyDiscountDialog>
                           )}
                         </div>
                       </div>

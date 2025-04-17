@@ -17,9 +17,9 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { FormCardSection } from "~/components/shared/form-card-section";
 
-import { CustomerFormField } from "../../_components/customer/customer-form-field";
-import { EditAddressDialog } from "../../_components/customer/edit-address-dialog";
-import { EditContactDialog } from "../../_components/customer/edit-contact-dialog";
+import { CustomerFormField } from "../../_components/customer-form-field";
+import { EditAddressDialog } from "../../_components/edit-address-dialog";
+import { EditContactDialog } from "../../_components/edit-contact-dialog";
 
 type Props = {
   form: UseFormReturn<DraftOrderFormData>;

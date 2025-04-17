@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { XIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 
-import type { DiscountFormData } from "../../_validators/discount-dialog";
+import type { DiscountFormData } from "../_validators/schema";
 import type { DraftOrderFormData } from "~/lib/validators/order";
 import { Button } from "~/components/ui/button";
 import {
@@ -30,7 +30,7 @@ type Props = {
   initialData?: DiscountFormData;
 };
 
-export const DiscountDialog = ({
+export const ApplyDiscountDialog = ({
   form,
   loading,
   orderItemIndex,

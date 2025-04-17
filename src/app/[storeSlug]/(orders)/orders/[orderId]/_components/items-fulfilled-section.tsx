@@ -1,11 +1,5 @@
 import Link from "next/link";
-import {
-  Check,
-  Clock,
-  ExternalLink,
-  MoreHorizontal,
-  Package,
-} from "lucide-react";
+import { Check, Clock, MoreHorizontal, Package } from "lucide-react";
 
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
@@ -17,16 +11,8 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Separator } from "~/components/ui/separator";
 
 import { MarkAsFulfilledDialog } from "../../_components/mark-as-fulfilled-dialog";
 
@@ -76,7 +62,7 @@ export const ItemsFulfilledSection = ({
   orderId,
   fulfillment,
   orderItems,
-  orderNumber,
+
   storeSlug,
 }: Props) => {
   // Calculate fulfilled quantities for each order item
@@ -154,14 +140,6 @@ export const ItemsFulfilledSection = ({
       .toLowerCase()
       .replace(/\b\w/g, (l) => l.toUpperCase());
   };
-
-  // Count total items fulfilled
-  const totalItemsFulfilled =
-    fulfillment?.packages?.reduce((total, pkg) => {
-      return (
-        total + pkg.items.reduce((count, item) => count + item.quantity, 0)
-      );
-    }, 0) ?? 0;
 
   // Get list of unique items that have been fulfilled
   const fulfilledItems = new Map<string, FulfilledItemInfo>();

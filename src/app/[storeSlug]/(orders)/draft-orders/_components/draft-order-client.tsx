@@ -7,7 +7,7 @@ import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { AdvancedDataTable } from "~/components/shared/tables/advanced-data-table";
 
-import { CreateOrderDialog } from "../../_components/create/create-order-dialog";
+import { CreateOrderDialog } from "../../_components/create-order-dialog";
 import { ContentLayout } from "../../../_components/content-layout";
 import { draftOrderColumnData } from "./draft-order-column-data";
 

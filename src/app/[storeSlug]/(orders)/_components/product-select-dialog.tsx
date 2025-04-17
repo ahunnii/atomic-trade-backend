@@ -7,6 +7,7 @@ import { XIcon } from "lucide-react";
 
 import { createId } from "@paralleldrive/cuid2";
 
+import type { PreviousProduct } from "../_validators/types";
 import type { DraftOrderFormData } from "~/lib/validators/order";
 import type { Product, Variation } from "~/types/product";
 import { env } from "~/env";
@@ -23,12 +24,6 @@ import {
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
-export type PreviousProduct = {
-  variantId: string;
-  productId: string;
-  product: Product | null;
-  variant: Variation | null;
-};
 type Props = {
   products: Product[];
   previousProducts: PreviousProduct[];
@@ -302,14 +297,7 @@ export const ProductSelectDialog = ({
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleConfirm}
-            type="button"
-            // disabled={
-            //   selectedProducts.filter((p) => p.productId && p.variantId)
-            //     .length === 0
-            // }
-          >
+          <Button onClick={handleConfirm} type="button">
             Confirm
           </Button>
         </DialogFooter>

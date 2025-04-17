@@ -2,14 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import {
-  Loader2,
-  MessageSquare,
-  Pencil,
-  Send,
-  StoreIcon,
-  UserIcon,
-} from "lucide-react";
+import { Loader2, Send, StoreIcon, UserIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -33,7 +26,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "~/components/ui/dialog";
 import {
   Form,
@@ -47,10 +39,6 @@ import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
 import { Textarea } from "~/components/ui/textarea";
-
-type TimelineFormData = {
-  description: string;
-};
 
 const editTimelineSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -69,15 +57,8 @@ export const TimelineSection = ({
   const topRef = useRef<HTMLDivElement>(null);
   const params = useParams();
   const orderId = params.orderId as string;
-  const [selectedTimelineEvent, setSelectedTimelineEvent] =
-    useState<TimelineEvent | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const timelineForm = useForm<TimelineFormData>({
-    defaultValues: {
-      description: "",
-    },
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const editForm = useForm<EditTimelineFormData>({
     resolver: zodResolver(editTimelineSchema),
@@ -114,7 +95,6 @@ export const TimelineSection = ({
       color: event.isEditable ? "secondary" : "primary",
       isEditable: event.isEditable,
       onEdit: () => {
-        setSelectedTimelineEvent(event);
         editForm.reset({
           title: event.title,
           description: event.description ?? "",

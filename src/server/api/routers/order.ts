@@ -433,6 +433,7 @@ export const ordersRouter = createTRPCRouter({
       where: { id: orderId },
       include: {
         store: true,
+        productRequests: true,
         billingAddress: true,
         shippingAddress: true,
         payments: { include: { refunds: true } },
@@ -459,7 +460,10 @@ export const ordersRouter = createTRPCRouter({
     .input(
       draftOrderValidator
         .omit({ shippingAddressId: true, billingAddressId: true })
-        .extend({ storeId: z.string() }),
+        .extend({
+          storeId: z.string(),
+          productRequestId: z.string().optional(),
+        }),
     )
     .mutation(async ({ ctx, input }) => {
       const {
@@ -469,6 +473,7 @@ export const ordersRouter = createTRPCRouter({
         discountType,
         shippingAddress,
         billingAddress,
+        productRequestId,
         ...rest
       } = input;
 
@@ -505,6 +510,7 @@ export const ordersRouter = createTRPCRouter({
         data: {
           ...rest,
           customerId,
+
           orderItems: {
             createMany: {
               data: orderItems.map((orderItem) => {
@@ -556,6 +562,15 @@ export const ordersRouter = createTRPCRouter({
         },
       });
 
+      if (productRequestId) {
+        await ctx.db.productRequest.update({
+          where: { id: productRequestId },
+          data: {
+            orderId: order.id,
+            status: "ACCEPTED",
+          },
+        });
+      }
       const timeline = await ctx.db.timelineEvent.create({
         data: {
           orderId: order.id,
@@ -564,6 +579,17 @@ export const ordersRouter = createTRPCRouter({
           isEditable: false,
         },
       });
+
+      if (productRequestId) {
+        await ctx.db.timelineEvent.create({
+          data: {
+            orderId: order.id,
+            title: "Product Request Accepted",
+            description: `Product request ${productRequestId} accepted by admin on ${new Date().toLocaleString()}`,
+            isEditable: false,
+          },
+        });
+      }
 
       const orderShippingAddress = shippingAddress?.formatted
         ? await ctx.db.address.create({

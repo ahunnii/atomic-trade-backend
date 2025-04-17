@@ -90,6 +90,7 @@ model Customer {
   orders      Order[]
   payments    Payment[]
   discounts   Discount[]
+  productRequests ProductRequest[]
 
   tags        String[]
   notes       String? @db.Text

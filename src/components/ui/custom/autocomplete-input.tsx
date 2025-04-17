@@ -121,8 +121,8 @@ export const AutoComplete = <Tmp,>({
   }, [createIfNotFound]);
 
   return (
-    <CommandPrimitive onKeyDown={handleKeyDown}>
-      <div>
+    <CommandPrimitive onKeyDown={handleKeyDown} className="w-full">
+      <div className="">
         <CommandInput
           ref={inputRef}
           value={inputValue}
@@ -131,7 +131,7 @@ export const AutoComplete = <Tmp,>({
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
           disabled={disabled}
-          className="text-base"
+          className="w-full text-base"
         />
       </div>
 

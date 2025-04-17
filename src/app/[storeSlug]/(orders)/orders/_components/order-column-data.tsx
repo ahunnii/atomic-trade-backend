@@ -6,11 +6,7 @@ import type {
 } from "@prisma/client";
 import { type ColumnDef } from "@tanstack/react-table";
 
-import type {
-  FulfillmentStatus,
-  FulfillmentType,
-  PaymentStatus,
-} from "~/types/order";
+import type { FulfillmentType } from "~/types/order";
 import { CellActions } from "~/components/shared/cell-actions";
 import { PrimaryCellLink } from "~/components/shared/primary-cell-link";
 

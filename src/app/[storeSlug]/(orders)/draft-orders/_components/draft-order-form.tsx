@@ -12,6 +12,7 @@ import type { DraftOrderFormData } from "~/lib/validators/order";
 import type { Customer } from "~/types/customer";
 import type { Order } from "~/types/order";
 import type { PartialProduct, Product } from "~/types/product";
+import type { ProductRequest } from "~/types/product-request";
 import { draftOrderFormValidator } from "~/lib/validators/order";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
@@ -45,6 +46,7 @@ type Props = {
   customers: Customer[];
   storeId: string;
   storeSlug: string;
+  productRequest: ProductRequest | null;
 };
 
 export const DraftOrderForm = ({
@@ -53,6 +55,7 @@ export const DraftOrderForm = ({
   customers,
   storeId,
   storeSlug,
+  productRequest,
 }: Props) => {
   const router = useRouter();
   const { defaultActions } = useDefaultMutationActions({
@@ -120,33 +123,56 @@ export const DraftOrderForm = ({
           : [],
       notes: initialData?.notes ?? "",
       customer: {
-        id: initialData?.customerId ?? "",
-        firstName: initialData?.customer?.firstName ?? "",
-        lastName: initialData?.customer?.lastName ?? "",
-        email: initialData?.customer?.email ?? "",
-        phone: initialData?.customer?.phone ?? "",
-        addresses: initialData?.customer?.addresses ?? [],
-        ordersCount: initialData?.customer?._count?.orders ?? 0,
+        id: initialData?.customerId ?? productRequest?.customer?.id ?? "",
+        firstName:
+          initialData?.customer?.firstName ??
+          productRequest?.customer?.firstName ??
+          "",
+        lastName:
+          initialData?.customer?.lastName ??
+          productRequest?.customer?.lastName ??
+          "",
+        email:
+          initialData?.customer?.email ?? productRequest?.customer?.email ?? "",
+        phone:
+          initialData?.customer?.phone ?? productRequest?.customer?.phone ?? "",
+        addresses:
+          initialData?.customer?.addresses ??
+          productRequest?.customer?.addresses ??
+          [],
+        ordersCount:
+          initialData?.customer?._count?.orders ??
+          productRequest?.customer?._count?.orders ??
+          0,
       },
       email: !!initialData?.email
         ? initialData?.email
-        : (initialData?.customer?.email ?? ""),
+        : (initialData?.customer?.email ?? productRequest?.email ?? ""),
       phone: !!initialData?.phone
         ? initialData?.phone
-        : (initialData?.customer?.phone ?? ""),
+        : (initialData?.customer?.phone ?? productRequest?.phone ?? ""),
       shippingAddressId:
         initialData?.shippingAddressId ??
         initialData?.customer?.addresses?.find((address) => address.isDefault)
           ?.id ??
+        productRequest?.customer?.addresses?.find(
+          (address) => address.isDefault,
+        )?.id ??
         undefined,
       billingAddressId:
         initialData?.billingAddressId ??
         initialData?.customer?.addresses?.find((address) => address.isDefault)
           ?.id ??
+        productRequest?.customer?.addresses?.find(
+          (address) => address.isDefault,
+        )?.id ??
         undefined,
       shippingAddress:
         initialData?.shippingAddress ??
         initialData?.customer?.addresses?.find(
+          (address) => address.isDefault,
+        ) ??
+        productRequest?.customer?.addresses?.find(
           (address) => address.isDefault,
         ) ??
         undefined,
@@ -155,7 +181,12 @@ export const DraftOrderForm = ({
         initialData?.customer?.addresses?.find(
           (address) => address.isDefault,
         ) ??
+        productRequest?.customer?.addresses?.find(
+          (address) => address.isDefault,
+        ) ??
         undefined,
+
+      productRequestId: productRequest?.id ?? undefined,
     },
   });
 
@@ -181,6 +212,7 @@ export const DraftOrderForm = ({
           0,
         ),
         tags: data.tags.map((tag) => tag.text),
+        productRequestId: data.productRequestId ?? undefined,
       });
   };
   const onDelete = () =>
@@ -205,7 +237,7 @@ export const DraftOrderForm = ({
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title={title} link={`/${storeSlug}/orders`}>
+          <FormHeader title={title} link={`/${storeSlug}/draft-orders`}>
             {initialData && <FormAdditionalOptionsButton onDelete={onDelete} />}
 
             <LoadButton type="submit" isLoading={isLoading}>
@@ -214,6 +246,86 @@ export const DraftOrderForm = ({
           </FormHeader>
           <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-8">
+              {productRequest && (
+                <FormCardSection title="Product Request">
+                  <div className="space-y-4">
+                    {productRequest.quotes &&
+                      !productRequest?.quotes.some(
+                        (quote) => quote.status === "ACCEPTED",
+                      ) && (
+                        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                          No quote has been accepted for this request. The price
+                          hasn&apos;t been confirmed by either party.
+                        </div>
+                      )}
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">
+                          Contact Information
+                        </h3>
+                        <div className="text-sm">
+                          <p>
+                            {productRequest.firstName} {productRequest.lastName}
+                          </p>
+                          <p>{productRequest.email}</p>
+                          {productRequest.phone && (
+                            <p>{productRequest.phone}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">Request Details</h3>
+                        <p className="text-sm">{productRequest.details}</p>
+                      </div>
+                    </div>
+
+                    {productRequest?.quotes &&
+                      productRequest?.quotes.length > 0 && (
+                        <div className="space-y-2">
+                          <h3 className="text-sm font-medium">Quotes</h3>
+                          <div className="space-y-2">
+                            {productRequest?.quotes.map((quote, index) => (
+                              <div
+                                key={index}
+                                className={`flex items-center justify-between rounded-md p-3 text-sm ${
+                                  quote.status === "ACCEPTED"
+                                    ? "border border-green-200 bg-green-50"
+                                    : "border border-gray-200 bg-gray-50"
+                                }`}
+                              >
+                                <div>
+                                  <span className="font-medium">
+                                    ${(quote.amountInCents / 100).toFixed(2)}
+                                  </span>
+                                  <span
+                                    className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
+                                      quote.status === "PENDING"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : quote.status === "ACCEPTED"
+                                          ? "bg-green-100 text-green-800"
+                                          : quote.status === "REJECTED"
+                                            ? "bg-red-100 text-red-800"
+                                            : ""
+                                    }`}
+                                  >
+                                    {quote.status}
+                                  </span>
+                                </div>
+                                {quote.message && (
+                                  <div className="max-w-[200px] truncate text-xs text-gray-500">
+                                    {quote.message}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                  </div>
+                </FormCardSection>
+              )}
               <DraftOrderItemSection
                 form={form}
                 loading={isLoading}

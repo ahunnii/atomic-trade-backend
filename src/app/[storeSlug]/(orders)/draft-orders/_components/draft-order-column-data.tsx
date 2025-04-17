@@ -51,7 +51,7 @@ export const draftOrderColumnData: ColumnDef<DraftOrderColumn>[] = [
           <PrimaryCellLink
             id={row.original.id}
             name={`#${row.original.orderNumber}`}
-            link={`/${row.original.storeSlug}/orders/${row.original.id}/edit`}
+            link={`/${row.original.storeSlug}/draft-orders/${row.original.id}/edit`}
           />
         </div>
       );

@@ -22,14 +22,12 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Form } from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import { AutoCompleteAddressFormField } from "~/components/input/autocomplete-address-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
 import { LoadButton } from "~/components/shared/load-button";
 
-import { CustomerFormField } from "../../../_components/customer/customer-form-field";
+import { CustomerFormField } from "../../../_components/customer-form-field";
 
 type CustomerFormData = {
   email: string;
@@ -75,9 +73,6 @@ export const CustomerSection = ({ customers, order }: Props) => {
   const [billingAddress, setBillingAddress] = useState(order?.billingAddress);
   const [editingContact, setEditingContact] = useState(false);
 
-  console.log({
-    order,
-  });
   const customerForm = useForm<CustomerFormData>({
     defaultValues: {
       email: !!order?.email ? order?.email : (order?.customer?.email ?? ""),

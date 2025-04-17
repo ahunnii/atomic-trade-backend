@@ -1,3 +1,4 @@
+import type { ProductRequest } from "~/types/product-request";
 import { api } from "~/trpc/server";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
@@ -5,6 +6,7 @@ import { DraftOrderForm } from "../_components/draft-order-form";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;
+  searchParams: Promise<{ productRequestId?: string }>;
 };
 
 export const metadata = {
@@ -12,11 +14,18 @@ export const metadata = {
   description: "Create a new draft order",
 };
 
-export default async function NewDraftOrderAdminPage({ params }: Props) {
+export default async function NewDraftOrderAdminPage({
+  params,
+  searchParams,
+}: Props) {
   const { storeSlug } = await params;
+  const { productRequestId } = await searchParams;
   const store = await api.store.getBySlug(storeSlug);
   const products = await api.product.getAll({ storeId: store!.id });
   const customers = await api.customer.getAll(store!.id);
+  const productRequest = productRequestId
+    ? await api.productRequest.get(productRequestId)
+    : null;
 
   if (!store) {
     return <div>Store not found</div>;
@@ -27,8 +36,8 @@ export default async function NewDraftOrderAdminPage({ params }: Props) {
       title="New Draft Order"
       breadcrumbs={[
         {
-          href: `/${storeSlug}/orders`,
-          label: "Orders",
+          href: `/${storeSlug}/draft-orders`,
+          label: "Draft Orders",
         },
       ]}
       currentPage="New Draft Order"
@@ -39,6 +48,7 @@ export default async function NewDraftOrderAdminPage({ params }: Props) {
         customers={customers ?? []}
         storeId={store.id}
         storeSlug={storeSlug}
+        productRequest={productRequest as ProductRequest | null}
       />
     </ContentLayout>
   );

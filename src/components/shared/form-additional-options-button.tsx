@@ -22,6 +22,8 @@ type Props = {
   onDuplicate?: () => void;
   onArchive?: () => void;
   onDelete: () => void;
+  onMisc?: () => void;
+  onMiscLabel?: string;
 };
 
 export const FormAdditionalOptionsButton = (props: Props) => {
@@ -40,6 +42,17 @@ export const FormAdditionalOptionsButton = (props: Props) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          {props?.onMisc && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={props.onMisc}
+                className="cursor-pointer"
+              >
+                <span>{props.onMiscLabel}</span>
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             {props?.onDuplicate && (

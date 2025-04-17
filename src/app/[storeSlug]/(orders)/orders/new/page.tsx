@@ -1,7 +1,7 @@
 import { api } from "~/trpc/server";
 
+import { OrderForm } from "../_components/order-form";
 import { ContentLayout } from "../../../_components/content-layout";
-import { DraftOrderForm } from "../../draft-orders/_components/draft-order-form";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;
@@ -28,7 +28,7 @@ export default async function NewOrderAdminPage({ params }: Props) {
       ]}
       currentPage="New Order"
     >
-      <DraftOrderForm
+      <OrderForm
         initialData={null}
         products={products ?? []}
         customers={customers ?? []}

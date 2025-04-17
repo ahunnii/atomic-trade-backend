@@ -1,14 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
-import { useRouter } from "next/navigation";
-
 import type { Customer } from "~/types/customer";
 import type { Order } from "~/types/order";
 import { OrderPaymentStatus } from "~/types/order";
-import { api } from "~/trpc/react";
-import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
-import { AdvancedDataTable } from "~/components/shared/tables/advanced-data-table";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { TimelineSection } from "../../_components/timeline-section";
@@ -26,12 +20,6 @@ type Props = {
 };
 
 export const SingleOrderClient = ({ order, storeSlug, customers }: Props) => {
-  const router = useRouter();
-
-  const { defaultActions } = useDefaultMutationActions({
-    invalidateEntities: ["order"],
-  });
-
   return (
     <ContentLayout title={`Order #${order?.orderNumber}`}>
       <section className="form-body grid w-full grid-cols-1 gap-4 lg:grid-cols-12">

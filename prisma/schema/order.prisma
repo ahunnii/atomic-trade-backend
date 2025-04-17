@@ -88,6 +88,9 @@ model Order {
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id])
 
+ 
+  productRequests       ProductRequest[]
+
   shippingAddressId     String? @unique
   shippingAddress       Address? @relation("OrderToShippingAddress", fields: [shippingAddressId], references: [id], onDelete: SetNull)
 

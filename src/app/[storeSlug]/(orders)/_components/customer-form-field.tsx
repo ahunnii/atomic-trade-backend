@@ -68,8 +68,6 @@ export function CustomerFormField({
                   value.data.addresses.find((address) => address.isDefault) ??
                   value.data.addresses[0];
 
-                console.log(value.data);
-
                 form.setValue("customer.firstName", value.data.firstName);
                 form.setValue("customer.lastName", value.data.lastName);
                 form.setValue("customer.email", value.data.email);

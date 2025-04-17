@@ -8,7 +8,7 @@ import { Card } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { MinimalSwitchFormField } from "~/components/input/minimal-switch-form-field";
 
-import { DiscountDialog } from "../../_components/payments/discount-dialog";
+import { ApplyDiscountDialog } from "../../_components/apply-discount-dialog";
 
 type Props = {
   form: UseFormReturn<DraftOrderFormData>;
@@ -49,7 +49,7 @@ export const DraftPaymentsSection = ({ form, loading, children }: Props) => {
         </div>
 
         <div className="flex justify-between">
-          <DiscountDialog
+          <ApplyDiscountDialog
             form={form}
             loading={loading}
             initialData={{
@@ -61,7 +61,7 @@ export const DraftPaymentsSection = ({ form, loading, children }: Props) => {
             <span className="cursor-pointer text-blue-600 hover:text-blue-700 hover:underline">
               {discountValue > 0 ? "Edit" : "Add"} discount
             </span>
-          </DiscountDialog>
+          </ApplyDiscountDialog>
           <span className="font-medium">
             {form.watch("discountInCents") > 0 && "-"}
             {new Intl.NumberFormat("en-US", {

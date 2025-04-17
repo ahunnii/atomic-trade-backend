@@ -1,24 +1,8 @@
 "use client";
 
-import type { UseFormReturn } from "react-hook-form";
-import { RefreshCcw } from "lucide-react";
-
-import type { DraftOrderFormData } from "~/lib/validators/order";
-import type { Product } from "~/types/product";
 import { cn } from "~/lib/utils";
-import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { Separator } from "~/components/ui/separator";
-import { MinimalSwitchFormField } from "~/components/input/minimal-switch-form-field";
 
 type Props = {
   subtotalInCents: number;

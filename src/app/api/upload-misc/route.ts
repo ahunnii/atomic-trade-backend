@@ -7,5 +7,10 @@ export const { POST } = createUploadRouteHandler({
   bucketName: "misc",
   routes: {
     misc: route({ fileTypes: ["image/*"] }),
+    images: route({
+      fileTypes: ["image/*"],
+      multipleFiles: true,
+      maxFiles: 8,
+    }),
   },
 });

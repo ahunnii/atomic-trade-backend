@@ -96,6 +96,14 @@ export function getMenuList(pathname: string, slug: string): Group[] {
           submenus: [],
           restrictedAccess: [],
         },
+        {
+          href: `/${slug}/requests`,
+          label: "Product Requests",
+          active: pathname.includes(`/${slug}/requests`),
+          icon: FileText,
+          submenus: [],
+          restrictedAccess: [],
+        },
       ],
     },
 

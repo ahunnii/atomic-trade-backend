@@ -63,15 +63,6 @@ export const PackageStatus = {
   ARRIVED_AT_FACILITY: "ARRIVED_AT_FACILITY",
 } as const;
 
-interface PackageFormData {
-  carrier?: string;
-  trackingNumber?: string;
-  items: Array<{
-    itemId: string;
-    quantity: number;
-  }>;
-}
-
 const packageSchema = z.object({
   carrier: z.string().optional(),
   trackingNumber: z.string().optional(),
@@ -132,8 +123,7 @@ export const FulfillmentSection = ({
   orderId,
   orderItems,
   storeSlug,
-  shippingAddressId,
-  onFulfill,
+
   initialFulfillment,
   orderNumber,
 }: Props) => {
@@ -143,8 +133,6 @@ export const FulfillmentSection = ({
     invalidateEntities: ["order"],
     redirectPath: `/${storeSlug}/orders/${orderId}/`,
   });
-
-  console.log(initialFulfillment);
 
   const form = useForm<FulfillmentFormData>({
     resolver: zodResolver(fulfillmentSchema),

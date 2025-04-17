@@ -1,4 +1,4 @@
-import type { Path, UseFormReturn } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 
 import type { DraftOrderFormData } from "~/lib/validators/order";
 import {
@@ -17,9 +17,6 @@ type Props = {
 };
 
 export const EditContactDialog = ({ form, children }: Props) => {
-  const email = form.getValues("email");
-  const phone = form.getValues("phone");
-
   return (
     <Dialog>
       <DialogTrigger asChild>
