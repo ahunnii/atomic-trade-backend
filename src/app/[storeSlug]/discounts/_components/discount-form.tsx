@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 
 import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { DiscountAmountType, DiscountType } from "@prisma/client";
 
 import type { ImageFormFieldRef } from "~/components/input/image-form-field";
 import type { CollectionFormData } from "~/lib/validators/collection";
@@ -13,7 +14,6 @@ import type { DiscountFormData } from "~/lib/validators/discount";
 import type { Collection } from "~/types/collection";
 import type { Discount } from "~/types/discount";
 import type { Product } from "~/types/product";
-import { DiscountAmountType, DiscountType } from "~/types/discount";
 import { env } from "~/env";
 import { collectionFormValidator } from "~/lib/validators/collection";
 import { discountFormValidator } from "~/lib/validators/discount";
@@ -221,7 +221,7 @@ export const DiscountForm = ({
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title={title} link={`/${storeSlug}/collections`}>
+          <FormHeader title={title} link={`/${storeSlug}/discounts`}>
             {initialData && (
               <FormAdditionalOptionsButton
                 onDelete={onDelete}

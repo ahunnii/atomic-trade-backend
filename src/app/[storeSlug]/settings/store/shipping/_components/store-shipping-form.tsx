@@ -25,8 +25,8 @@ import {
 } from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
 import { AutoCompleteAddressFormField } from "~/components/input/autocomplete-address-form-field";
+import { CurrencyFormField } from "~/components/input/currency-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
-import { NumericFormField } from "~/components/input/numeric-form-field";
 import { SingleCheckboxFormField } from "~/components/input/single-checkbox-form-field";
 import { SwitchFormField } from "~/components/input/switch-form-field";
 import { TextareaFormField } from "~/components/input/textarea-form-field";
@@ -216,12 +216,11 @@ export const StoreShippingForm = ({ initialData, slug }: Props) => {
                 <div className={cn("flex flex-col space-y-8")}>
                   {form.watch("hasFlatRate") && (
                     <>
-                      <NumericFormField
+                      <CurrencyFormField
                         form={form}
                         name="flatRateAmount"
                         label="Flat Rate Amount"
                         placeholder="e.g. 25"
-                        prependSpan="$"
                         className="w-[350px]"
                       />
 
@@ -233,12 +232,11 @@ export const StoreShippingForm = ({ initialData, slug }: Props) => {
                         />
 
                         {form.watch("hasFreeShipping") && (
-                          <NumericFormField
+                          <CurrencyFormField
                             form={form}
                             name="minFreeShipping"
                             label="Free Shipping Threshold"
                             placeholder="e.g. 25"
-                            prependSpan="$"
                             className="w-[350px]"
                             description="What is the minimum amount for a user to qualify for free shipping? Defaults to 0."
                           />

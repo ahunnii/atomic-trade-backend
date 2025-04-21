@@ -74,6 +74,7 @@ export const CustomerForm = ({
             })) as Tag[])
           : [],
       notes: initialData?.notes ?? "",
+      metadata: initialData?.metadata ?? {},
     },
   });
 
@@ -224,7 +225,35 @@ export const CustomerForm = ({
                 />
               </FormSection>
             </div>
-            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-5"></div>
+            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-5">
+              <FormSection
+                title="Metadata"
+                description="Additional information about the customer"
+                bodyClassName="space-y-4"
+              >
+                {initialData?.metadata &&
+                Object.keys(initialData.metadata).length > 0 ? (
+                  <div className="rounded-md border p-4">
+                    <div className="space-y-2">
+                      {Object.entries(
+                        initialData.metadata as Record<string, string>,
+                      ).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-muted-foreground text-sm font-medium">
+                            {key}:
+                          </span>
+                          <span className="text-sm">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground text-sm">
+                    No metadata available for this customer.
+                  </div>
+                )}
+              </FormSection>
+            </div>
           </section>
         </form>
       </Form>

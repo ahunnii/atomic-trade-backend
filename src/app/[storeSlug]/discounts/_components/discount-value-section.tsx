@@ -1,11 +1,11 @@
 import type { UseFormReturn } from "react-hook-form";
 
 import { init } from "@paralleldrive/cuid2";
+import { DiscountAmountType, DiscountType } from "@prisma/client";
 
 import type { DiscountFormData } from "~/lib/validators/discount";
 import type { Collection } from "~/types/collection";
 import type { Product } from "~/types/product";
-import { DiscountAmountType, DiscountType } from "~/types/discount";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";

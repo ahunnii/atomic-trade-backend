@@ -16,6 +16,7 @@ export type Variation = {
   values: string[];
   stock: number;
   priceInCents: number;
+  compareAtPriceInCents: number | null;
   manageStock: boolean;
   sku: string | null;
   imageUrl: string | null;

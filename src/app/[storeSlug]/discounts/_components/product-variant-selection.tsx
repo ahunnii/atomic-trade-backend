@@ -280,9 +280,25 @@ export const ProductVariantSelection = ({
                               SKU: {variant.sku ?? "N/A"}
                             </p>
                           </div>
-                          <p className="text-muted-foreground ml-auto text-sm">
-                            ${(variant.priceInCents / 100).toFixed(2)}
-                          </p>
+                          <div className="ml-auto text-sm">
+                            {variant.compareAtPriceInCents ? (
+                              <>
+                                <p className="text-muted-foreground line-through">
+                                  $
+                                  {(
+                                    variant.compareAtPriceInCents / 100
+                                  ).toFixed(2)}
+                                </p>
+                                <p className="text-muted-foreground">
+                                  ${(variant.priceInCents / 100).toFixed(2)}
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-muted-foreground">
+                                ${(variant.priceInCents / 100).toFixed(2)}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>

@@ -14,6 +14,7 @@ export const customerValidator = z.object({
   address: addressValidator,
   tags: z.array(z.object({ id: z.string(), text: z.string() })),
   notes: z.string().optional(),
+  metadata: z.any(),
 });
 
 export type CustomerFormData = z.infer<typeof customerValidator>;

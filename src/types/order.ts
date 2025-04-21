@@ -1,3 +1,5 @@
+import type { JsonValue } from "next-auth/adapters";
+
 import type { Customer } from "./customer";
 import type { Address } from "~/lib/validators/geocoding";
 
@@ -49,7 +51,7 @@ export type OrderItem = {
   orderId: string;
   order: Order;
   name: string;
-  description?: string;
+  description?: string | null;
   quantity: number;
   unitPriceInCents: number;
   discountInCents: number;

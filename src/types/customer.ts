@@ -15,4 +15,5 @@ export type Customer = {
   _count?: {
     orders?: number | null;
   } | null;
+  metadata?: Record<string, unknown>;
 };

@@ -1,23 +1,25 @@
+import type { DiscountAmountType, DiscountType } from "@prisma/client";
+
 import type { Collection } from "./collection";
 import type { Customer } from "./customer";
 import type { Variation } from "./product";
 
-export enum DiscountAmountType {
-  PERCENTAGE = "PERCENTAGE",
-  FIXED = "FIXED",
-}
+// export enum DiscountAmountType {
+//   PERCENTAGE = "PERCENTAGE",
+//   FIXED = "FIXED",
+// }
 
-export enum DiscountType {
-  PRODUCT = "PRODUCT",
-  ORDER = "ORDER",
-  SHIPPING = "SHIPPING",
-}
+// export enum DiscountType {
+//   PRODUCT = "PRODUCT",
+//   ORDER = "ORDER",
+//   SHIPPING = "SHIPPING",
+// }
 
 export type Discount = {
   id: string;
   code: string;
-  description?: string;
-  uses?: number;
+  description?: string | null;
+  uses?: number | null;
   type: DiscountType;
   applyToAllCountries: boolean;
   applyToAllProducts: boolean;
@@ -36,10 +38,10 @@ export type Discount = {
   limitOncePerCustomer: boolean;
   applyToOrder: boolean;
   applyToShipping: boolean;
-  maximumUses?: number;
-  maximumAmountForShippingInCents?: number;
+  maximumUses?: number | null;
+  maximumAmountForShippingInCents?: number | null;
   startsAt: Date;
-  endsAt?: Date;
+  endsAt?: Date | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { DiscountAmountType, DiscountType } from "~/types/discount";
+import { DiscountAmountType, DiscountType } from "@prisma/client";
 
 export const discountFormValidator = z.object({
   code: z.string(),

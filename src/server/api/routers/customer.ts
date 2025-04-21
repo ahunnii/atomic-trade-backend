@@ -63,7 +63,7 @@ export const customersRouter = createTRPCRouter({
 
   create: adminProcedure
     .input(
-      customerValidator.extend({
+      customerValidator.omit({ metadata: true }).extend({
         storeId: z.string(),
       }),
     )
@@ -91,7 +91,7 @@ export const customersRouter = createTRPCRouter({
 
   update: adminProcedure
     .input(
-      customerValidator.extend({
+      customerValidator.omit({ metadata: true }).extend({
         customerId: z.string(),
       }),
     )
