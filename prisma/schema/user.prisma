@@ -42,7 +42,7 @@ model User {
   sessions      Session[]
   role          Role             @default(USER)
   // orders        Order[]          @relation("UserToOrder")
-  cart          Cart[]           @relation("UserToCart")
+ 
   reviews       Review[]
   addresses         Address[]
   customerProfiles  Customer[]
@@ -78,6 +78,7 @@ model Customer {
   storeId     String
   user        User?     @relation( fields: [userId], references: [id])
   store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  cart        Cart?
 
   defaultAddressId String?
 

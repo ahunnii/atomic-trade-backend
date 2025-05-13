@@ -1,0 +1,23 @@
+model SitePage {
+  id String @id @default(cuid())
+  title String
+  content Json
+  slug String @unique
+  status SitePageStatus @default(DRAFT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  storeId String
+  store Store @relation(fields: [storeId], references: [id])
+
+  parentId              String?
+  parentSlug            String?
+  parent                SitePage?  @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
+  children              SitePage[] @relation("ParentChild")
+}
+
+enum SitePageStatus {
+    DRAFT
+    PUBLISHED
+    SCHEDULED
+}

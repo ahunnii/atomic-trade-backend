@@ -14,12 +14,16 @@ model Cart {
   id          String     @id @default(cuid())
   storeId     String
   store       Store      @relation("StoreToCart", fields: [storeId], references: [id])
-  userId      String
-  user        User       @relation("UserToCart", fields: [userId], references: [id])
+
+
+  customerId  String?     @unique
+  customer    Customer?   @relation( fields: [customerId], references: [id], onDelete: SetNull)
+
+  
   cartItems   CartItem[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
   @@index([storeId])
-  @@index([userId])
+  @@index([customerId])
 }

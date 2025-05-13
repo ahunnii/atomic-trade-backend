@@ -1,14 +1,23 @@
 import type { Stripe } from "stripe";
 import { db } from "~/server/db";
+import { calculateCartDiscounts } from "~/utils/calculate-cart-discounts";
 
 import type { OrderItem } from "@prisma/client";
 
 import type { PaymentProcessor } from "../payment-processor";
-import type { CheckoutData, InvoiceData, PaymentLinkData } from "../types";
+import type {
+  CheckoutData,
+  CreateProductData,
+  InvoiceData,
+  PaymentLinkData,
+} from "../types";
+import type { StripeProduct } from "../utils/cart-to-coupon";
 import type { Product, Variation } from "~/types/product";
 import { env } from "~/env";
 
 import { stripeClient } from "../clients/stripe";
+import { cartDiscountsToCoupon } from "../utils/cart-to-coupon";
+import { cartToLineItems } from "../utils/cart-to-line-items";
 import { orderToCoupon } from "../utils/order-to-coupon";
 import { orderToLineItems } from "../utils/order-to-line-items";
 
@@ -21,6 +30,7 @@ export class StripePaymentProcessor implements PaymentProcessor {
   async createCheckoutSession(props: CheckoutData) {
     let line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
     let orderDiscount: Stripe.Checkout.SessionCreateParams.Discount | undefined;
+    const discounts: Stripe.Checkout.SessionCreateParams.Discount[] = [];
 
     if (props.orderId) {
       const order = await db.order.findUnique({
@@ -50,8 +60,78 @@ export class StripePaymentProcessor implements PaymentProcessor {
           ? await stripeClient.coupons.create(couponData)
           : null;
 
-        orderDiscount = coupon ? { coupon: coupon.id } : undefined;
+        if (coupon) {
+          discounts.push({ coupon: coupon.id });
+        }
       }
+    }
+
+    if (props.cartId) {
+      const cart = await db.cart.findUnique({
+        where: { id: props.cartId },
+        include: {
+          cartItems: { include: { variant: { include: { product: true } } } },
+          store: {
+            include: {
+              discounts: {
+                include: { collections: true, variants: true, customers: true },
+              },
+              collections: {
+                include: { products: { include: { variants: true } } },
+              },
+            },
+          },
+        },
+      });
+
+      const variants = await db.variation.findMany({
+        where: { product: { storeId: cart?.storeId } },
+        include: { product: true },
+      });
+
+      const couponDiscount = props?.couponCode
+        ? await db.discount.findFirst({
+            where: { storeId: cart?.storeId, code: props?.couponCode },
+            include: { collections: true, variants: true, customers: true },
+          })
+        : null;
+
+      const data = calculateCartDiscounts({
+        cartItems: cart?.cartItems ?? [],
+        discounts: cart?.store?.discounts ?? [],
+        collections: cart?.store?.collections ?? [],
+        variants: variants.map((v) => ({
+          variantId: v.id,
+          priceInCents: v.priceInCents,
+          compareAtPriceInCents: v.compareAtPriceInCents,
+        })),
+        shippingCost: cart?.store?.flatRateAmount ?? 0,
+        customerId: cart?.customerId ?? undefined,
+        couponDiscount: couponDiscount ?? undefined,
+      });
+
+      const results = await cartToLineItems({
+        cartId: cart?.id ?? "",
+        cartItems: data.updatedCartItemsWithDiscounts,
+      });
+
+      line_items = results.line_items;
+
+      // const cartDiscounts = await cartToCoupon({
+      //   id: cart?.id ?? "",
+      //   stripeProducts: results.products as unknown as StripeProduct[],
+      //   productDiscounts: data.productDiscountsMap,
+      //   orderDiscounts: data.orderDiscounts,
+      //   shippingDiscount: data.shippingDiscount ?? undefined,
+      // });
+
+      const discount = await cartDiscountsToCoupon({
+        id: cart?.id ?? "",
+        totalDiscountInCents: data.totalDiscountInCents,
+        appliedDiscounts: data.appliedDiscounts,
+      });
+
+      discounts.push(...discount);
     }
 
     const session = await stripeClient.checkout.sessions.create({
@@ -62,7 +142,7 @@ export class StripePaymentProcessor implements PaymentProcessor {
         props.successUrl ??
         `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: props.returnUrl ?? `${origin}/cancel`,
-      discounts: orderDiscount ? [orderDiscount] : undefined,
+      discounts: discounts ? discounts : undefined,
       shipping_address_collection: {
         allowed_countries: ["US", "CA"],
       },
@@ -79,7 +159,7 @@ export class StripePaymentProcessor implements PaymentProcessor {
       },
     });
 
-    return { sessionId: session.id, sessionUrl: session?.url ?? "" };
+    return { sessionId: session.id, sessionUrl: session?.url ?? "", discounts };
   }
 
   async createPaymentLink(props: PaymentLinkData) {

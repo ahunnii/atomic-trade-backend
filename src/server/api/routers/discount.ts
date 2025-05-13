@@ -536,9 +536,22 @@ export const discountRouter = createTRPCRouter({
       const cartItems = rawCartItems.map((item) => {
         const variant = variants.find((v) => v.id === item.variantId);
         return {
+          id: item.variantId,
           variantId: item.variantId,
           quantity: item.quantity,
-          priceInCents: variant?.priceInCents ?? 0,
+          // priceInCents: variant?.priceInCents ?? 0,
+          // compareAtPriceInCents: variant?.compareAtPriceInCents ?? undefined,
+          variant: {
+            id: variant?.id ?? "",
+            priceInCents: variant?.priceInCents ?? 0,
+            compareAtPriceInCents: variant?.compareAtPriceInCents ?? undefined,
+            name: variant?.name ?? "",
+            product: {
+              id: variant?.productId ?? "",
+              name: variant?.product?.name ?? "",
+              featuredImage: variant?.product?.featuredImage ?? "",
+            },
+          },
         };
       });
 

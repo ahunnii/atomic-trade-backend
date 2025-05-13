@@ -5,12 +5,77 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import { calculateCartDiscounts } from "~/utils/calculate-cart-discounts";
 import { z } from "zod";
 
 import { paymentService } from "~/lib/payments";
 import { stripeClient } from "~/lib/payments/clients/stripe";
 
 export const paymentRouter = createTRPCRouter({
+  checkout: publicProcedure
+    .input(
+      z.object({
+        cartId: z.string(),
+        couponCode: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input: { cartId, couponCode } }) => {
+      // const cart = await ctx.db.cart.findUnique({
+      //   where: { id: cartId },
+      //   include: {
+      //     cartItems: { include: { variant: { include: { product: true } } } },
+      //     store: {
+      //       include: {
+      //         discounts: {
+      //           include: { collections: true, variants: true, customers: true },
+      //         },
+      //         collections: {
+      //           include: { products: { include: { variants: true } } },
+      //         },
+      //       },
+      //     },
+      //   },
+      // });
+
+      // const variants = await ctx.db.variation.findMany({
+      //   where: { product: { storeId: cart?.storeId } },
+      //   include: { product: true },
+      // });
+
+      // const couponDiscount = couponCode
+      //   ? await ctx.db.discount.findFirst({
+      //       where: { storeId: cart?.storeId, code: couponCode },
+      //       include: { collections: true, variants: true, customers: true },
+      //     })
+      //   : null;
+
+      // const data = calculateCartDiscounts({
+      //   cartItems: cart?.cartItems ?? [],
+      //   discounts: cart?.store?.discounts ?? [],
+      //   collections: cart?.store?.collections ?? [],
+      //   variants: variants.map((v) => ({
+      //     variantId: v.id,
+      //     priceInCents: v.priceInCents,
+      //     compareAtPriceInCents: v.compareAtPriceInCents,
+      //   })),
+      //   shippingCost: cart?.store?.flatRateAmount ?? 0,
+      //   customerId: cart?.customerId ?? undefined,
+      //   couponDiscount: couponDiscount ?? undefined,
+      // });
+
+      const paymentSession = await paymentService.createCheckoutSession({
+        returnUrl: `http://localhost:3000/dreamwalker-studios/settings/payments/checkout?canceled=true`,
+        successUrl: `http://localhost:3000/dreamwalker-studios/settings/payments/checkout?session_id={CHECKOUT_SESSION_ID}`,
+        cartId,
+        couponCode,
+      });
+
+      return {
+        data: paymentSession,
+        message: "Checkout session created successfully",
+      };
+    }),
+
   createCheckoutSession: adminProcedure
     .input(z.string())
     .mutation(async ({ ctx, input: orderId }) => {
@@ -127,6 +192,25 @@ export const paymentRouter = createTRPCRouter({
         }
       }
 
+      if (checkoutSession.payment_intent && orderId) {
+        const paymentIntent = await stripeClient.paymentIntents.retrieve(
+          checkoutSession.payment_intent as string,
+        );
+
+        console.log("paymentIntent", paymentIntent);
+
+        if (paymentIntent.metadata?.orderId) {
+          await ctx.db.payment.create({
+            data: {
+              orderId,
+              amountInCents: paymentIntent.amount,
+              status: "PAID",
+              method: "STRIPE",
+              metadata: { paymentIntentId: paymentIntent.id },
+            },
+          });
+        }
+      }
       return {
         data: checkoutSession,
         message: "Checkout session updated successfully",

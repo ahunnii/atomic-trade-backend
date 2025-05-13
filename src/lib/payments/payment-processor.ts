@@ -1,4 +1,9 @@
-import type { CheckoutData, InvoiceData, PaymentLinkData } from "./types";
+import type {
+  CheckoutData,
+  CreateProductData,
+  InvoiceData,
+  PaymentLinkData,
+} from "./types";
 
 export interface PaymentProcessor {
   createCheckoutSession(

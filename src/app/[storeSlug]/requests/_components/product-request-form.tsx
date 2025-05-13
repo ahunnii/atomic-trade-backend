@@ -132,7 +132,7 @@ export const ProductRequestForm = ({
   const mediaRef = useRef<MultiImageFormFieldRef>(null);
 
   const currentImages = form.formState?.defaultValues?.images?.map(
-    (image) => `${env.NEXT_PUBLIC_STORAGE_URL}/misc/${image}`,
+    (image) => `${env.NEXT_PUBLIC_STORAGE_URL}/product-requests/${image}`,
   );
   return (
     <>
@@ -247,9 +247,9 @@ export const ProductRequestForm = ({
                   disabled={isLoading}
                   isRequired={false}
                   route="images"
-                  apiUrl="/api/upload-misc"
+                  apiUrl="/api/upload-product-requests"
                   currentImageUrls={currentImages}
-                  imagePrefix={`${env.NEXT_PUBLIC_STORAGE_URL}/misc/`}
+                  imagePrefix={`${env.NEXT_PUBLIC_STORAGE_URL}/product-requests/`}
                 />
               </FormCardSection>
             </div>

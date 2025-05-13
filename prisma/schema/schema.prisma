@@ -44,6 +44,8 @@ model Store {
   customers   Customer[]  
   discounts   Discount[]
   productRequests ProductRequest[] 
+  contactsMessages    ContactMessage[]
+  sitePages SitePage[]
 
   hasFreeShipping         Boolean @default(true)
   minFreeShipping         Float?  @default(0)
@@ -59,8 +61,11 @@ model Store {
 
   socialMedia SocialMediaLink[]
 
-  contactEmail    String?
-  contactPhone    String?
+  contactEmail    String @default("")
+
+  publicEmail     String?
+  publicPhone     String?
+
   showFullAddress Boolean @default(false)
 
   customProductTypes String[]

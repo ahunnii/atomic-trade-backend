@@ -1,28 +1,19 @@
 // Types
 export type CartItem = {
-  id: string;
   variantId: string;
+  quantity: number;
+  // priceInCents: number;
+  // compareAtPriceInCents?: number;
   variant: {
     id: string;
-    name: string;
-    product: {
-      id: string;
-      name: string;
-      featuredImage: string;
-    };
     priceInCents: number;
     compareAtPriceInCents?: number | null;
   };
-  quantity: number;
-  priceInCents?: number | null;
-  compareAtPriceInCents?: number | null;
-  appliedDiscounts?:
-    | {
-        id: string;
-        code: string;
-        type: "PRODUCT" | "ORDER" | "SHIPPING";
-      }[]
-    | null;
+  appliedDiscounts?: {
+    id: string;
+    code: string;
+    type: "PRODUCT" | "ORDER" | "SHIPPING";
+  }[];
 };
 
 export type Discount = {
@@ -164,7 +155,7 @@ function applyBestProductDiscounts(
     const variant = variants.find((v) => v.variantId === item.variantId);
     if (!variant) return item;
 
-    const basePrice = item.variant.priceInCents;
+    const basePrice = variant.priceInCents;
 
     let bestPrice = basePrice;
     let bestDiscount: Discount | null = null;
@@ -302,7 +293,7 @@ export function calculateCartDiscounts({
   );
 
   const subtotal = updatedItems.reduce(
-    (sum, item) => sum + (item?.priceInCents ?? 0) * item.quantity,
+    (sum, item) => sum + item.variant.priceInCents * item.quantity,
     0,
   );
 
@@ -326,52 +317,11 @@ export function calculateCartDiscounts({
     ...(appliedShippingDiscount ? [appliedShippingDiscount] : []),
   ];
 
-  // Build a map of product discounts to products using them
-  const productDiscountsMap = validDiscounts
-    .filter((discount) => discount.type === "PRODUCT")
-    .reduce(
-      (acc, discount) => {
-        acc[discount.id] = {
-          discount,
-          products: updatedItems
-            .filter((item) =>
-              item.appliedDiscounts?.some((d) => d.id === discount.id),
-            )
-            .map((item) => ({
-              id: item.id,
-              variantId: item.variantId,
-              name: item.variant.product.name,
-              variantName: item.variant.name,
-            })),
-        };
-        return acc;
-      },
-      {} as Record<
-        string,
-        {
-          discount: Discount;
-          products: {
-            id: string;
-            variantId: string;
-            name: string;
-            variantName: string;
-          }[];
-        }
-      >,
-    );
-
-  // Array of order discounts that were applied
-  const orderDiscounts = appliedOrderDiscounts ?? [];
-
-  // Shipping discount that was applied (if any)
-  const shippingDiscount = appliedShippingDiscount ?? null;
-
   const originalSubtotal = cartItems.reduce(
     (sum, item) => sum + item.variant.priceInCents * item.quantity,
     0,
   );
   return {
-    originalSubtotal,
     originalCartItems: cartItems,
     updatedCartItems: updatedItems,
     discountedShipping,
@@ -384,20 +334,6 @@ export function calculateCartDiscounts({
       type: d.type,
     })),
     itemDiscountMap,
-    updatedCartItemsWithDiscounts: updatedItems.map((item) => {
-      const discounts = itemDiscountMap[item.variantId] ?? [];
-      return {
-        ...item,
-        appliedDiscounts: discounts.map((d) => ({
-          id: d.id,
-          code: d.code,
-          type: d.type,
-        })),
-      };
-    }),
-    productDiscountsMap,
-    orderDiscounts,
-    shippingDiscount,
     totalDiscountInCents:
       orderDiscountInCents + discountedShipping + (originalSubtotal - subtotal),
   };

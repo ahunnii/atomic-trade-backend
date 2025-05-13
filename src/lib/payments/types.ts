@@ -36,3 +36,15 @@ export type InvoiceData = {
   orderId: string;
   storeId: string;
 };
+
+export type CreateProductData = {
+  name: string;
+  description?: string;
+  priceInCents: number;
+  compareAtPriceInCents?: number;
+  currency: string;
+  storeId: string;
+  variantId?: string;
+  image?: string;
+  isActive?: boolean;
+};

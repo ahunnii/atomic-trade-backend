@@ -43,12 +43,12 @@ export function Sidebar() {
             />
 
             <Image
-              src="/logo.png"
+              src="/logo-at.png"
               alt="logo"
-              width={375}
-              height={76}
+              width={75}
+              height={75}
               className={cn(
-                "text-lg font-bold whitespace-nowrap transition-[transform,opacity,display] duration-300 ease-in-out",
+                "pt-4 text-lg font-bold whitespace-nowrap transition-[transform,opacity,display] duration-300 ease-in-out",
                 sidebar?.isOpen === false
                   ? "hidden -translate-x-96 opacity-0"
                   : "translate-x-0 opacity-100",
