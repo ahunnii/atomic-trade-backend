@@ -8,6 +8,7 @@ import {
 import { calculateCartDiscounts } from "~/utils/calculate-cart-discounts";
 import { z } from "zod";
 
+import { env } from "~/env";
 import { paymentService } from "~/lib/payments";
 import { stripeClient } from "~/lib/payments/clients/stripe";
 
@@ -64,8 +65,8 @@ export const paymentRouter = createTRPCRouter({
       // });
 
       const paymentSession = await paymentService.createCheckoutSession({
-        returnUrl: `http://localhost:3000/dreamwalker-studios/settings/payments/checkout?canceled=true`,
-        successUrl: `http://localhost:3000/dreamwalker-studios/settings/payments/checkout?session_id={CHECKOUT_SESSION_ID}`,
+        returnUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?canceled=true`,
+        successUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?session_id={CHECKOUT_SESSION_ID}`,
         cartId,
         couponCode,
       });
@@ -87,8 +88,8 @@ export const paymentRouter = createTRPCRouter({
       });
 
       const paymentSession = await paymentService.createCheckoutSession({
-        returnUrl: `http://localhost:3000/dreamwalker-studios/settings/payments/checkout?canceled=true`,
-        successUrl: `http://localhost:3000/dreamwalker-studios/settings/payments/checkout?session_id={CHECKOUT_SESSION_ID}`,
+        returnUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?canceled=true`,
+        successUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?session_id={CHECKOUT_SESSION_ID}`,
         orderId,
         storeId: order?.storeId,
       });
