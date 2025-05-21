@@ -15,8 +15,8 @@ export type CartColumn = {
 
 export const cartColumnData: ColumnDef<CartColumn>[] = [
   {
-    accessorKey: "name",
-    header: "Name",
+    accessorKey: "email",
+    header: "Email",
     filterFn: "includesString",
 
     cell: ({ row }) => (

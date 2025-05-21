@@ -224,8 +224,8 @@ export const ProductForm = ({
     deleteProduct.isPending ||
     (featuredImageRef.current?.isUploading ?? false) ||
     (mediaRef.current?.isUploading ?? false) ||
-    isArchived ||
-    wasProductUsed;
+    isArchived;
+  // wasProductUsed;
 
   return (
     <>

@@ -26,7 +26,6 @@ type CollectionSelectionColumn = {
   storeSlug: string;
   name: string;
   imageUrl: string;
-
   status: string;
 };
 
