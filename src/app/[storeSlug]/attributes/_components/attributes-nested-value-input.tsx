@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import type { Control, FieldValues, UseFormReturn } from "react-hook-form";
 import { Plus, Trash } from "lucide-react";
 import { useFieldArray } from "react-hook-form";

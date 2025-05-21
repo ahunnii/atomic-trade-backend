@@ -2,7 +2,6 @@ import { format } from "date-fns";
 
 import { type ColumnDef } from "@tanstack/react-table";
 
-import { DiscountType } from "~/types/discount";
 import { env } from "~/env";
 import { Badge } from "~/components/ui/badge";
 import { CellActions } from "~/components/shared/cell-actions";

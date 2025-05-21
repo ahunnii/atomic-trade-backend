@@ -1,5 +1,7 @@
+import type { DiscountType } from "@prisma/client";
+
 import type { Collection } from "~/types/collection";
-import type { Discount, DiscountType } from "~/types/discount";
+import type { Discount } from "~/types/discount";
 import type { Product } from "~/types/product";
 import { api } from "~/trpc/server";
 import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
@@ -48,7 +50,7 @@ export default async function EditDiscountPage({
         storeId={store.id}
         storeSlug={storeSlug}
         collections={collections as Collection[]}
-        type={discount?.type as DiscountType}
+        type={discount!.type}
       />
     </ContentLayout>
   );

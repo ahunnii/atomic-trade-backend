@@ -1,5 +1,6 @@
+import type { DiscountType } from "@prisma/client";
+
 import type { Collection } from "~/types/collection";
-import type { DiscountType } from "~/types/discount";
 import type { Product } from "~/types/product";
 import { api } from "~/trpc/server";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";

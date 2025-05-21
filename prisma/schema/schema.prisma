@@ -76,7 +76,6 @@ model Store {
   blogPosts BlogPost[]
 
 
-
 }
 
 model Image {

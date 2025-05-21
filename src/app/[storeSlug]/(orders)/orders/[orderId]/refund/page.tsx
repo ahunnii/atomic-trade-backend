@@ -1,3 +1,4 @@
+import type { Customer } from "~/types/customer";
 import type { Order } from "~/types/order";
 import { api } from "~/trpc/server";
 
@@ -28,7 +29,7 @@ export default async function OrdersPage({ params }: Props) {
       order={order as unknown as Order}
       areItemsRefundable={store?.areItemsRefundable}
       areItemsExchangeable={store?.areItemsExchangeable}
-      customers={customers}
+      customers={customers as Customer[]}
     />
   );
 }

@@ -1,4 +1,6 @@
-import { type Editor } from "@tiptap/react";
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import type { FC } from "react";
+import { useCallback } from "react";
 import {
   Bold,
   Heading,
@@ -15,8 +17,10 @@ import {
   Strikethrough,
 } from "lucide-react";
 
-import { useCallback, type FC } from "react";
+import { type Editor } from "@tiptap/react";
+
 import { Button } from "~/components/ui/button";
+
 import { Toggle } from "../../ui/toggle";
 
 type Props = {
@@ -57,7 +61,7 @@ const MarkdownToolbar: FC<Props> = ({ editor }) => {
   if (!editor) return null;
 
   return (
-    <div className="rounded-md border border-input bg-transparent ">
+    <div className="border-input rounded-md border bg-transparent">
       <Toggle
         size="sm"
         pressed={editor.isActive("heading", { level: 1 })}

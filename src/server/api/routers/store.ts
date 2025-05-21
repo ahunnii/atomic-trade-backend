@@ -178,7 +178,8 @@ export const storeRouter = createTRPCRouter({
         data: {
           name: input.name,
           contactEmail: input.contactEmail,
-          contactPhone: input.contactPhone,
+          publicPhone: input.contactPhone,
+          // contactPhone: input.contactPhone,
         },
       });
 
@@ -273,7 +274,7 @@ export const storeRouter = createTRPCRouter({
         data: {
           name: input.businessName,
           contactEmail: input.businessEmail,
-          contactPhone: input.businessPhone,
+          publicPhone: input.businessPhone,
           logo: input.businessLogo ?? undefined,
           slug,
         },

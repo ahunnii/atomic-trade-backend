@@ -126,7 +126,7 @@ export const productsRouter = createTRPCRouter({
       });
 
       const filteredProductsAlt = filterProductsByVariantsAlt(
-        products as Product[],
+        products as unknown as Product[],
         results.names,
         results.values,
       );

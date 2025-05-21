@@ -1,3 +1,4 @@
+import type { Customer } from "~/types/customer";
 import type { ProductRequest } from "~/types/product-request";
 import { api } from "~/trpc/server";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
@@ -45,7 +46,7 @@ export default async function NewDraftOrderAdminPage({
       <DraftOrderForm
         initialData={null}
         products={products ?? []}
-        customers={customers ?? []}
+        customers={customers as Customer[]}
         storeId={store.id}
         storeSlug={storeSlug}
         productRequest={productRequest as ProductRequest | null}

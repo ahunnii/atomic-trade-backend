@@ -1,3 +1,4 @@
+import type { Customer } from "~/types/customer";
 import type { ProductRequest } from "~/types/product-request";
 import { api } from "~/trpc/server";
 import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
@@ -38,7 +39,7 @@ export default async function EditProductRequestPage({ params }: Props) {
         initialData={productRequest as ProductRequest | null}
         storeId={store.id}
         storeSlug={storeSlug}
-        customers={customers}
+        customers={customers as Customer[]}
       />
     </ContentLayout>
   );

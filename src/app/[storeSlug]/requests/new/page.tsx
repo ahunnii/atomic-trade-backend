@@ -1,3 +1,4 @@
+import type { Customer } from "~/types/customer";
 import { api } from "~/trpc/server";
 
 import { ProductRequestForm } from "../_components/product-request-form";
@@ -34,7 +35,7 @@ export default async function NewProductRequestAdminPage({ params }: Props) {
         initialData={null}
         storeId={store.id}
         storeSlug={storeSlug}
-        customers={customers}
+        customers={customers as Customer[]}
       />
     </ContentLayout>
   );

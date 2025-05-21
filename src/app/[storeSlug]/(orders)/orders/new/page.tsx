@@ -1,3 +1,4 @@
+import type { Customer } from "~/types/customer";
 import { api } from "~/trpc/server";
 
 import { OrderForm } from "../_components/order-form";
@@ -31,7 +32,7 @@ export default async function NewOrderAdminPage({ params }: Props) {
       <OrderForm
         initialData={null}
         products={products ?? []}
-        customers={customers ?? []}
+        customers={customers as Customer[]}
         storeId={store.id}
         storeSlug={storeSlug}
       />

@@ -55,7 +55,7 @@ export const OrderForm = ({
     resolver: zodResolver(draftOrderFormValidator),
     defaultValues: {
       orderItems: initialData?.orderItems
-        ? initialData?.orderItems.map((item) => ({
+        ? (initialData?.orderItems.map((item) => ({
             ...item,
             productId: item.variant?.product?.id,
             id: item.id,
@@ -71,7 +71,7 @@ export const OrderForm = ({
                   discountReason: string | undefined;
                 }
               )?.discountReason ?? "",
-          }))
+          })) as DraftOrderFormData["orderItems"])
         : [],
       discountInCents: initialData?.discountInCents ?? 0,
       discountType:
@@ -185,6 +185,7 @@ export const OrderForm = ({
       createDraftOrder.mutate({
         ...data,
         storeId,
+        productRequestId: data.productRequestId ?? undefined,
         customerId: data.customer.id,
         subtotalInCents: data.orderItems.reduce(
           (acc, item) => acc + item.totalPriceInCents * item.quantity,

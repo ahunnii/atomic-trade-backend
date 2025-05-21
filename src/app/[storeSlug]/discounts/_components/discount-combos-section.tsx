@@ -3,7 +3,6 @@ import type { UseFormReturn } from "react-hook-form";
 import { init } from "@paralleldrive/cuid2";
 
 import type { DiscountFormData } from "~/lib/validators/discount";
-import { DiscountAmountType } from "~/types/discount";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";

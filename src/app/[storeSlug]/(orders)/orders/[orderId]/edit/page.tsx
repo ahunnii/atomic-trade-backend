@@ -1,5 +1,6 @@
 import type { Customer } from "~/types/customer";
 import type { Order } from "~/types/order";
+import type { ProductRequest } from "~/types/product-request";
 import { api } from "~/trpc/server";
 import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
@@ -41,8 +42,9 @@ export default async function UpdateOrderPage({ params }: Props) {
         initialData={order as Order | null}
         storeId={store.id}
         storeSlug={storeSlug}
-        customers={customers}
+        customers={customers as Customer[]}
         products={products}
+        productRequest={null}
       />
     </ContentLayout>
   );
