@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BellRing,
   BoxesIcon,
+  BrushIcon,
   CreditCard,
   FileJson,
   Files,
@@ -158,6 +159,14 @@ export function getMenuList(pathname: string, slug: string): Group[] {
           submenus: [],
           restrictedAccess: [],
         },
+        {
+          href: `/${slug}/settings/reserved-pages`,
+          label: "Reserved Pages",
+          active: pathname.includes(`/${slug}/settings/reserved-pages`),
+          icon: FileText,
+          submenus: [],
+          restrictedAccess: [],
+        },
       ],
     },
 
@@ -165,11 +174,27 @@ export function getMenuList(pathname: string, slug: string): Group[] {
       groupLabel: "Settings",
       menus: [
         {
+          href: `/${slug}/settings/policies`,
+          label: "Policies",
+          active: pathname.includes(`/${slug}/settings/policies`),
+          restrictedAccess: [],
+          icon: StarsIcon,
+          submenus: [],
+        },
+        {
           href: `/${slug}/settings/store/branding`,
           label: "Branding",
           active: pathname.includes(`/${slug}/settings/store/branding`),
           restrictedAccess: [],
           icon: StarsIcon,
+          submenus: [],
+        },
+        {
+          href: `/${slug}/settings/store/customization`,
+          label: "Customization",
+          active: pathname.includes(`/${slug}/settings/store/customization`),
+          restrictedAccess: [],
+          icon: BrushIcon,
           submenus: [],
         },
         {

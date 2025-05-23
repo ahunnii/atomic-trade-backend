@@ -28,7 +28,9 @@ import { cartsRouter } from "./routers/cart";
 import { discountRouter } from "./routers/discount";
 import { fulfillmentRouter } from "./routers/fulfillment";
 import { paymentRouter } from "./routers/payment";
+import { policyRouter } from "./routers/policy";
 import { productRequestRouter } from "./routers/product-request";
+import { reservedPageRouter } from "./routers/reserved-page";
 import { sitePageRouter } from "./routers/site-page";
 import { userRouter } from "./routers/users";
 
@@ -59,6 +61,8 @@ export const appRouter = createTRPCRouter({
   cart: cartsRouter,
 
   sitePage: sitePageRouter,
+  policy: policyRouter,
+  reservedPage: reservedPageRouter,
   // showcaseItems: showcaseItemRouter,
 
   // shoppingBag: shoppingBagRouter,

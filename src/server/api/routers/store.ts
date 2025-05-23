@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { TRPCError } from "@trpc/server";
 
+import { homepageSettingsValidator } from "~/lib/validators/settings";
 import {
   brandingSettingsValidator,
   shippingSettingsValidator,
@@ -329,5 +330,34 @@ export const storeRouter = createTRPCRouter({
         data: store,
         message: "Shipping settings updated successfully",
       };
+    }),
+
+  updateHomepageSettings: adminProcedure
+    .input(
+      homepageSettingsValidator
+        .extend({ storeId: z.string() })
+        .omit({ tempImages: true, tempCallToActionImage: true }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const store = await ctx.db.homePageSettings.upsert({
+        where: { storeId: input.storeId },
+        update: input,
+        create: input,
+      });
+
+      return {
+        data: store,
+        message: "Homepage settings updated successfully",
+      };
+    }),
+
+  getHomepageSettings: publicProcedure
+    .input(z.string())
+    .query(async ({ ctx, input: storeId }) => {
+      const store = await ctx.db.homePageSettings.findUnique({
+        where: { storeId },
+      });
+
+      return store;
     }),
 });

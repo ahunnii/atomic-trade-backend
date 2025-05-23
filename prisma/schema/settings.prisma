@@ -1,0 +1,75 @@
+enum HeroType {
+    SINGLE_IMAGE
+    GALLERY
+}
+
+model HomePageSettings {
+    id String @id @default(cuid())
+    storeId String @unique
+    store Store @relation(fields: [storeId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    heroType HeroType @default(SINGLE_IMAGE)
+    heroImages String[]
+    heroTitle String?
+    heroSubtitle String?
+    heroButtonText String?
+    heroButtonLink String?
+
+    callToActionTitle String?
+    callToActionSubtitle String?
+    callToActionButtonText String?
+    callToActionButtonLink String?
+    callToActionImage String?
+
+    enableCallToAction Boolean @default(false)
+    enableCollectionsSection Boolean @default(false)
+    enableBlogSection Boolean @default(false)
+
+    homepageStyle Json?
+
+}
+
+model SiteSettings {
+    id String @id @default(cuid())
+    storeId String @unique
+    store Store @relation(fields: [storeId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    enableBlog Boolean @default(false)
+    enableCustomOrders Boolean @default(false)
+
+}
+
+model SitePolicies {
+    id String @id @default(cuid())
+    storeId String @unique
+    store Store @relation(fields: [storeId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    privacyPolicy Json?
+    shippingPolicy Json?
+    termsOfService Json?
+    refundPolicy Json?
+}
+
+model ReservedSitePages {
+    id String @id @default(cuid())
+    storeId String @unique
+    store Store @relation(fields: [storeId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    aboutPage Json?
+    faqPage Json?
+    contactPage Json?
+    specialOrderPage Json?
+
+    enableAboutPage Boolean @default(false)
+    enableFaqPage Boolean @default(false)
+    enableContactPage Boolean @default(false)
+    enableSpecialOrderPage Boolean @default(false)
+}

@@ -2,6 +2,7 @@ import {
   ArchiveIcon,
   FileStackIcon,
   MoreHorizontal,
+  RotateCcwIcon,
   TrashIcon,
 } from "lucide-react";
 
@@ -23,6 +24,7 @@ type Props = {
   onArchive?: () => void;
   onDelete: () => void;
   onMisc?: () => void;
+  onReset?: () => void;
   onMiscLabel?: string;
 };
 
@@ -72,6 +74,15 @@ export const FormAdditionalOptionsButton = (props: Props) => {
               >
                 <ArchiveIcon className="mr-2 h-4 w-4" />
                 <span>Archive</span>
+              </DropdownMenuItem>
+            )}
+            {props?.onReset && (
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={props.onReset}
+              >
+                <RotateCcwIcon className="mr-2 h-4 w-4" />
+                <span>Reset</span>
               </DropdownMenuItem>
             )}
           </DropdownMenuGroup>

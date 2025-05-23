@@ -80,6 +80,9 @@ export const BrandingForm = ({ initialData, slug }: Props) => {
           onKeyDown={(e) => {
             if (e.key === "Enter") e.preventDefault();
           }}
+          onChange={(e) => {
+            console.log(form.formState.errors);
+          }}
         >
           <FormHeader title="Branding Settings" link={`/${slug}/dashboard`}>
             <FormDiscardButton

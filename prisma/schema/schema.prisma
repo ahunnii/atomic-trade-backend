@@ -75,14 +75,14 @@ model Store {
 
   blogPosts BlogPost[]
 
-
+  homePageSettings HomePageSettings?
+  siteSettings SiteSettings?
+  sitePolicies SitePolicies?
+  reservedSitePages ReservedSitePages?
 }
 
 model Image {
   id        String   @id @default(cuid())
-
-
-
 
   reviewId String?
   review   Review? @relation(fields: [reviewId], references: [id], onDelete: Cascade)
