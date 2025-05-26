@@ -26,7 +26,7 @@ export default async function EditContactPage({ params }: Props) {
       title="Update Contact Page"
       breadcrumbs={[
         {
-          href: `/${storeSlug}/settings/reserved-pages`,
+          href: `/${storeSlug}/pages/reserved`,
           label: "Reserved Pages",
         },
       ]}

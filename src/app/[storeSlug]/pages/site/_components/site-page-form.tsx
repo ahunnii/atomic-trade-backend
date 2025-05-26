@@ -1,79 +1,49 @@
 "use client";
 
-import type { Tag } from "emblor";
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
-import { uniqueId } from "lodash";
 import { useForm } from "react-hook-form";
 
 import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import type { ImageFormFieldRef } from "~/components/input/image-form-field";
 import type { LargeMarkdownFormFieldRef } from "~/components/input/large-markdown-form-field";
-import type { BlogPostFormData } from "~/lib/validators/blog";
 import type { SitePageFormData } from "~/lib/validators/site-page";
 import type { SitePage } from "~/types/site-page";
-import { env } from "~/env";
 import { sitePageFormValidator } from "~/lib/validators/site-page";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
-import { Badge } from "~/components/ui/badge";
 import { Form } from "~/components/ui/form";
-import { ImageFormField } from "~/components/input/image-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
 import { LargeMarkdownFormField } from "~/components/input/large-markdown-form-field";
-import { SelectFormField } from "~/components/input/select-form-field";
-import { TagFormField } from "~/components/input/tag-form-field";
 import { FormAdditionalOptionsButton } from "~/components/shared/form-additional-options-button";
 import { FormHeader } from "~/components/shared/form-header";
 import { FormSaveOptionsButton } from "~/components/shared/form-save-options-button";
-import { FormSection } from "~/components/shared/form-section";
+import { FormStatusTitle } from "~/components/shared/form-status-title";
 
 type Props = {
   initialData: SitePage | null;
   sitePages: SitePage[];
-
   storeSlug: string;
   storeId: string;
 };
 
-export const SitePageForm = ({
-  initialData,
-  storeSlug,
-  storeId,
-  sitePages,
-}: Props) => {
+export const SitePageForm = ({ initialData, storeSlug, storeId }: Props) => {
   const router = useRouter();
 
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["sitePage"],
-    redirectPath: `/${storeSlug}/site-pages`,
+    redirectPath: `/${storeSlug}/pages/site`,
   });
 
   const editorRef = useRef<LargeMarkdownFormFieldRef>(null);
 
-  const title = initialData ? (
-    initialData?.status === "PUBLISHED" ? (
-      <div className="flex items-center gap-2">
-        <span>Edit site page</span>
-        <Badge
-          variant="outline"
-          className="bg-green-100 text-xs font-bold text-green-800 dark:bg-green-900 dark:text-green-100"
-        >
-          Published
-        </Badge>
-      </div>
-    ) : (
-      <span className="flex items-center gap-2">
-        <span>Edit site page</span>
-        <Badge variant="outline" className="text-xs">
-          Draft
-        </Badge>
-      </span>
-    )
-  ) : (
-    "Create site page"
+  const title = (
+    <FormStatusTitle
+      hasInitialData={!!initialData}
+      title="Site Page"
+      status={initialData?.status ?? "DRAFT"}
+    />
   );
 
   const updateSitePage = api.sitePage.update.useMutation(defaultActions);
@@ -158,7 +128,7 @@ export const SitePageForm = ({
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title={title} link={`/${storeSlug}/collections`}>
+          <FormHeader title={title} link={`/${storeSlug}/pages/site`}>
             {initialData && (
               <FormAdditionalOptionsButton
                 onDelete={onDelete}
@@ -180,18 +150,26 @@ export const SitePageForm = ({
           </FormHeader>
 
           <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
-            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-7">
-              <FormSection
-                title="Details"
-                description="Basic information on the Collection"
-                bodyClassName="space-y-4"
-              >
+            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-9">
+              <div className="border-border bg-background/50 w-full space-y-4 rounded-md border p-4">
+                <LargeMarkdownFormField
+                  form={form}
+                  ref={editorRef}
+                  contentFieldName="content"
+                  className="col-span-full w-full"
+                  label="Content"
+                  description="The content of the page. This is the main content of the page. It is the text that will be displayed on the page."
+                />
+              </div>
+            </div>
+            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-3">
+              <div className="border-border bg-background/50 sticky top-20 w-full space-y-4 rounded-md border p-4">
                 <InputFormField
                   form={form}
                   disabled={isLoading}
                   name="title"
                   label="Title"
-                  placeholder="e.g. The Summer Collection"
+                  placeholder="e.g. Meet the Team"
                 />
 
                 <InputFormField
@@ -199,29 +177,8 @@ export const SitePageForm = ({
                   disabled={isLoading}
                   name="slug"
                   label="Slug"
-                  placeholder="e.g. the-summer-collection"
+                  placeholder="e.g. meet-the-team"
                   description="The slug is the URL of the page. It is used to identify the page and is used in the URL. It is also used to identify the page in the database. Make sure it is unique!"
-                />
-
-                <LargeMarkdownFormField
-                  form={form}
-                  ref={editorRef}
-                  contentFieldName="content"
-                  className="col-span-full w-full"
-                />
-              </FormSection>
-            </div>
-            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-5">
-              <div className="border-border bg-background/50 w-full rounded-md border p-4">
-                <SelectFormField
-                  form={form}
-                  name="parentId"
-                  label="(Optional) Parent Page"
-                  description="Select a parent page for this page"
-                  values={sitePages.map((page) => ({
-                    label: page.title,
-                    value: page.id,
-                  }))}
                 />
               </div>
             </div>

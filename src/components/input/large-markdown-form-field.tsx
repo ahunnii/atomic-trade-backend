@@ -47,6 +47,7 @@ interface Props<CurrentForm extends FieldValues> {
   placeholder?: string;
   className?: string;
   defaultContent?: Record<string, unknown>;
+  description?: string;
   onSubmit?: (data: CurrentForm) => void;
 }
 
@@ -60,6 +61,7 @@ const LargeMarkdownFormFieldComponent = <CurrentForm extends FieldValues>(
     contentFieldName,
     placeholder = "Type here to write your content...",
     className,
+    description,
   } = props;
 
   const { uploadFile } = useFileUpload({
@@ -206,16 +208,13 @@ const LargeMarkdownFormFieldComponent = <CurrentForm extends FieldValues>(
     <div className={cn("col-span-full", className)}>
       {label && <Label>{label}</Label>}
 
-      <div className="prose prose-stone dark:prose-invert border-border bg-background col-span-full mt-2 w-full rounded-lg border p-2">
-        <div id="editor" className="min-h-[500px] w-full px-14 py-7" />
-        {/* <p className="text-sm text-gray-500">
-        Use{" "}
-        <kbd className="bg-muted rounded-md border px-1 text-xs uppercase">
-          Tab
-        </kbd>{" "}
-        to open the command menu.
-      </p> */}
+      <div className="prose prose-stone dark:prose-invert border-border bg-background -full col-span-full mt-2 w-full max-w-7xl rounded-lg border p-2">
+        <div id="editor" className="h-full min-h-[500px] w-full px-14 py-7" />
       </div>
+
+      {description && (
+        <p className="mt-4 text-sm text-gray-500">{description}</p>
+      )}
     </div>
   );
 };

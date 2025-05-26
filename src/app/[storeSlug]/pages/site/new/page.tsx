@@ -2,7 +2,7 @@ import type { SitePage } from "~/types/site-page";
 import { api } from "~/trpc/server";
 
 import { SitePageForm } from "../_components/site-page-form";
-import { ContentLayout } from "../../_components/content-layout";
+import { ContentLayout } from "../../../_components/content-layout";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;

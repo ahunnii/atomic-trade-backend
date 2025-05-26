@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { Ellipsis, LogOut } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 
 import { Role } from "@prisma/client";
 
@@ -20,6 +20,8 @@ import {
 import { CollapseMenuButton } from "~/components/layout/collapse-menu-button";
 import { getMenuList } from "~/app/[storeSlug]/_utils/sidebar-menu-list";
 
+import { Badge } from "../ui/badge";
+
 type Props = {
   isOpen: boolean | undefined;
 };
@@ -29,7 +31,11 @@ export function Menu({ isOpen }: Props) {
   const { storeSlug } = useParams();
   const role = session?.user?.role ?? Role.USER;
   const pathname = usePathname();
-  const menuList = getMenuList(pathname, storeSlug as string);
+
+  const orders = api.order.getPendingCount.useQuery(storeSlug as string);
+
+  const menuList = getMenuList(pathname, storeSlug as string, orders.data ?? 0);
+
   const filteredMenuList = menuList
     .map((group) => ({
       ...group,
@@ -71,7 +77,10 @@ export function Menu({ isOpen }: Props) {
                 <p className="pb-2"></p>
               )}
               {menus.map(
-                ({ href, label, icon: Icon, active, submenus }, index) =>
+                (
+                  { href, label, badge, icon: Icon, active, submenus },
+                  index,
+                ) =>
                   submenus.length === 0 ? (
                     <div className="w-full" key={index}>
                       <TooltipProvider disableHoverableContent>
@@ -79,7 +88,7 @@ export function Menu({ isOpen }: Props) {
                           <TooltipTrigger asChild>
                             <Button
                               variant={active ? "secondary" : "ghost"}
-                              className="mb-1 h-10 w-full justify-start"
+                              className="mb-1 h-8 w-full justify-start"
                               asChild
                             >
                               <Link href={href}>
@@ -96,7 +105,12 @@ export function Menu({ isOpen }: Props) {
                                       : "translate-x-0 opacity-100",
                                   )}
                                 >
-                                  {label}
+                                  {label}{" "}
+                                  {badge && (
+                                    <Badge className="bg-primary ml-2 rounded-full text-white">
+                                      {badge}
+                                    </Badge>
+                                  )}
                                 </p>
                               </Link>
                             </Button>
@@ -118,7 +132,8 @@ export function Menu({ isOpen }: Props) {
                         submenus={submenus}
                         isOpen={isOpen}
                         href={href}
-                      />{" "}
+                        badge={badge}
+                      />
                     </div>
                   ),
               )}
@@ -135,7 +150,7 @@ export function Menu({ isOpen }: Props) {
                       })
                     }
                     variant="outline"
-                    className="mt-5 h-10 w-full justify-center"
+                    className="mt-5 h-8 w-full justify-center"
                   >
                     <span className={cn(isOpen === false ? "" : "mr-4")}>
                       <LogOut size={18} />

@@ -26,7 +26,7 @@ export const sitePageColumnData: ColumnDef<CollectionColumn>[] = [
       <PrimaryCellLink
         id={row.original.id}
         name={row.original.title}
-        link={`/${row.original.storeSlug}/site-pages/${row.original.id}/edit`}
+        link={`/${row.original.storeSlug}/pages/site/${row.original.id}/edit`}
       />
     ),
   },

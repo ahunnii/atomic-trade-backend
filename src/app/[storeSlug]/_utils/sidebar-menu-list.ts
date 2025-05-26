@@ -31,6 +31,7 @@ type Menu = {
   href: string;
   label: string;
   active: boolean;
+  badge?: number;
   icon: LucideIcon;
   restrictedAccess: Role[];
   submenus: Submenu[];
@@ -41,7 +42,11 @@ type Group = {
   menus: Menu[];
 };
 
-export function getMenuList(pathname: string, slug: string): Group[] {
+export function getMenuList(
+  pathname: string,
+  slug: string,
+  pendingOrders: number,
+): Group[] {
   return [
     {
       groupLabel: "",
@@ -63,6 +68,7 @@ export function getMenuList(pathname: string, slug: string): Group[] {
         {
           href: ``,
           label: "Orders",
+          badge: pendingOrders ?? 0,
           active:
             pathname.includes(`/${slug}/orders`) ||
             pathname.includes(`/${slug}/draft-orders`),
@@ -152,19 +158,24 @@ export function getMenuList(pathname: string, slug: string): Group[] {
           restrictedAccess: [],
         },
         {
-          href: `/${slug}/site-pages`,
-          label: "Site Pages",
-          active: pathname.includes(`/${slug}/site-pages`),
+          href: `/${slug}/pages`,
+          label: "Pages",
+          active: pathname.includes(`/${slug}/pages`),
           icon: FileText,
-          submenus: [],
-          restrictedAccess: [],
-        },
-        {
-          href: `/${slug}/settings/reserved-pages`,
-          label: "Reserved Pages",
-          active: pathname.includes(`/${slug}/settings/reserved-pages`),
-          icon: FileText,
-          submenus: [],
+          submenus: [
+            {
+              href: `/${slug}/pages/site`,
+              label: "Site Pages",
+              active: pathname.includes(`/${slug}/pages/site`),
+              restrictedAccess: [],
+            },
+            {
+              href: `/${slug}/pages/reserved`,
+              label: "Reserved Pages",
+              active: pathname.includes(`/${slug}/pages/reserved`),
+              restrictedAccess: [],
+            },
+          ],
           restrictedAccess: [],
         },
       ],
@@ -174,6 +185,31 @@ export function getMenuList(pathname: string, slug: string): Group[] {
       groupLabel: "Settings",
       menus: [
         {
+          href: ``,
+          label: "Customization",
+          active: pathname.includes(`/${slug}/settings/store/customization`),
+          restrictedAccess: [],
+          icon: BrushIcon,
+          submenus: [
+            {
+              href: `/${slug}/settings/customization/homepage`,
+              label: "Homepage",
+              active: pathname.includes(
+                `/${slug}/settings/customization/homepage`,
+              ),
+              restrictedAccess: [],
+            },
+            {
+              href: `/${slug}/settings/customization/branding`,
+              label: "Site Branding",
+              active: pathname.includes(
+                `/${slug}/settings/customization/branding`,
+              ),
+              restrictedAccess: [],
+            },
+          ],
+        },
+        {
           href: `/${slug}/settings/policies`,
           label: "Policies",
           active: pathname.includes(`/${slug}/settings/policies`),
@@ -181,26 +217,11 @@ export function getMenuList(pathname: string, slug: string): Group[] {
           icon: StarsIcon,
           submenus: [],
         },
+
         {
-          href: `/${slug}/settings/store/branding`,
-          label: "Branding",
-          active: pathname.includes(`/${slug}/settings/store/branding`),
-          restrictedAccess: [],
-          icon: StarsIcon,
-          submenus: [],
-        },
-        {
-          href: `/${slug}/settings/store/customization`,
-          label: "Customization",
-          active: pathname.includes(`/${slug}/settings/store/customization`),
-          restrictedAccess: [],
-          icon: BrushIcon,
-          submenus: [],
-        },
-        {
-          href: `/${slug}/settings/store/shipping`,
+          href: `/${slug}/settings/shipping`,
           label: "Shipping",
-          active: pathname.includes(`/${slug}/settings/store/shipping`),
+          active: pathname.includes(`/${slug}/settings/shipping`),
           restrictedAccess: [],
           icon: TruckIcon,
           submenus: [],

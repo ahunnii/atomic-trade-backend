@@ -17,7 +17,6 @@ import { LargeMarkdownFormField } from "~/components/input/large-markdown-form-f
 import { SwitchFormField } from "~/components/input/switch-form-field";
 import { FormDiscardButton } from "~/components/shared/form-discard-button";
 import { FormHeader } from "~/components/shared/form-header";
-import { FormSection } from "~/components/shared/form-section";
 import { LoadButton } from "~/components/shared/load-button";
 
 type Props = {
@@ -26,19 +25,13 @@ type Props = {
   storeId: string;
 };
 
-export const FrequentlyAskedQuestionsPageForm = ({
-  initialData,
-  storeSlug,
-  storeId,
-}: Props) => {
+export const AboutPageForm = ({ initialData, storeSlug, storeId }: Props) => {
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["reservedPage"],
-    redirectPath: `/${storeSlug}/settings/reserved-pages`,
+    redirectPath: `/${storeSlug}/pages/reserved`,
   });
 
   const editorRef = useRef<LargeMarkdownFormFieldRef>(null);
-
-  const title = "Update Frequently Asked Questions Page";
 
   const updatePoliciesMutation =
     api.reservedPage.update.useMutation(defaultActions);
@@ -46,8 +39,8 @@ export const FrequentlyAskedQuestionsPageForm = ({
   const form = useForm<ReservedPageFormData>({
     resolver: zodResolver(reservedPageValidator),
     defaultValues: {
-      faqPage: initialData?.faqPage ?? null,
-      enableFaqPage: initialData?.enableFaqPage ?? false,
+      aboutPage: initialData?.aboutPage ?? null,
+      enableAboutPage: initialData?.enableAboutPage ?? false,
     },
   });
 
@@ -57,8 +50,8 @@ export const FrequentlyAskedQuestionsPageForm = ({
     updatePoliciesMutation.mutate({
       ...data,
       storeId,
-      faqPage: form.getValues("faqPage") as JsonValue,
-      enableFaqPage: form.getValues("enableFaqPage") ?? false,
+      aboutPage: form.getValues("aboutPage") as JsonValue,
+      enableAboutPage: form.getValues("enableAboutPage") ?? false,
     });
   };
 
@@ -74,12 +67,12 @@ export const FrequentlyAskedQuestionsPageForm = ({
           }}
         >
           <FormHeader
-            title={title}
-            link={`/${storeSlug}/settings/reserved-pages`}
+            title={"Update About Page"}
+            link={`/${storeSlug}/pages/reserved`}
           >
             <FormDiscardButton
               isLoading={isLoading}
-              redirectPath={`/${storeSlug}/settings/reserved-pages`}
+              redirectPath={`/${storeSlug}/pages/reserved`}
             />
             <LoadButton isLoading={isLoading} type="submit" size="sm">
               Save changes
@@ -87,25 +80,27 @@ export const FrequentlyAskedQuestionsPageForm = ({
           </FormHeader>
 
           <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
-            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-7">
-              <FormSection
-                title="Frequently Asked Questions Page"
-                description="Set up your store's frequently asked questions page."
-                bodyClassName="space-y-4"
-              >
+            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-9">
+              <div className="border-border bg-background/50 w-full space-y-4 rounded-md border p-4">
                 <LargeMarkdownFormField
                   form={form}
                   ref={editorRef}
-                  contentFieldName="faqPage"
+                  contentFieldName="aboutPage"
+                  label="About Page Content"
                   className="col-span-full w-full"
+                  description="The content of the about page. This is the main content of the page. It is the text that will be displayed on the page."
                 />
+              </div>
+            </div>
+            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-3">
+              <div className="border-border bg-background/50 sticky top-20 w-full space-y-4 rounded-md border p-4">
                 <SwitchFormField
                   form={form}
-                  name="enableFaqPage"
-                  description="Enable or disable the faq page."
-                  label="Enable Faq Page"
+                  name="enableAboutPage"
+                  description="Enable or disable the about page."
+                  label="Enable About Page"
                 />
-              </FormSection>
+              </div>
             </div>
           </section>
         </form>

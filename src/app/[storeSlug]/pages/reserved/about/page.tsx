@@ -2,19 +2,17 @@ import { api } from "~/trpc/server";
 import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
-import { FrequentlyAskedQuestionsPageForm } from "../_components/faq-page-form";
+import { AboutPageForm } from "../_components/about-page-form";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
 export const metadata = {
-  title: "Update Frequently Asked Questions Page",
+  title: "Update About Page",
 };
 
-export default async function EditFrequentlyAskedQuestionsPage({
-  params,
-}: Props) {
+export default async function EditPrivacyPolicyPage({ params }: Props) {
   const { storeSlug } = await params;
   const store = await api.store.getBySlug(storeSlug);
   const reservedPages = await api.reservedPage.get(store?.id ?? "");
@@ -25,16 +23,16 @@ export default async function EditFrequentlyAskedQuestionsPage({
 
   return (
     <ContentLayout
-      title="Update Frequently Asked Questions Page"
+      title="Update About Page"
       breadcrumbs={[
         {
-          href: `/${storeSlug}/settings/reserved-pages`,
+          href: `/${storeSlug}/pages/reserved`,
           label: "Reserved Pages",
         },
       ]}
-      currentPage="Frequently Asked Questions Page"
+      currentPage="About Page"
     >
-      <FrequentlyAskedQuestionsPageForm
+      <AboutPageForm
         initialData={reservedPages?.reservedSitePages ?? null}
         storeId={store.id}
         storeSlug={storeSlug}

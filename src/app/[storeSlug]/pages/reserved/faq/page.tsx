@@ -2,17 +2,19 @@ import { api } from "~/trpc/server";
 import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
-import { SpecialRequestPageForm } from "../_components/special-request-page-form";
+import { FrequentlyAskedQuestionsPageForm } from "../_components/faq-page-form";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
 export const metadata = {
-  title: "Update Special Request Page",
+  title: "Update Frequently Asked Questions Page",
 };
 
-export default async function EditSpecialRequestPage({ params }: Props) {
+export default async function EditFrequentlyAskedQuestionsPage({
+  params,
+}: Props) {
   const { storeSlug } = await params;
   const store = await api.store.getBySlug(storeSlug);
   const reservedPages = await api.reservedPage.get(store?.id ?? "");
@@ -23,16 +25,16 @@ export default async function EditSpecialRequestPage({ params }: Props) {
 
   return (
     <ContentLayout
-      title="Update Special Request Page"
+      title="Update Frequently Asked Questions Page"
       breadcrumbs={[
         {
-          href: `/${storeSlug}/settings/reserved-pages`,
+          href: `/${storeSlug}/pages/reserved`,
           label: "Reserved Pages",
         },
       ]}
-      currentPage="Special Request Page"
+      currentPage="Frequently Asked Questions Page"
     >
-      <SpecialRequestPageForm
+      <FrequentlyAskedQuestionsPageForm
         initialData={reservedPages?.reservedSitePages ?? null}
         storeId={store.id}
         storeSlug={storeSlug}

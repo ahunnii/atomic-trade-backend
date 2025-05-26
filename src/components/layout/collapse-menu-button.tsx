@@ -30,6 +30,8 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 
+import { Badge } from "../ui/badge";
+
 type Submenu = {
   href: string;
   label: string;
@@ -43,6 +45,7 @@ type Props = {
   submenus: Submenu[];
   isOpen: boolean | undefined;
   href?: string;
+  badge?: number;
 };
 
 export function CollapseMenuButton({
@@ -52,6 +55,7 @@ export function CollapseMenuButton({
   submenus,
   isOpen,
   href,
+  badge,
 }: Props) {
   const isSubmenuActive = submenus.some((submenu) => submenu.active);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(isSubmenuActive);
@@ -65,7 +69,7 @@ export function CollapseMenuButton({
       <CollapsibleTrigger
         className="mb-1 [&[data-state=open]>div>div>svg]:rotate-180"
         // onClick={(e) => {
-        //   e.preventDefault();
+        //   // e.preventDefault();
         //   if (href) {
         //     router.replace(href);
         //     console.log(href);
@@ -75,11 +79,11 @@ export function CollapseMenuButton({
       >
         <Button
           variant={active ? "secondary" : "ghost"}
-          className="h-10 w-full justify-start"
+          className="h-8 w-full justify-start"
         >
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center">
-              <span className="mr-4">
+              <span className="mr-6">
                 <Icon size={18} />
               </span>
               <p
@@ -91,6 +95,11 @@ export function CollapseMenuButton({
                 )}
               >
                 {label}
+                {badge && (
+                  <Badge className="bg-primary ml-2 rounded-full text-white">
+                    {badge}
+                  </Badge>
+                )}
               </p>
             </div>
             <div
@@ -114,7 +123,7 @@ export function CollapseMenuButton({
           <Button
             key={index}
             variant={active ? "secondary" : "ghost"}
-            className="mb-1 h-10 w-full justify-start"
+            className="mb-1 h-8 w-full justify-start"
             asChild
           >
             <Link href={href}>
@@ -144,7 +153,7 @@ export function CollapseMenuButton({
             <DropdownMenuTrigger asChild>
               <Button
                 variant={active ? "secondary" : "ghost"}
-                className="mb-1 h-10 w-full justify-start"
+                className="mb-1 h-8 w-full justify-start"
               >
                 <div className="flex w-full items-center justify-between">
                   <div className="flex items-center">

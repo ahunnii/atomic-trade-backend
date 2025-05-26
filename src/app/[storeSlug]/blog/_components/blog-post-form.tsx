@@ -195,7 +195,7 @@ export const BlogPostForm = ({ initialData, storeSlug, storeId }: Props) => {
           </FormHeader>
 
           <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
-            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-7">
+            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-8">
               <FormSection
                 title="Details"
                 description="Basic information on the Collection"
@@ -217,30 +217,32 @@ export const BlogPostForm = ({ initialData, storeSlug, storeId }: Props) => {
                 />
               </FormSection>
             </div>
-            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-5">
-              <div className="border-border bg-background/50 w-full rounded-md border p-4">
-                <ImageFormField
-                  form={form}
-                  ref={featuredImageRef}
-                  label="Cover Image (optional)"
-                  disabled={isLoading}
-                  isRequired={true}
-                  route="misc"
-                  apiUrl="/api/upload-misc"
-                  name="cover"
-                  tempName="tempCover"
-                  currentImageUrl={currentFeaturedImage}
-                  description="Used to represent your blog on social media and other places."
-                />
-              </div>
-              <div className="border-border bg-background/50 w-full rounded-md border p-4">
-                <TagFormField
-                  form={form}
-                  label="Tags (optional)"
-                  defaultTags={form.getValues("tags") ?? []}
-                  name="tags"
-                  description="Tags are used to categorize your blog posts. You can add multiple tags to a blog post."
-                />
+            <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-4">
+              <div className="sticky top-20 space-y-4">
+                <div className="border-border bg-background/50 w-full rounded-md border p-4">
+                  <ImageFormField
+                    form={form}
+                    ref={featuredImageRef}
+                    label="Cover Image (optional)"
+                    disabled={isLoading}
+                    isRequired={true}
+                    route="misc"
+                    apiUrl="/api/upload-misc"
+                    name="cover"
+                    tempName="tempCover"
+                    currentImageUrl={currentFeaturedImage}
+                    description="Used to represent your blog on social media and other places."
+                  />
+                </div>
+                <div className="border-border bg-background/50 w-full rounded-md border p-4">
+                  <TagFormField
+                    form={form}
+                    label="Tags (optional)"
+                    defaultTags={form.getValues("tags") ?? []}
+                    name="tags"
+                    description="Tags are used to categorize your blog posts. You can add multiple tags to a blog post."
+                  />
+                </div>
               </div>
             </div>
           </section>

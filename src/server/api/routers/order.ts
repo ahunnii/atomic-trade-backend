@@ -30,6 +30,13 @@ import {
 // import { storeRouter } from "./store";
 
 export const ordersRouter = createTRPCRouter({
+  getPendingCount: adminProcedure
+    .input(z.string())
+    .query(({ ctx, input: storeSlug }) => {
+      return ctx.db.order.count({
+        where: { store: { slug: storeSlug }, status: "PENDING" },
+      });
+    }),
   // markAsFulfilled: adminProcedure
   //   .input(z.string())
   //   .mutation(async ({ ctx, input: orderId }) => {

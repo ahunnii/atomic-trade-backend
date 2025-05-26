@@ -7,7 +7,7 @@ import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { AdvancedDataTable } from "~/components/shared/tables/advanced-data-table";
 
-import { ContentLayout } from "../../_components/content-layout";
+import { ContentLayout } from "../../../_components/content-layout";
 import { sitePageColumnData } from "./site-page-column-data";
 
 type Props = { storeId: string; storeSlug: string };
@@ -25,7 +25,7 @@ export const SitePageClient = ({ storeId, storeSlug }: Props) => {
     ...defaultActions,
     onSuccess: ({ data, message }) => {
       defaultActions.onSuccess({ message });
-      void router.push(`/${storeSlug}/site-pages/${data.id}/edit`);
+      void router.push(`/${storeSlug}/pages/site/${data.id}/edit`);
     },
   });
 

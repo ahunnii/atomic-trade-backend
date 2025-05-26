@@ -2,17 +2,17 @@ import { api } from "~/trpc/server";
 import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
-import { AboutPageForm } from "../_components/about-page-form";
+import { SpecialRequestPageForm } from "../_components/special-request-page-form";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
 export const metadata = {
-  title: "Update About Page",
+  title: "Update Special Request Page",
 };
 
-export default async function EditPrivacyPolicyPage({ params }: Props) {
+export default async function EditSpecialRequestPage({ params }: Props) {
   const { storeSlug } = await params;
   const store = await api.store.getBySlug(storeSlug);
   const reservedPages = await api.reservedPage.get(store?.id ?? "");
@@ -23,16 +23,16 @@ export default async function EditPrivacyPolicyPage({ params }: Props) {
 
   return (
     <ContentLayout
-      title="Update About Page"
+      title="Update Special Request Page"
       breadcrumbs={[
         {
-          href: `/${storeSlug}/settings/reserved-pages`,
+          href: `/${storeSlug}/pages/reserved`,
           label: "Reserved Pages",
         },
       ]}
-      currentPage="About Page"
+      currentPage="Special Request Page"
     >
-      <AboutPageForm
+      <SpecialRequestPageForm
         initialData={reservedPages?.reservedSitePages ?? null}
         storeId={store.id}
         storeSlug={storeSlug}

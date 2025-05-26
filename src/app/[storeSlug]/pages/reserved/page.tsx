@@ -21,15 +21,25 @@ export default async function ReservedPagesPage({ params }: Props) {
   return (
     <ContentLayout
       title="Reserved Pages"
-      breadcrumbs={[
-        {
-          href: `/${storeSlug}/settings/reserved-pages`,
-          label: "Reserved Pages",
-        },
-      ]}
+      // breadcrumbs={[
+      //   {
+      //     href: `/${storeSlug}/pages/reserved`,
+      //     label: "Reserved Pages",
+      //   },
+      // ]}
       currentPage="Reserved Pages"
       // breadcrumbClassName="bg-background shadow p-4"
     >
+      <div className="mt-4 mb-8 space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Reserved Pages
+        </h1>
+        <p className="text-muted-foreground">
+          Reserved pages are common store pages that most (if not all) stores
+          would have. You can edit the basic content, enable, or disable them.
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 gap-4 py-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-lg border p-4 shadow-sm">
           <h3 className="mb-2 text-lg font-semibold">About Page</h3>
@@ -37,7 +47,7 @@ export default async function ReservedPagesPage({ params }: Props) {
             Manage your store&apos;s about page
           </p>
           <a
-            href={`/${storeSlug}/settings/reserved-pages/about-page`}
+            href={`/${storeSlug}/pages/reserved/about`}
             className="text-primary text-sm font-medium hover:underline"
           >
             Edit About Page →
@@ -52,7 +62,7 @@ export default async function ReservedPagesPage({ params }: Props) {
             Manage your store&apos;s frequently asked questions page
           </p>
           <a
-            href={`/${storeSlug}/settings/reserved-pages/faq-page`}
+            href={`/${storeSlug}/pages/reserved/faq`}
             className="text-primary text-sm font-medium hover:underline"
           >
             Edit Frequently Asked Questions →
@@ -65,7 +75,7 @@ export default async function ReservedPagesPage({ params }: Props) {
             Manage your store&apos;s contact page
           </p>
           <a
-            href={`/${storeSlug}/settings/reserved-pages/contact-page`}
+            href={`/${storeSlug}/pages/reserved/contact`}
             className="text-primary text-sm font-medium hover:underline"
           >
             Edit Contact Page →
@@ -78,7 +88,7 @@ export default async function ReservedPagesPage({ params }: Props) {
             Manage your store&apos;s special request page
           </p>
           <a
-            href={`/${storeSlug}/settings/reserved-pages/special-request-page`}
+            href={`/${storeSlug}/pages/reserved/special-request`}
             className="text-primary text-sm font-medium hover:underline"
           >
             Edit Special Request Page →
