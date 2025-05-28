@@ -34,7 +34,6 @@ type Props = {
 };
 
 export function CreatePaymentLink({ storeId, storeSlug }: Props) {
-  const router = useRouter();
   const [items, setItems] = useState<PaymentLinkItem[]>([]);
   const [paymentLink, setPaymentLink] = useState<string>("");
 

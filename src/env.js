@@ -30,8 +30,10 @@ export const env = createEnv({
     RESEND_API_KEY: z.string(),
 
     //Payments
-    STRIPE_SECRET_KEY: z.string(),
-    STRIPE_WEBHOOK_SECRET: z.string(),
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().optional(),
+    MOOV_API_KEY: z.string().optional(),
+    MOOV_SECRET_KEY: z.string().optional(),
   },
 
   /**
@@ -68,6 +70,8 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+    MOOV_API_KEY: process.env.MOOV_API_KEY,
+    MOOV_SECRET_KEY: process.env.MOOV_SECRET_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

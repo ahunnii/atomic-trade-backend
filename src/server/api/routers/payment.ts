@@ -1,4 +1,3 @@
-import type Stripe from "stripe";
 import {
   adminProcedure,
   createTRPCRouter,
@@ -8,9 +7,11 @@ import {
 import { calculateCartDiscounts } from "~/utils/calculate-cart-discounts";
 import { z } from "zod";
 
+import type { Stripe } from "@atomic-trade/payments";
+import { paymentService, stripeClient } from "@atomic-trade/payments";
+import { TRPCError } from "@trpc/server";
+
 import { env } from "~/env";
-import { paymentService } from "~/lib/payments";
-import { stripeClient } from "~/lib/payments/clients/stripe";
 
 export const paymentRouter = createTRPCRouter({
   checkout: publicProcedure
@@ -64,12 +65,13 @@ export const paymentRouter = createTRPCRouter({
       //   couponDiscount: couponDiscount ?? undefined,
       // });
 
-      const paymentSession = await paymentService.createCheckoutSession({
-        returnUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?canceled=true`,
-        successUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?session_id={CHECKOUT_SESSION_ID}`,
-        cartId,
-        couponCode,
-      });
+      const paymentSession =
+        await paymentService.checkout.createCheckoutSession({
+          returnUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?canceled=true`,
+          successUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?session_id={CHECKOUT_SESSION_ID}`,
+          cartId,
+          couponCode,
+        });
 
       return {
         data: paymentSession,
@@ -84,15 +86,38 @@ export const paymentRouter = createTRPCRouter({
         where: { id: orderId },
         include: {
           store: true,
+          orderItems: true,
+          customer: true,
         },
       });
 
-      const paymentSession = await paymentService.createCheckoutSession({
-        returnUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?canceled=true`,
-        successUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?session_id={CHECKOUT_SESSION_ID}`,
-        orderId,
-        storeId: order?.storeId,
-      });
+      if (!order) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Order not found",
+        });
+      }
+
+      const paymentSession =
+        await paymentService.checkout.createCheckoutSession({
+          returnUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?canceled=true`,
+          successUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?session_id={CHECKOUT_SESSION_ID}`,
+          orderId,
+          storeId: order?.storeId,
+          customerId: order?.customerId ?? undefined,
+          order: {
+            id: order.id,
+            discountInCents: order.discountInCents,
+            orderItems: order.orderItems.map((item) => ({
+              id: item.id,
+              name: item.name,
+              unitPriceInCents: item.unitPriceInCents,
+              quantity: item.quantity,
+              variantId: item.variantId,
+              totalPriceInCents: item.totalPriceInCents,
+            })),
+          },
+        });
 
       return {
         data: paymentSession,
@@ -103,6 +128,10 @@ export const paymentRouter = createTRPCRouter({
   updateOrderFromCheckoutSession: publicProcedure
     .input(z.any())
     .mutation(async ({ ctx, input: session }) => {
+      if (!stripeClient) {
+        throw new Error("Stripe client not found");
+      }
+
       const checkoutSession = session as Stripe.Checkout.Session;
 
       console.log("checkoutSession", checkoutSession);
@@ -258,8 +287,25 @@ export const paymentRouter = createTRPCRouter({
         storeId: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
-      const invoice = await paymentService.createInvoice(input);
+    .mutation(async ({ ctx, input }) => {
+      const customer = await ctx.db.customer.findUnique({
+        where: { email: input.email },
+      });
+
+      if (!customer) {
+        throw new Error("Customer not found");
+      }
+
+      const invoice = await paymentService.invoice.createInvoice({
+        ...input,
+        customer: {
+          id: customer.id,
+          email: customer.email,
+          firstName: customer.firstName,
+          lastName: customer.lastName,
+          metadata: customer.metadata as Record<string, string> | null,
+        },
+      });
 
       return {
         data: invoice,

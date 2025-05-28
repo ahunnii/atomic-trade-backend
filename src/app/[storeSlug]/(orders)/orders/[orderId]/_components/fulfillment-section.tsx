@@ -137,7 +137,7 @@ export const FulfillmentSection = ({
   const form = useForm<FulfillmentFormData>({
     resolver: zodResolver(fulfillmentSchema),
     defaultValues: {
-      type: FulfillmentType.MANUAL,
+      type: FulfillmentType.EASYPOST,
       packages: [
         {
           carrier: "",
@@ -152,6 +152,20 @@ export const FulfillmentSection = ({
   const createPackages = api.order.createPackages.useMutation(defaultActions);
 
   const handleSubmit = async (data: FulfillmentFormData) => {
+    // Determine the appropriate status based on fulfillment type
+    const getPackageStatus = (type: keyof typeof FulfillmentType) => {
+      switch (type) {
+        case FulfillmentType.EASYPOST:
+          return PackageStatus.PENDING;
+        case FulfillmentType.PICKUP:
+          return PackageStatus.READY_FOR_PICKUP;
+        case FulfillmentType.MANUAL:
+          return PackageStatus.DELIVERED;
+        default:
+          return PackageStatus.PENDING;
+      }
+    };
+
     createPackages.mutate({
       orderId,
       type: data.type,
@@ -159,7 +173,7 @@ export const FulfillmentSection = ({
       packages: data.packages.map((pkg) => ({
         carrier: pkg.carrier,
         trackingNumber: pkg.trackingNumber,
-        status: PackageStatus.PENDING,
+        status: getPackageStatus(data.type),
         items: pkg.items,
       })),
     });
@@ -283,23 +297,22 @@ export const FulfillmentSection = ({
       existingPackagesQuantity +
       1;
 
-    // Only add if we haven't exceeded the order item quantity
-    if (totalQuantityInPackages <= orderItem.quantity) {
-      if (existingItem) {
-        form.setValue(
-          `packages.${selectedPackageIndex}.items`,
-          currentItems.map((item) =>
-            item.itemId === itemId
-              ? { ...item, quantity: item.quantity + 1 }
-              : item,
-          ),
-        );
-      } else {
-        form.setValue(`packages.${selectedPackageIndex}.items`, [
-          ...currentItems,
-          { itemId, quantity: 1 },
-        ]);
-      }
+    // Allow adding items even if they exceed original quantity (for replacements, free items, etc.)
+    // But show a warning when this happens
+    if (existingItem) {
+      form.setValue(
+        `packages.${selectedPackageIndex}.items`,
+        currentItems.map((item) =>
+          item.itemId === itemId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        ),
+      );
+    } else {
+      form.setValue(`packages.${selectedPackageIndex}.items`, [
+        ...currentItems,
+        { itemId, quantity: 1 },
+      ]);
     }
   };
 
@@ -351,11 +364,62 @@ export const FulfillmentSection = ({
             : "Some items in this order still need to be fulfilled"}
         </div>
 
-        {!allItemsFulfilled && (
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
-          >
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          {allItemsFulfilled && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <p className="mb-2 text-sm text-blue-700">
+                <strong>Additional Fulfillment:</strong> All original order
+                items have been fulfilled. You can still create additional
+                packages for scenarios like:
+              </p>
+              <ul className="list-inside list-disc space-y-1 text-sm text-blue-700">
+                <li>Sending free items or gifts</li>
+                <li>Shipping forgotten or missing items</li>
+                <li>Replacement items</li>
+              </ul>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <h3 className="font-medium">Fulfillment Type</h3>
+            <Select
+              value={form.watch("type")}
+              onValueChange={(value: keyof typeof FulfillmentType) => {
+                form.setValue("type", value);
+                // Reset to single package for pickup/manual fulfillment
+                if (
+                  value === FulfillmentType.PICKUP ||
+                  value === FulfillmentType.MANUAL
+                ) {
+                  form.setValue("packages", [
+                    {
+                      carrier: "",
+                      trackingNumber: "",
+                      items: [],
+                    },
+                  ]);
+                  setSelectedPackageIndex(0);
+                }
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select fulfillment type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={FulfillmentType.EASYPOST}>
+                  Ship to Customer
+                </SelectItem>
+                <SelectItem value={FulfillmentType.PICKUP}>
+                  Mark for Pickup
+                </SelectItem>
+                <SelectItem value={FulfillmentType.MANUAL}>
+                  Hand to Customer Now
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {form.watch("type") === FulfillmentType.EASYPOST && (
             <div className="flex items-center gap-4">
               <Select
                 value={selectedPackageIndex.toString()}
@@ -389,11 +453,16 @@ export const FulfillmentSection = ({
                 </Button>
               )}
             </div>
+          )}
 
-            <div className="space-y-4">
-              <h3 className="font-medium">
-                Package {nextPackageNumber + selectedPackageIndex} Details
-              </h3>
+          <div className="space-y-4">
+            <h3 className="font-medium">
+              {form.watch("type") === FulfillmentType.EASYPOST
+                ? `Package ${nextPackageNumber + selectedPackageIndex} Details`
+                : "Fulfillment Details"}
+            </h3>
+
+            {form.watch("type") === FulfillmentType.EASYPOST && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm text-gray-600">Carrier</label>
@@ -416,96 +485,146 @@ export const FulfillmentSection = ({
                   />
                 </div>
               </div>
+            )}
+
+            {form.watch("type") === FulfillmentType.PICKUP && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <p className="text-sm text-blue-700">
+                  This package will be marked as ready for customer pickup. The
+                  customer will be notified if you choose to send notifications.
+                </p>
+              </div>
+            )}
+
+            {form.watch("type") === FulfillmentType.MANUAL && (
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                <p className="text-sm text-green-700">
+                  This package will be marked as fulfilled immediately,
+                  indicating it has been handed directly to the customer.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-lg border">
+            <div className="grid grid-cols-12 gap-4 border-b bg-gray-50 p-4">
+              <div className="col-span-6">Item</div>
+              <div className="col-span-3 text-center">Available</div>
+              <div className="col-span-3 text-right">In Package</div>
             </div>
 
-            <div className="rounded-lg border">
-              <div className="grid grid-cols-12 gap-4 border-b bg-gray-50 p-4">
-                <div className="col-span-6">Item</div>
-                <div className="col-span-3 text-center">Available</div>
-                <div className="col-span-3 text-right">In Package</div>
-              </div>
+            <div className="divide-y">
+              {allItems.map((item) => {
+                const packageItem = currentPackage?.items?.find(
+                  (i) => i.itemId === item.id,
+                );
+                const isFulfilled = item.isFulfilled;
 
-              <div className="divide-y">
-                {allItems.map((item) => {
-                  const packageItem = currentPackage?.items?.find(
-                    (i) => i.itemId === item.id,
-                  );
-                  const isFulfilled = item.isFulfilled;
+                // Calculate total quantity being sent (including current packages)
+                const totalBeingSent = packages.reduce((total, pkg) => {
+                  const pkgItem = pkg.items.find((i) => i.itemId === item.id);
+                  return total + (pkgItem?.quantity ?? 0);
+                }, 0);
 
-                  return (
-                    <div
-                      key={item.id}
-                      className={`grid grid-cols-12 items-center gap-4 p-4 ${
-                        isFulfilled ? "bg-gray-50 text-gray-400" : ""
-                      }`}
-                    >
-                      <div className="col-span-6">
-                        <span className="font-medium">{item.name}</span>
-                      </div>
-                      <div className="col-span-3 text-center text-gray-600">
-                        {item.quantityFulfilled} of {item.quantity}
-                      </div>
-                      <div className="col-span-3 flex items-center justify-end gap-3">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={!item.quantityFulfilled || isFulfilled}
-                          onClick={() => addItemToPackage(item.id)}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                        <span className="w-8 text-center">
-                          {packageItem?.quantity ?? 0}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={!packageItem?.quantity || isFulfilled}
-                          onClick={() => removeItemFromPackage(item.id)}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                      </div>
+                const isExceedingOriginal =
+                  totalBeingSent > item.quantityFulfilled;
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`grid grid-cols-12 items-center gap-4 p-4 ${
+                      isFulfilled && !isExceedingOriginal ? "bg-gray-50" : ""
+                    }`}
+                  >
+                    <div className="col-span-6">
+                      <span className="font-medium">{item.name}</span>
+                      {isExceedingOriginal && (
+                        <div className="mt-1 text-xs text-orange-600">
+                          Sending {totalBeingSent - item.quantityFulfilled}{" "}
+                          extra
+                        </div>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="col-span-3 text-center text-gray-600">
+                      {item.quantityFulfilled} of {item.quantity}
+                      {isFulfilled && (
+                        <div className="text-xs text-green-600">Fulfilled</div>
+                      )}
+                    </div>
+                    <div className="col-span-3 flex items-center justify-end gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addItemToPackage(item.id)}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-8 text-center">
+                        {packageItem?.quantity ?? 0}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={!packageItem?.quantity}
+                        onClick={() => removeItemFromPackage(item.id)}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
+          </div>
 
-            <div className="space-y-4">
-              <h3 className="font-medium">Notify customer</h3>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="notifyCustomer"
-                  checked={form.watch("notifyCustomer")}
-                  onCheckedChange={(checked: boolean) => {
-                    form.setValue("notifyCustomer", checked);
-                  }}
-                />
-                <label
-                  htmlFor="notifyCustomer"
-                  className="text-sm leading-none text-gray-600"
-                >
-                  Send shipment details to your customer now
-                </label>
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <LoadButton
-                type="submit"
-                isLoading={loading}
-                disabled={
-                  loading || packages.every((pkg) => !pkg.items?.length)
-                }
+          <div className="space-y-4">
+            <h3 className="font-medium">Notify customer</h3>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="notifyCustomer"
+                checked={form.watch("notifyCustomer")}
+                onCheckedChange={(checked: boolean) => {
+                  form.setValue("notifyCustomer", checked);
+                }}
+              />
+              <label
+                htmlFor="notifyCustomer"
+                className="text-sm leading-none text-gray-600"
               >
-                {loading ? "Fulfilling..." : "Create Fulfillment"}
-              </LoadButton>
+                {form.watch("type") === FulfillmentType.EASYPOST &&
+                  "Send shipment details to your customer now"}
+                {form.watch("type") === FulfillmentType.PICKUP &&
+                  "Notify customer that their order is ready for pickup"}
+                {form.watch("type") === FulfillmentType.MANUAL &&
+                  "Send fulfillment confirmation to your customer"}
+              </label>
             </div>
-          </form>
-        )}
+          </div>
+
+          <div className="flex justify-end">
+            <LoadButton
+              type="submit"
+              isLoading={loading}
+              disabled={loading || packages.every((pkg) => !pkg.items?.length)}
+            >
+              {loading
+                ? "Processing..."
+                : form.watch("type") === FulfillmentType.EASYPOST
+                  ? allItemsFulfilled
+                    ? "Create Additional Shipment"
+                    : "Create Shipment"
+                  : form.watch("type") === FulfillmentType.PICKUP
+                    ? allItemsFulfilled
+                      ? "Mark Additional Items for Pickup"
+                      : "Mark for Pickup"
+                    : allItemsFulfilled
+                      ? "Mark Additional Items as Fulfilled"
+                      : "Mark as Fulfilled"}
+            </LoadButton>
+          </div>
+        </form>
       </Card>
 
       {initialFulfillment?.packages &&

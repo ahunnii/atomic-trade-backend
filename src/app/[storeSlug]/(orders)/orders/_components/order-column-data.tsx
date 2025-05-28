@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { CheckCircle2 } from "lucide-react";
 
 import type {
   OrderFulfillmentStatus,
@@ -47,12 +48,18 @@ export const orderColumnData: ColumnDef<OrderColumn>[] = [
     },
     cell: ({ row }) => {
       return (
-        <div className="flex flex-col">
+        <div className="flex flex-row items-center justify-start gap-0">
           <PrimaryCellLink
             id={row.original.id}
             name={`#${row.original.orderNumber}`}
             link={`/${row.original.storeSlug}/orders/${row.original.id}`}
-          />
+          />{" "}
+          {row.original.fulfillmentStatus === "FULFILLED" &&
+            row.original.paymentStatus === "PAID" && (
+              <div className="ml-2">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              </div>
+            )}
         </div>
       );
     },

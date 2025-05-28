@@ -1,13 +1,11 @@
-import {
-  adminProcedure,
-  createTRPCRouter,
-  publicProcedure,
-} from "~/server/api/trpc";
+import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { z } from "zod";
 
+import { emailService } from "@atomic-trade/email";
+
 import { OrderFulfillmentStatus } from "~/types/order";
-import { emailService } from "~/lib/email";
-import { GenericOrderUpdateEmail } from "~/lib/email/email-templates/orders/generic-order-update-email";
+import { env } from "~/env";
+import { GenericOrderUpdateEmail } from "~/lib/email-templates/generic-order-update-email";
 
 export const fulfillmentRouter = createTRPCRouter({
   markAsFulfilled: adminProcedure
@@ -18,7 +16,7 @@ export const fulfillmentRouter = createTRPCRouter({
         data: {
           fulfillmentStatus: OrderFulfillmentStatus.FULFILLED,
         },
-        include: { store: { select: { name: true } } },
+        include: { store: { select: { name: true, logo: true } } },
       });
       await ctx.db.orderItem.updateMany({
         where: { orderId },
@@ -26,6 +24,8 @@ export const fulfillmentRouter = createTRPCRouter({
       });
 
       const fromEmail = `${order.store.name} <support@dreamwalkerstudios.co>`;
+
+      const logo = `${env.NEXT_PUBLIC_STORAGE_URL}/misc/${order.store.logo}`;
 
       if (order.email) {
         await emailService.sendEmail({
@@ -37,6 +37,7 @@ export const fulfillmentRouter = createTRPCRouter({
             storeName: order.store.name,
             message: "Your order has been marked as fulfilled",
             email: "ahunn@umich.edu",
+            logo,
           },
         });
       }

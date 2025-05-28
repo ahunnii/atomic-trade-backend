@@ -1,20 +1,34 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { db } from "~/server/db";
 
-import type { CheckoutData } from "~/lib/payments/types";
-import { paymentService } from "~/lib/payments";
+import type { CheckoutData } from "@atomic-trade/payments";
+import { paymentService } from "@atomic-trade/payments";
 
 export async function POST(request: NextRequest) {
   try {
     const { orderId, customerId, couponCode, returnUrl, successUrl } =
       (await request.json()) as CheckoutData;
 
-    const session = await paymentService.createCheckoutSession({
+    const order = await db.order.findUnique({
+      where: { id: orderId },
+      include: {
+        store: true,
+        orderItems: { include: { variant: { include: { product: true } } } },
+      },
+    });
+
+    if (!order) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    const session = await paymentService.checkout.createCheckoutSession({
       orderId,
       customerId,
       couponCode,
       returnUrl,
       successUrl,
+      order,
     });
     return NextResponse.json(session, { status: 200 });
   } catch (error) {

@@ -96,7 +96,7 @@ export function CollapseMenuButton({
               >
                 {label}
                 {badge && (
-                  <Badge className="bg-primary ml-2 rounded-full text-white">
+                  <Badge className="bg-secondary text-primary ml-2 rounded-full">
                     {badge}
                   </Badge>
                 )}

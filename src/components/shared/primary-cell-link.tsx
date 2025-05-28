@@ -38,7 +38,7 @@ export const PrimaryCellLink = ({ name, image, subheader, link }: Props) => {
     </>
   );
 
-  const sharedClasses = "group flex w-full items-center gap-3 py-1";
+  const sharedClasses = "group flex w-fit items-center gap-3 py-1";
 
   if (link) {
     return (

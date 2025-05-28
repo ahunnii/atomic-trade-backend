@@ -1,14 +1,12 @@
-import { SingleColumn } from "responsive-react-email";
-
-import { Text } from "@react-email/components";
-
 import {
   EmailBody,
   EmailCallToActionButton,
+  EmailColumn,
+  EmailCustomLogo,
   EmailImportantText,
-  EmailLogo,
   EmailSignature,
-} from "~/lib/email/components";
+  EmailText,
+} from "@atomic-trade/email";
 
 type Props = {
   email: string;
@@ -16,6 +14,7 @@ type Props = {
   previewText?: string;
   message: string;
   isPreview?: boolean;
+  logo: string;
 };
 
 export const GenericOrderUpdateEmail = (props: Props) => (
@@ -23,19 +22,21 @@ export const GenericOrderUpdateEmail = (props: Props) => (
     previewText={props.previewText ?? `New update from ${props.storeName}`}
     isPreview={props.isPreview}
   >
-    <SingleColumn pX={25}>
-      <EmailLogo />
-      <Text>Greetings from {props.storeName},</Text>
+    <EmailColumn pX={25}>
+      <EmailCustomLogo logoUrl={props.logo} />
+      <EmailText>Greetings from {props.storeName},</EmailText>
 
-      <Text>You have a new update on your order from {props.storeName}.</Text>
+      <EmailText>
+        You have a new update on your order from {props.storeName}.
+      </EmailText>
       <EmailImportantText>{props.message}</EmailImportantText>
-    </SingleColumn>
+    </EmailColumn>
 
-    <SingleColumn pX={25}>
-      <Text style={{ marginBottom: 4 }}>
+    <EmailColumn pX={25}>
+      <EmailText style={{ marginBottom: 4 }}>
         You can respond by replying to this email or by reaching out to them
         directly in a separate email below.
-      </Text>
+      </EmailText>
 
       <EmailCallToActionButton
         link={props.isPreview ? "#!" : `mailto:${props.email}`}
@@ -44,7 +45,7 @@ export const GenericOrderUpdateEmail = (props: Props) => (
           margin: "24px 0 24px",
         }}
       />
-    </SingleColumn>
+    </EmailColumn>
     <EmailSignature name={props.storeName} />
   </EmailBody>
 );

@@ -1,13 +1,12 @@
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
-import { db } from "~/server/db";
 import { z } from "zod";
 
+import { emailService } from "@atomic-trade/email";
 import { ProductRequestStatus, QuoteStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import { env } from "~/env";
-import { emailService } from "~/lib/email";
-import { GenericOrderUpdateEmail } from "~/lib/email/email-templates/orders/generic-order-update-email";
+import { GenericOrderUpdateEmail } from "~/lib/email-templates/generic-order-update-email";
 import {
   productQuoteValidator,
   productRequestFormValidator,
@@ -88,7 +87,7 @@ export const productRequestRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const request = await ctx.db.productRequest.findUnique({
         where: { id: input.requestId },
-        select: { email: true, store: { select: { name: true } } },
+        select: { email: true, store: { select: { name: true, logo: true } } },
       });
 
       if (!request) {
@@ -105,7 +104,7 @@ export const productRequestRouter = createTRPCRouter({
       });
 
       const fromEmail = `${request.store.name} <support@dreamwalkerstudios.co>`;
-
+      const logo = `${env.NEXT_PUBLIC_STORAGE_URL}/misc/${request.store.logo}`;
       const email = await emailService.sendEmail({
         to: request.email,
         from: fromEmail,
@@ -114,6 +113,7 @@ export const productRequestRouter = createTRPCRouter({
           email: request.email,
           storeName: request.store.name,
           message: "New quote sent",
+          logo,
         },
         template: GenericOrderUpdateEmail,
       });
@@ -134,7 +134,7 @@ export const productRequestRouter = createTRPCRouter({
             select: {
               id: true,
               email: true,
-              store: { select: { name: true } },
+              store: { select: { name: true, logo: true } },
             },
           },
         },
@@ -148,7 +148,7 @@ export const productRequestRouter = createTRPCRouter({
       }
 
       const fromEmail = `${quote.productRequest.store.name} <support@dreamwalkerstudios.co>`;
-
+      const logo = `${env.NEXT_PUBLIC_STORAGE_URL}/misc/${quote.productRequest.store.logo}`;
       const email = await emailService.sendEmail({
         to: quote.productRequest.email,
         from: fromEmail,
@@ -157,6 +157,7 @@ export const productRequestRouter = createTRPCRouter({
           email: quote.productRequest.email,
           storeName: quote.productRequest.store.name,
           message: "New quote sent",
+          logo,
         },
         template: GenericOrderUpdateEmail,
       });

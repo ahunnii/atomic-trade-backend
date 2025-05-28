@@ -3,8 +3,8 @@ import PlaceholderContent from "~/components/layout/placeholder-content";
 import { FormCardSection } from "~/components/shared/form-card-section";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
-import { CheckoutSessionClient } from "../_components/checkout-session-client";
 import { DiscountClient } from "../_components/discount-client";
+import { CheckoutSessionClient } from "../../payments/_components/checkout-session-client";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;

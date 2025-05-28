@@ -8,6 +8,7 @@ import {
 // import { getTotals } from "~/utils/calculate-prices";
 import { z } from "zod";
 
+import { emailService } from "@atomic-trade/email";
 import { FulfillmentType, PackageStatus } from "@prisma/client";
 // import { FulfillmentStatus, ShipmentStatus } from "@prisma/client";
 // import { TRPCError } from "@trpc/server";
@@ -19,6 +20,7 @@ import { FulfillmentType, PackageStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 import type { Address } from "~/lib/validators/geocoding";
+import { ShippingUpdateEmail } from "~/lib/email-templates/shipping-update-email";
 import {
   draftOrderFormValidator,
   draftOrderValidator,
@@ -34,7 +36,11 @@ export const ordersRouter = createTRPCRouter({
     .input(z.string())
     .query(({ ctx, input: storeSlug }) => {
       return ctx.db.order.count({
-        where: { store: { slug: storeSlug }, status: "PENDING" },
+        where: {
+          store: { slug: storeSlug },
+          fulfillmentStatus: "IN_PROGRESS",
+          paymentStatus: "PAID",
+        },
       });
     }),
   // markAsFulfilled: adminProcedure
@@ -1014,7 +1020,11 @@ export const ordersRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const order = await ctx.db.order.findUnique({
         where: { id: input.orderId },
-        include: { fulfillment: true },
+        include: {
+          fulfillment: true,
+          store: { select: { name: true, logo: true } },
+          orderItems: true,
+        },
       });
 
       if (!order) {
@@ -1048,7 +1058,17 @@ export const ordersRouter = createTRPCRouter({
               },
             },
             include: {
-              items: true,
+              items: {
+                include: {
+                  orderItem: {
+                    include: {
+                      variant: {
+                        include: { product: { select: { name: true } } },
+                      },
+                    },
+                  },
+                },
+              },
             },
           });
 
@@ -1083,8 +1103,54 @@ export const ordersRouter = createTRPCRouter({
         }),
       );
 
+      // Check if all order items are now fulfilled
+      const updatedOrder = await ctx.db.order.findUnique({
+        where: { id: input.orderId },
+        include: { orderItems: true },
+      });
+
+      const allItemsFulfilled = updatedOrder?.orderItems.every(
+        (item) => item.isFulfilled,
+      );
+
+      if (allItemsFulfilled) {
+        await ctx.db.order.update({
+          where: { id: input.orderId },
+          data: { fulfillmentStatus: "FULFILLED", status: "COMPLETED" },
+        });
+      }
+
+      if (
+        input.notifyCustomer &&
+        order.email &&
+        input.type === FulfillmentType.EASYPOST
+      ) {
+        const noReplyEmail = "no-reply@dreamwalkerstudios.co";
+        await emailService.sendEmail({
+          to: order.email,
+          from: noReplyEmail,
+          subject: "Your order has been fulfilled",
+          template: ShippingUpdateEmail,
+          data: {
+            email: order.email,
+            storeName: order.store.name,
+            packages: createdPackages.map((pkg) => ({
+              trackingNumber: pkg.trackingNumber ?? "Unknown",
+              trackingUrl: pkg.trackingUrl ?? "Unknown",
+              carrier: pkg.carrier ?? "Unknown",
+              items: pkg.items.map((item) => ({
+                name: item?.orderItem?.variant?.product?.name ?? "Item",
+                quantity: item.quantity,
+              })),
+            })),
+            isPreview: false,
+            logo: order.store.logo ?? "",
+          },
+        });
+      }
+
       return {
-        data: { createdPackages },
+        data: { createdPackages, allItemsFulfilled },
         message: "Packages created successfully",
       };
     }),
