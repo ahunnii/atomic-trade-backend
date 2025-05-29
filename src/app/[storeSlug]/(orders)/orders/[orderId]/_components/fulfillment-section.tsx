@@ -7,7 +7,7 @@ import { z } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import type { Fulfillment } from "~/types/order";
+import type { FulfillmentWithPackages } from "~/types/order";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { Button } from "~/components/ui/button";
@@ -97,7 +97,7 @@ interface OrderItem {
 }
 
 interface Props {
-  initialFulfillment?: Fulfillment;
+  initialFulfillment?: FulfillmentWithPackages;
   orderId: string;
   orderNumber: string;
   orderItems: OrderItem[];
@@ -254,17 +254,17 @@ export const FulfillmentSection = ({
     }
   };
 
-  const getQuantityFulfilled = (itemId: string) => {
-    const item = orderItems.find((i) => i.id === itemId);
-    if (!item) return 0;
+  // const getQuantityFulfilled = (itemId: string) => {
+  //   const item = orderItems.find((i) => i.id === itemId);
+  //   if (!item) return 0;
 
-    const allocatedQuantity = packages.reduce((total, pkg) => {
-      const pkgItem = pkg.items.find((i) => i.itemId === itemId);
-      return total + (pkgItem?.quantity ?? 0);
-    }, 0);
+  //   const allocatedQuantity = packages.reduce((total, pkg) => {
+  //     const pkgItem = pkg.items.find((i) => i.itemId === itemId);
+  //     return total + (pkgItem?.quantity ?? 0);
+  //   }, 0);
 
-    return item.quantity - allocatedQuantity;
-  };
+  //   return item.quantity - allocatedQuantity;
+  // };
 
   const addItemToPackage = (itemId: string) => {
     const currentItems = currentPackage?.items ?? [];
@@ -274,28 +274,28 @@ export const FulfillmentSection = ({
     if (!orderItem) return;
 
     // Calculate how many are already in this package
-    const currentPackageQuantity = existingItem?.quantity ?? 0;
+    // const currentPackageQuantity = existingItem?.quantity ?? 0;
 
     // Calculate how many are in other packages being created
-    const otherPackagesQuantity = packages.reduce((total, pkg, index) => {
-      if (index === selectedPackageIndex) return total;
-      const pkgItem = pkg.items.find((i) => i.itemId === itemId);
-      return total + (pkgItem?.quantity ?? 0);
-    }, 0);
+    // const otherPackagesQuantity = packages.reduce((total, pkg, index) => {
+    //   if (index === selectedPackageIndex) return total;
+    //   const pkgItem = pkg.items.find((i) => i.itemId === itemId);
+    //   return total + (pkgItem?.quantity ?? 0);
+    // }, 0);
 
     // Calculate how many are in existing packages
-    const existingPackagesQuantity =
-      initialFulfillment?.packages.reduce((total, pkg) => {
-        const pkgItem = pkg.items.find((i) => i.orderItemId === itemId);
-        return total + (pkgItem?.quantity ?? 0);
-      }, 0) ?? 0;
+    // const existingPackagesQuantity =
+    //   initialFulfillment?.packages.reduce((total, pkg) => {
+    //     const pkgItem = pkg.items.find((i) => i.orderItemId === itemId);
+    //     return total + (pkgItem?.quantity ?? 0);
+    //   }, 0) ?? 0;
 
     // Total quantity that would be in packages after adding one more
-    const totalQuantityInPackages =
-      currentPackageQuantity +
-      otherPackagesQuantity +
-      existingPackagesQuantity +
-      1;
+    // const totalQuantityInPackages =
+    //   currentPackageQuantity +
+    //   otherPackagesQuantity +
+    //   existingPackagesQuantity +
+    //   1;
 
     // Allow adding items even if they exceed original quantity (for replacements, free items, etc.)
     // But show a warning when this happens

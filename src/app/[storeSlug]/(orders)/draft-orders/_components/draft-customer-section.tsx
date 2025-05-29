@@ -5,7 +5,7 @@ import Link from "next/link";
 import { MoreHorizontal } from "lucide-react";
 
 import type { DraftOrderFormData } from "~/lib/validators/order";
-import type { Customer } from "~/types/customer";
+import type { CustomerWithOrders } from "~/types/customer";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -23,7 +23,7 @@ import { EditContactDialog } from "../../_components/edit-contact-dialog";
 
 type Props = {
   form: UseFormReturn<DraftOrderFormData>;
-  customers: Customer[];
+  customers: CustomerWithOrders[];
   isLoading: boolean;
   storeSlug: string;
 };

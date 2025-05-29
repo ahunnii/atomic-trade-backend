@@ -1,6 +1,5 @@
 import { AdminFooter } from "~/components/layout/admin-footer";
 import { Navbar } from "~/components/layout/navbar";
-import { cn } from "~/lib/utils";
 
 type Props = {
   children: React.ReactNode;

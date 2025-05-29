@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 import { cn } from "~/lib/utils";
 import { useSidebarToggle } from "~/hooks/use-sidebar-toggle";
@@ -56,6 +57,7 @@ export function Sidebar() {
             />
           </Link>
         </Button>
+
         <Menu isOpen={sidebar?.isOpen} />
       </div>
     </aside>

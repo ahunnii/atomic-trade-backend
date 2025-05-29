@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check, Clock, MoreHorizontal, Package } from "lucide-react";
 
+import type { FulfillmentWithPackages } from "~/types/order";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { Badge } from "~/components/ui/badge";
@@ -16,27 +17,6 @@ import {
 
 import { MarkAsFulfilledDialog } from "../../_components/mark-as-fulfilled-dialog";
 
-interface PackageItem {
-  id: string;
-  orderItemId: string;
-  quantity: number;
-}
-
-interface FulfilledPackage {
-  id: string;
-  status: string;
-  carrier?: string | null;
-  trackingNumber?: string | null;
-  trackingUrl?: string | null;
-  createdAt: Date;
-  items: PackageItem[];
-}
-
-interface Fulfillment {
-  id: string;
-  packages: FulfilledPackage[];
-}
-
 interface OrderItem {
   id: string;
   name: string;
@@ -51,7 +31,7 @@ interface FulfilledItemInfo {
 }
 
 interface Props {
-  fulfillment?: Fulfillment;
+  fulfillment?: FulfillmentWithPackages;
   orderItems: OrderItem[];
   orderNumber: string;
   storeSlug: string;

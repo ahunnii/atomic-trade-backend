@@ -1,12 +1,12 @@
 import { format } from "date-fns";
 
 import type {
+  FulfillmentType,
   OrderFulfillmentStatus,
   OrderPaymentStatus,
 } from "@prisma/client";
 import { type ColumnDef } from "@tanstack/react-table";
 
-import type { FulfillmentType } from "~/types/order";
 import { CellActions } from "~/components/shared/cell-actions";
 import { PrimaryCellLink } from "~/components/shared/primary-cell-link";
 
@@ -167,7 +167,6 @@ export const draftOrderColumnData: ColumnDef<DraftOrderColumn>[] = [
       <CellActions
         handleOnDelete={row.original.onDelete}
         id={row.original.id}
-        copyText="Order ID"
         isLoading={row.original.isLoading}
         hasUpdate={false}
       />

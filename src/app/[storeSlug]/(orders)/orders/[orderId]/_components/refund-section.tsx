@@ -7,9 +7,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { PaymentStatus } from "@prisma/client";
 
-import type { Payment } from "~/types/order";
-import { PaymentStatus } from "~/types/order";
+import type { PaymentWithRefunds } from "~/types/order";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import {
@@ -20,18 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-import { Textarea } from "~/components/ui/textarea";
+import { Form } from "~/components/ui/form";
 import { CurrencyFormField } from "~/components/input/currency-form-field";
 import { RadioGroupFormField } from "~/components/input/radio-group-form-field";
 import { TextareaFormField } from "~/components/input/textarea-form-field";
@@ -45,9 +34,14 @@ const refundSchema = z.object({
 
 type RefundFormData = z.infer<typeof refundSchema>;
 
-export const RefundSection = ({ payments }: { payments: Payment[] }) => {
+export const RefundSection = ({
+  payments,
+}: {
+  payments: PaymentWithRefunds[];
+}) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [selectedPayment, setSelectedPayment] =
+    useState<PaymentWithRefunds | null>(null);
 
   const form = useForm<RefundFormData>({
     resolver: zodResolver(refundSchema),
@@ -60,7 +54,7 @@ export const RefundSection = ({ payments }: { payments: Payment[] }) => {
 
   const refundType = form.watch("type");
 
-  const handleRefundClick = (payment: Payment) => {
+  const handleRefundClick = (payment: PaymentWithRefunds) => {
     setSelectedPayment(payment);
     form.reset({
       paymentId: payment.id,

@@ -7,8 +7,9 @@ import type {
 import { useState } from "react";
 import { AlertTriangle, Pencil, Trash2 } from "lucide-react";
 
+import type { Address as StoreAddress } from "@prisma/client";
+
 import type { Address as GeocodingAddress } from "~/lib/validators/geocoding";
-import type { Address as StoreAddress } from "~/types/store";
 import { cn } from "~/lib/utils";
 import {
   FormDescription,
@@ -41,7 +42,9 @@ type Props<CurrentForm extends FieldValues> = {
   onSelectAdditional?: (address: GeocodingAddress) => void;
 };
 
-const convertToStoreAddress = (address: GeocodingAddress): StoreAddress => ({
+const convertToStoreAddress = (
+  address: GeocodingAddress,
+): GeocodingAddress => ({
   id: "temp", // This is a temporary ID since we're not saving to the database
   formatted: address.formatted,
   street: address.street,
@@ -98,8 +101,10 @@ export const AutoCompleteAddressFormField = <CurrentForm extends FieldValues>({
     setIsUnverified(isUnverified);
   };
 
-  const handleAddressUpdate = (address: StoreAddress) => {
-    onAddressSelect(convertToGeocodingAddress(address));
+  const handleAddressUpdate = (
+    address: Partial<StoreAddress> & { formatted: string },
+  ) => {
+    onAddressSelect(convertToGeocodingAddress(address as StoreAddress));
   };
 
   console.log("AutoCompleteAddressFormField render:", { isUnverified });
@@ -140,6 +145,8 @@ export const AutoCompleteAddressFormField = <CurrentForm extends FieldValues>({
                         state: "",
                         postalCode: "",
                         country: "",
+                        customerId: null,
+                        userId: null,
                       }
                 }
                 setAddress={handleAddressUpdate}

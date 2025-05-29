@@ -2,12 +2,12 @@ import { format } from "date-fns";
 import { CheckCircle2 } from "lucide-react";
 
 import type {
+  FulfillmentType,
   OrderFulfillmentStatus,
   OrderPaymentStatus,
 } from "@prisma/client";
 import { type ColumnDef } from "@tanstack/react-table";
 
-import type { FulfillmentType } from "~/types/order";
 import { CellActions } from "~/components/shared/cell-actions";
 import { PrimaryCellLink } from "~/components/shared/primary-cell-link";
 
@@ -137,27 +137,6 @@ export const orderColumnData: ColumnDef<OrderColumn>[] = [
     },
   },
 
-  // {
-  //   accessorKey: "paymentStatus",
-  //   header: "Payment Status",
-  //   filterFn: (row, id, value) => {
-  //     return value.includes(row.getValue(id) as string) || value.includes(row.original.paymentStatus);
-  //   },
-  //   cell: ({ row }) => {
-  //     return <p className="">{`${row.original.paymentStatus}`}</p>;
-  //   },
-  // },
-  // {
-  //   accessorKey: "fulfillmentStatus",
-  //   header: "Fulfillment Status",
-  //   filterFn: (row, id, value) => {
-  //     return value.includes(row.getValue(id) as string);
-  //   },
-  //   cell: ({ row }) => {
-  //     return <p className="">{`${row.original.fulfillmentStatus}`}</p>;
-  //   },
-  // },
-
   {
     accessorKey: "subtotalInCents",
     header: "Subtotal",
@@ -187,7 +166,6 @@ export const orderColumnData: ColumnDef<OrderColumn>[] = [
       <CellActions
         handleOnDelete={row.original.onDelete}
         id={row.original.id}
-        copyText="Order ID"
         isLoading={row.original.isLoading}
         hasUpdate={false}
       />

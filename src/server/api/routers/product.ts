@@ -16,7 +16,7 @@ import { z } from "zod";
 import { ProductStatus, ProductType, SaleType } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
-import type { Product } from "~/types/product";
+import type { ProductWithVariations } from "~/types/product";
 import { env } from "~/env";
 import {
   productFormValidator,
@@ -127,7 +127,7 @@ export const productsRouter = createTRPCRouter({
       });
 
       const filteredProductsAlt = filterProductsByVariantsAlt(
-        products as unknown as Product[],
+        products as unknown as ProductWithVariations[],
         results.names,
         results.values,
       );

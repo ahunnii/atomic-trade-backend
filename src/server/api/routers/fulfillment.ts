@@ -2,8 +2,8 @@ import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { z } from "zod";
 
 import { emailService } from "@atomic-trade/email";
+import { OrderFulfillmentStatus } from "@prisma/client";
 
-import { OrderFulfillmentStatus } from "~/types/order";
 import { env } from "~/env";
 import { GenericOrderUpdateEmail } from "~/lib/email-templates/generic-order-update-email";
 

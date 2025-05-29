@@ -9,10 +9,10 @@ import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { DraftOrderFormData } from "~/lib/validators/order";
-import type { Customer } from "~/types/customer";
-import type { Order } from "~/types/order";
-import type { PartialProduct, Product } from "~/types/product";
-import type { ProductRequest } from "~/types/product-request";
+import type { CustomerWithOrders } from "~/types/customer";
+import type { OrderWithOrderItems } from "~/types/order";
+import type { PartialProduct, ProductWithVariations } from "~/types/product";
+import type { ProductRequestWithCustomer } from "~/types/product-request";
 import { draftOrderFormValidator } from "~/lib/validators/order";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
@@ -41,12 +41,12 @@ import { DraftOrderItemSection } from "./draft-order-item-section";
 import { DraftPaymentsSection } from "./draft-payments-section";
 
 type Props = {
-  initialData: Order | null;
+  initialData: OrderWithOrderItems | null;
   products: PartialProduct[];
-  customers: Customer[];
+  customers: CustomerWithOrders[];
   storeId: string;
   storeSlug: string;
-  productRequest: ProductRequest | null;
+  productRequest: ProductRequestWithCustomer | null;
 };
 
 export const DraftOrderForm = ({
@@ -329,13 +329,13 @@ export const DraftOrderForm = ({
               <DraftOrderItemSection
                 form={form}
                 loading={isLoading}
-                products={products as Product[]}
+                products={products as ProductWithVariations[]}
               />
 
               <DraftPaymentsSection
                 form={form}
                 loading={isLoading}
-                products={products as Product[]}
+                products={products}
               >
                 <Separator />
 

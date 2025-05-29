@@ -8,7 +8,7 @@ import { useFieldArray } from "react-hook-form";
 
 import type { PreviousProduct } from "../../_validators/types";
 import type { DraftOrderFormData } from "~/lib/validators/order";
-import type { Product } from "~/types/product";
+import type { ProductWithVariations } from "~/types/product";
 import { env } from "~/env";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
@@ -19,7 +19,7 @@ import { ProductSelectDialog } from "../../_components/product-select-dialog";
 
 type Props = {
   form: UseFormReturn<DraftOrderFormData>;
-  products: Product[];
+  products: ProductWithVariations[];
   loading: boolean;
 };
 
@@ -49,11 +49,11 @@ export const DraftOrderItemSection = ({ form, loading, products }: Props) => {
 
     // Otherwise, find the product and variant
     const product = products.find((product) =>
-      product.variants.some((variant) => variant.id === field.variantId),
+      product?.variants?.some((variant) => variant.id === field.variantId),
     )!;
-    const variant = product.variants.find(
+    const variant = product?.variants?.find(
       (variant) => variant.id === field.variantId,
-    )!;
+    );
     return {
       variantId: field.variantId,
       productId: product?.id ?? "",

@@ -5,11 +5,12 @@ import { useState } from "react";
 import Image from "next/image";
 import { XIcon } from "lucide-react";
 
+import type { Variation } from "@prisma/client";
 import { createId } from "@paralleldrive/cuid2";
 
 import type { PreviousProduct } from "../_validators/types";
 import type { DraftOrderFormData } from "~/lib/validators/order";
-import type { Product, Variation } from "~/types/product";
+import type { ProductWithVariations } from "~/types/product";
 import { env } from "~/env";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -25,7 +26,7 @@ import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
 type Props = {
-  products: Product[];
+  products: ProductWithVariations[];
   previousProducts: PreviousProduct[];
   isOpen: boolean;
   onClose: () => void;
@@ -44,7 +45,7 @@ export const ProductSelectDialog = ({
     {
       variantId: string;
       productId: string;
-      product: Product | null;
+      product: ProductWithVariations | null;
       variant: Variation | null;
     }[]
   >(previousProducts ?? []);
@@ -53,7 +54,10 @@ export const ProductSelectDialog = ({
     product.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const handleSelectVariant = (product: Product, variantId: string) => {
+  const handleSelectVariant = (
+    product: ProductWithVariations,
+    variantId: string,
+  ) => {
     const existingIndex = selectedProducts.findIndex(
       (item) => item.variantId === variantId,
     );
@@ -210,7 +214,7 @@ export const ProductSelectDialog = ({
                       <div className="flex items-center gap-3">
                         <div className="relative h-10 w-10 overflow-hidden rounded-md border">
                           <Image
-                            src={product.featuredImage}
+                            src={`${env.NEXT_PUBLIC_STORAGE_URL}/products/${product.featuredImage}`}
                             alt={product.name}
                             fill
                             className="object-cover"

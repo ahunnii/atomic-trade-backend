@@ -6,10 +6,11 @@ import { useParams } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
 import { useForm } from "react-hook-form";
 
-import type { Address } from "~/lib/validators/geocoding";
+import type { Address, Customer } from "@prisma/client";
+
 import type { DraftOrderFormData } from "~/lib/validators/order";
-import type { Customer } from "~/types/customer";
-import type { Order } from "~/types/order";
+import type { CustomerWithOrders } from "~/types/customer";
+import type { OrderWithOrderItems } from "~/types/order";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { Button } from "~/components/ui/button";
@@ -36,12 +37,12 @@ type CustomerFormData = {
   billingAddressId?: string;
   shippingAddress?: Address;
   billingAddress?: Address;
-  customer: Customer & { ordersCount: number };
+  customer: Customer & { addresses: Address[]; _count: { orders: number } };
 };
 
 type Props = {
-  customers: Customer[];
-  order?: Order;
+  customers: CustomerWithOrders[];
+  order?: OrderWithOrderItems;
 };
 
 export const CustomerSection = ({ customers, order }: Props) => {
@@ -56,7 +57,7 @@ export const CustomerSection = ({ customers, order }: Props) => {
     api.order.updateOrderCustomerInfo.useMutation(defaultActions);
 
   const [selectedCustomer, setSelectedCustomer] =
-    useState<Partial<Customer> | null>({
+    useState<Partial<CustomerWithOrders> | null>({
       id: order?.customerId ?? "",
       firstName: order?.customer?.firstName ?? "",
       lastName: order?.customer?.lastName ?? "",
@@ -77,10 +78,16 @@ export const CustomerSection = ({ customers, order }: Props) => {
     defaultValues: {
       email: !!order?.email ? order?.email : (order?.customer?.email ?? ""),
       phone: !!order?.phone ? order?.phone : (order?.customer?.phone ?? ""),
-      shippingAddress: order?.shippingAddress,
-      billingAddress: order?.billingAddress,
-      shippingAddressId: order?.shippingAddress?.id,
-      billingAddressId: order?.billingAddress?.id,
+      shippingAddress: order?.shippingAddress ?? undefined,
+      billingAddress: order?.billingAddress ?? undefined,
+      shippingAddressId:
+        order?.shippingAddress && "id" in order.shippingAddress
+          ? order.shippingAddress.id
+          : undefined,
+      billingAddressId:
+        order?.billingAddress && "id" in order.billingAddress
+          ? order.billingAddress.id
+          : undefined,
       customer: {
         id: order?.customerId ?? "",
         firstName: order?.customer?.firstName ?? "",
@@ -88,7 +95,9 @@ export const CustomerSection = ({ customers, order }: Props) => {
         email: order?.customer?.email ?? "",
         phone: order?.customer?.phone ?? "",
         addresses: order?.customer?.addresses ?? [],
-        ordersCount: order?.customer?._count?.orders ?? 0,
+        _count: {
+          orders: order?.customer?._count?.orders ?? 0,
+        },
       },
     },
   });
@@ -120,8 +129,8 @@ export const CustomerSection = ({ customers, order }: Props) => {
       email: !!order?.email ? order?.email : (order?.customer?.email ?? ""),
       phone: !!order?.phone ? order?.phone : (order?.customer?.phone ?? ""),
 
-      shippingAddress: order?.shippingAddress,
-      billingAddress: order?.billingAddress,
+      shippingAddress: order?.shippingAddress ?? undefined,
+      billingAddress: order?.billingAddress ?? undefined,
       customer: {
         id: order?.customerId ?? "",
         firstName: order?.customer?.firstName ?? "",
@@ -129,7 +138,9 @@ export const CustomerSection = ({ customers, order }: Props) => {
         email: order?.customer?.email ?? "",
         phone: order?.customer?.phone ?? "",
         addresses: order?.customer?.addresses ?? [],
-        ordersCount: order?.customer?._count?.orders ?? 0,
+        _count: {
+          orders: order?.customer?._count?.orders ?? 0,
+        },
       },
     });
     setShippingAddress(order?.shippingAddress);
@@ -273,12 +284,17 @@ export const CustomerSection = ({ customers, order }: Props) => {
                           form={customerForm}
                           name="shippingAddress.formatted"
                           defaultValue={
-                            shippingAddress ?? order?.shippingAddress
+                            shippingAddress ??
+                            order?.shippingAddress ??
+                            undefined
                           }
                           onSelectAdditional={(address) => {
                             setEditingContact(true);
-                            setShippingAddress(address);
-                            customerForm.setValue("shippingAddress", address);
+                            setShippingAddress(address as Address);
+                            customerForm.setValue(
+                              "shippingAddress",
+                              address as Address,
+                            );
 
                             // handleUpdateCustomerInfo({
                             //   ...customerForm.getValues(),
@@ -325,10 +341,15 @@ export const CustomerSection = ({ customers, order }: Props) => {
                         <AutoCompleteAddressFormField
                           form={customerForm}
                           name="billingAddress.formatted"
-                          defaultValue={billingAddress ?? order?.billingAddress}
+                          defaultValue={
+                            billingAddress ?? order?.billingAddress ?? undefined
+                          }
                           onSelectAdditional={(address) => {
-                            setBillingAddress(address);
-                            customerForm.setValue("billingAddress", address);
+                            setBillingAddress(address as Address);
+                            customerForm.setValue(
+                              "billingAddress",
+                              address as Address,
+                            );
                             // handleUpdateCustomerInfo({
                             //   ...customerForm.getValues(),
                             //   billingAddress: address,

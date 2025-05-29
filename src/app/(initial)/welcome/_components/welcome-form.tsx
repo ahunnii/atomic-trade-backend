@@ -13,7 +13,6 @@ import { useFileUpload } from "~/lib/file-upload/hooks/use-file-upload";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { Form } from "~/components/ui/form";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import { AutoCompleteAddressFormField } from "~/components/input/autocomplete-address-form-field";
 import { ImageFormField } from "~/components/input/image-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
@@ -26,7 +25,7 @@ export const WelcomeForm = () => {
 
   const businessLogoRef = useRef<ImageFormFieldRef>(null);
 
-  const { uploadFile, isUploading } = useFileUpload({
+  const { isUploading } = useFileUpload({
     route: "misc",
     api: "/api/upload-misc",
   });

@@ -1,4 +1,4 @@
-import type { Product } from "~/types/product";
+import type { ProductWithVariations } from "~/types/product";
 
 export function extractQueryString(query: string) {
   // Split the query string into individual key-value pairs
@@ -44,7 +44,7 @@ export function parseQueryString(query: string): Record<string, unknown> {
 }
 
 export function filterProductsByVariants(
-  products: Product[],
+  products: ProductWithVariations[],
   targetNames: string[],
   targetValues: string[][],
 ) {
@@ -62,7 +62,7 @@ export function filterProductsByVariants(
 }
 
 export function filterProductsByVariantsAlt(
-  products: Product[],
+  products: ProductWithVariations[],
   targetNames: string[],
   targetValues: string[][],
 ) {

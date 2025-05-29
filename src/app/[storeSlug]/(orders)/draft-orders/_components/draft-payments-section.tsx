@@ -3,7 +3,7 @@
 import type { UseFormReturn } from "react-hook-form";
 
 import type { DraftOrderFormData } from "~/lib/validators/order";
-import type { Product } from "~/types/product";
+import type { PartialProduct } from "~/types/product";
 import { Card } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { MinimalSwitchFormField } from "~/components/input/minimal-switch-form-field";
@@ -12,7 +12,7 @@ import { ApplyDiscountDialog } from "../../_components/apply-discount-dialog";
 
 type Props = {
   form: UseFormReturn<DraftOrderFormData>;
-  products: Product[];
+  products: PartialProduct[];
   loading: boolean;
   children?: React.ReactNode;
 };

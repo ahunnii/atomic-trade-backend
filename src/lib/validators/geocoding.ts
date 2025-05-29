@@ -13,6 +13,8 @@ export const addressValidator = z.object({
   postalCode: z.string(),
   country: z.string(),
   isDefault: z.boolean().optional().nullable(),
+  customerId: z.string().optional().nullable(),
+  userId: z.string().optional().nullable(),
 });
 
 export type Address = z.infer<typeof addressValidator>;

@@ -1,13 +1,13 @@
 "use client";
 
 import type React from "react";
-import type { FormEvent } from "react";
 import type { ZodError } from "zod";
 import { useEffect, useState } from "react";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { z } from "zod";
 
-import type { Address } from "~/types/store";
+import type { Address } from "@prisma/client";
+
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -24,8 +24,8 @@ import { FormMessages } from "~/components/shared/form-messages";
 interface AddressDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  address: Address;
-  setAddress: (address: Address) => void;
+  address: Partial<Address> & { formatted: string };
+  setAddress: (address: Partial<Address> & { formatted: string }) => void;
   adrAddress: string;
   dialogTitle: string;
   isLoading: boolean;
@@ -224,11 +224,11 @@ export default function AddressDialog(
   };
 
   useEffect(() => {
-    setStreet(address.street);
+    setStreet(address.street ?? "");
     setAdditional(address.additional ?? "");
-    setPostalCode(address.postalCode);
-    setCity(address.city);
-    setState(address.state);
+    setPostalCode(address.postalCode ?? "");
+    setCity(address.city ?? "");
+    setState(address.state ?? "");
 
     if (!open) {
       setErrorMap({});

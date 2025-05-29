@@ -1,4 +1,5 @@
-import type { Customer } from "~/types/customer";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
 import { api } from "~/trpc/server";
 
 import { OrderForm } from "../_components/order-form";
@@ -8,15 +9,13 @@ type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
+export const metadata = { title: "New Order" };
+
 export default async function NewOrderAdminPage({ params }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  const products = await api.product.getAll({ storeId: store!.id });
-  const customers = await api.users.getAllCustomers(store!.id);
-
-  if (!store) {
-    return <div>Store not found</div>;
-  }
+  const storeId = await getStoreIdViaTRPC(storeSlug);
+  const products = await api.product.getAll(storeSlug);
+  const customers = await api.customer.getAll(storeSlug);
 
   return (
     <ContentLayout
@@ -32,8 +31,8 @@ export default async function NewOrderAdminPage({ params }: Props) {
       <OrderForm
         initialData={null}
         products={products ?? []}
-        customers={customers as Customer[]}
-        storeId={store.id}
+        customers={customers}
+        storeId={storeId}
         storeSlug={storeSlug}
       />
     </ContentLayout>

@@ -6,9 +6,9 @@ import { Loader2, Send, StoreIcon, UserIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import type { TimelineEvent } from "@prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import type { TimelineEvent } from "~/types/order";
 import type { TimelineElement } from "~/types/timeline";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";

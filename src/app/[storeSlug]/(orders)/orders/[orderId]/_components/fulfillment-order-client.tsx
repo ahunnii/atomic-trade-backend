@@ -1,7 +1,10 @@
 "use client";
 
-import type { Customer } from "~/types/customer";
-import type { Order } from "~/types/order";
+import type { CustomerWithOrders } from "~/types/customer";
+import type {
+  FulfillmentWithPackages,
+  OrderWithOrderItems,
+} from "~/types/order";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { CustomerSection } from "./customer-section";
@@ -10,10 +13,10 @@ import { FulfillmentSection } from "./fulfillment-section";
 type Props = {
   orderId: string;
   storeSlug: string;
-  order: Order;
+  order: OrderWithOrderItems;
   areItemsRefundable: boolean;
   areItemsExchangeable: boolean;
-  customers: Customer[];
+  customers: CustomerWithOrders[];
 };
 
 export const FulfillmentSingleOrderClient = ({
@@ -44,7 +47,7 @@ export const FulfillmentSingleOrderClient = ({
             onFulfill={async (data) => {
               console.log(data);
             }}
-            initialFulfillment={order?.fulfillment}
+            initialFulfillment={order?.fulfillment as FulfillmentWithPackages}
             orderNumber={order?.orderNumber ?? ""}
             storeSlug={storeSlug}
           />

@@ -47,7 +47,6 @@ export const sitePageColumnData: ColumnDef<CollectionColumn>[] = [
         handleOnDelete={row.original.onDelete}
         handleOnDuplicate={row.original.onDuplicate}
         id={row.original.id}
-        copyText="Site Page ID"
         isLoading={row.original.isLoading}
       />
     ),

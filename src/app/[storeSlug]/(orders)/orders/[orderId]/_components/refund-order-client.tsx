@@ -1,20 +1,19 @@
 "use client";
 
-import type { Customer } from "~/types/customer";
-import type { Order } from "~/types/order";
+import type { CustomerWithOrders } from "~/types/customer";
+import type { OrderWithOrderItems } from "~/types/order";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { CustomerSection } from "./customer-section";
-import { FulfillmentSection } from "./fulfillment-section";
 import { RefundSection } from "./refund-section";
 
 type Props = {
   orderId: string;
   storeSlug: string;
-  order: Order;
+  order: OrderWithOrderItems;
   areItemsRefundable: boolean;
   areItemsExchangeable: boolean;
-  customers: Customer[];
+  customers: CustomerWithOrders[];
 };
 
 export const RefundOrderClient = ({ order, storeSlug, customers }: Props) => {

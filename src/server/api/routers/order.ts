@@ -1,4 +1,5 @@
 // import { type Item } from "~/providers/cart-provider";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import {
   generateDraftOrderNumber,
@@ -400,29 +401,35 @@ export const ordersRouter = createTRPCRouter({
   //     });
   //   }),
 
-  getAll: adminProcedure.input(z.string()).query(({ ctx, input: storeId }) => {
-    return ctx.db.order.findMany({
-      where: { storeId, status: { not: "DRAFT" } },
-      include: {
-        customer: true,
+  getAll: adminProcedure
+    .input(z.string())
+    .query(async ({ ctx, input: storeSlug }) => {
+      const storeId = await getStoreIdViaTRPC(storeSlug);
 
-        fulfillment: true,
-        shippingAddress: {
-          select: {
-            city: true,
-            state: true,
+      return ctx.db.order.findMany({
+        where: { storeId, status: { not: "DRAFT" } },
+        include: {
+          customer: true,
+
+          fulfillment: true,
+          shippingAddress: {
+            select: {
+              city: true,
+              state: true,
+            },
           },
+          payments: true,
+          orderItems: { include: { variant: { include: { product: true } } } },
         },
-        payments: true,
-        orderItems: { include: { variant: { include: { product: true } } } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-  }),
+        orderBy: { createdAt: "desc" },
+      });
+    }),
 
   getAllDrafts: adminProcedure
     .input(z.string())
-    .query(({ ctx, input: storeId }) => {
+    .query(async ({ ctx, input: storeSlug }) => {
+      const storeId = await getStoreIdViaTRPC(storeSlug);
+
       return ctx.db.order.findMany({
         where: { storeId, status: "DRAFT" },
         include: {

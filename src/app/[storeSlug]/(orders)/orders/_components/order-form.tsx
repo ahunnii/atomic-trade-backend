@@ -4,12 +4,13 @@ import type { Tag } from "emblor";
 import { uniqueId } from "lodash";
 import { useForm } from "react-hook-form";
 
+import type { Customer } from "@prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { DraftOrderFormData } from "~/lib/validators/order";
-import type { Customer } from "~/types/customer";
-import type { Order } from "~/types/order";
-import type { PartialProduct, Product } from "~/types/product";
+import type { CustomerWithOrders } from "~/types/customer";
+import type { OrderWithOrderItems } from "~/types/order";
+import type { PartialProduct, ProductWithVariations } from "~/types/product";
 import { draftOrderFormValidator } from "~/lib/validators/order";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
@@ -18,6 +19,7 @@ import { Form } from "~/components/ui/form";
 import { TagFormField } from "~/components/input/tag-form-field";
 import { TextareaFormField } from "~/components/input/textarea-form-field";
 import { FormAdditionalOptionsButton } from "~/components/shared/form-additional-options-button";
+import { FormDiscardButton } from "~/components/shared/form-discard-button";
 import { FormHeader } from "~/components/shared/form-header";
 import { LoadButton } from "~/components/shared/load-button";
 
@@ -26,7 +28,7 @@ import { DraftOrderItemSection } from "../../draft-orders/_components/draft-orde
 import { DraftPaymentsSection } from "../../draft-orders/_components/draft-payments-section";
 
 type Props = {
-  initialData: Order | null;
+  initialData: OrderWithOrderItems | null;
   products: PartialProduct[];
   customers: Customer[];
   storeId: string;
@@ -141,6 +143,31 @@ export const OrderForm = ({
       ),
       tags: data.tags.map((tag) => tag.text),
     });
+
+    if (initialData)
+      updateDraftOrder.mutate({
+        ...data,
+        orderId: initialData.id,
+        customerId: data.customer.id,
+        subtotalInCents: data.orderItems.reduce(
+          (acc, item) => acc + item.totalPriceInCents * item.quantity,
+          0,
+        ),
+        tags: data.tags.map((tag) => tag.text),
+      });
+    else
+      createDraftOrder.mutate({
+        ...data,
+        storeId,
+        productRequestId: data.productRequestId ?? undefined,
+        customerId: data.customer.id,
+        subtotalInCents: data.orderItems.reduce(
+          (acc, item) => acc + item.totalPriceInCents * item.quantity,
+          0,
+        ),
+        tags: data.tags.map((tag) => tag.text),
+      });
+
     // if (initialData)
     //   updateOrder.mutate({
     //     ...data,
@@ -169,40 +196,39 @@ export const OrderForm = ({
 
   const isLoading = false;
 
-  const onSave = (data: DraftOrderFormData) => {
-    if (initialData)
-      updateDraftOrder.mutate({
-        ...data,
-        orderId: initialData.id,
-        customerId: data.customer.id,
-        subtotalInCents: data.orderItems.reduce(
-          (acc, item) => acc + item.totalPriceInCents * item.quantity,
-          0,
-        ),
-        tags: data.tags.map((tag) => tag.text),
-      });
-    else
-      createDraftOrder.mutate({
-        ...data,
-        storeId,
-        productRequestId: data.productRequestId ?? undefined,
-        customerId: data.customer.id,
-        subtotalInCents: data.orderItems.reduce(
-          (acc, item) => acc + item.totalPriceInCents * item.quantity,
-          0,
-        ),
-        tags: data.tags.map((tag) => tag.text),
-      });
-  };
+  // const onSave = (data: DraftOrderFormData) => {
+  //   if (initialData)
+  //     updateDraftOrder.mutate({
+  //       ...data,
+  //       orderId: initialData.id,
+  //       customerId: data.customer.id,
+  //       subtotalInCents: data.orderItems.reduce(
+  //         (acc, item) => acc + item.totalPriceInCents * item.quantity,
+  //         0,
+  //       ),
+  //       tags: data.tags.map((tag) => tag.text),
+  //     });
+  //   else
+  //     createDraftOrder.mutate({
+  //       ...data,
+  //       storeId,
+  //       productRequestId: data.productRequestId ?? undefined,
+  //       customerId: data.customer.id,
+  //       subtotalInCents: data.orderItems.reduce(
+  //         (acc, item) => acc + item.totalPriceInCents * item.quantity,
+  //         0,
+  //       ),
+  //       tags: data.tags.map((tag) => tag.text),
+  //     });
+  // };
 
   return (
     <>
       <Form {...form}>
         <form
           onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
-          onChange={(e) => {
-            console.log(form.watch());
-            console.log(form.formState.errors);
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.preventDefault();
           }}
         >
           <FormHeader title={title} link={`/${storeSlug}/orders`}>
@@ -213,6 +239,12 @@ export const OrderForm = ({
               onPublish={() => onSave(form.getValues(), true)}
               isLoading={isLoading}
             /> */}
+
+            <FormDiscardButton
+              isLoading={isLoading}
+              redirectPath={`/${storeSlug}/orders`}
+            />
+
             <LoadButton variant="outline" type="submit" isLoading={isLoading}>
               Save Draft
             </LoadButton>
@@ -222,19 +254,19 @@ export const OrderForm = ({
               <DraftOrderItemSection
                 form={form}
                 loading={isLoading}
-                products={products as Product[]}
+                products={products as ProductWithVariations[]}
               />
 
               <DraftPaymentsSection
                 form={form}
                 loading={isLoading}
-                products={products as Product[]}
+                products={products}
               />
             </div>
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-5">
               <DraftCustomerSection
                 form={form}
-                customers={customers ?? []}
+                customers={customers as CustomerWithOrders[]}
                 isLoading={isLoading}
                 storeSlug={storeSlug}
               />

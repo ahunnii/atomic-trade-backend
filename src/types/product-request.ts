@@ -4,7 +4,6 @@ import {
   type Order,
   type ProductQuote,
   type ProductRequest,
-  type ProductRequestStatus,
 } from "@prisma/client";
 
 // export type ProductRequest = {

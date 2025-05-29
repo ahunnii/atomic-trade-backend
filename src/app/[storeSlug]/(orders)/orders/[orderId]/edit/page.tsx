@@ -1,6 +1,3 @@
-import type { Customer } from "~/types/customer";
-import type { Order } from "~/types/order";
-import type { ProductRequest } from "~/types/product-request";
 import { api } from "~/trpc/server";
 import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
@@ -20,7 +17,7 @@ export default async function UpdateOrderPage({ params }: Props) {
   const store = await api.store.getBySlug(storeSlug);
   const order = await api.order.get(orderId);
 
-  const products = await api.product.getAll({ storeId: store!.id });
+  const products = await api.product.getAll(storeSlug);
   const customers = await api.customer.getAll(store!.id);
 
   if (!store) {
@@ -39,10 +36,10 @@ export default async function UpdateOrderPage({ params }: Props) {
       currentPage="Update Order"
     >
       <DraftOrderForm
-        initialData={order as Order | null}
+        initialData={order}
         storeId={store.id}
         storeSlug={storeSlug}
-        customers={customers as Customer[]}
+        customers={customers}
         products={products}
         productRequest={null}
       />

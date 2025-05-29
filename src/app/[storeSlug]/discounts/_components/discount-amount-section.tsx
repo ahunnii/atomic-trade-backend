@@ -31,7 +31,7 @@ export const DiscountAmountSection = ({ form }: Props) => {
         defaultValue={currentMethod ? "true" : "false"}
         label="Discount method"
         values={[
-          { label: "Discount via sale", value: "true" },
+          // { label: "Discount via sale", value: "true" },
           { label: "Discount via code", value: "false" },
         ]}
         onChange={(value) => {

@@ -1,5 +1,3 @@
-import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
-
 import { WelcomeClient } from "./_components/welcome-client";
 
 export const metadata = {

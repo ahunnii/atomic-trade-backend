@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 
 import type { Option } from "~/components/ui/custom/autocomplete-input";
 import type { DraftOrderFormData } from "~/lib/validators/order";
-import type { Customer } from "~/types/customer";
+import type { CustomerWithOrders } from "~/types/customer";
 import { cn } from "~/lib/utils";
 import { AutoComplete } from "~/components/ui/custom/autocomplete-input";
 import {
@@ -26,7 +26,7 @@ type Props = {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   inputId?: string;
   inputClassName?: string;
-  customers: Customer[];
+  customers: CustomerWithOrders[];
 };
 
 export function CustomerFormField({
@@ -37,7 +37,7 @@ export function CustomerFormField({
   customers,
   disabled,
 }: Props) {
-  const [value, setValue] = useState<Option<Customer>>();
+  const [value, setValue] = useState<Option<CustomerWithOrders>>();
 
   const formattedCustomers = useMemo(() => {
     return customers.map((customer) => ({
@@ -45,7 +45,7 @@ export function CustomerFormField({
       label: `${customer.firstName} ${customer.lastName}`,
       sublabel: customer.email,
       data: customer,
-    })) as Option<Customer>[];
+    })) as Option<CustomerWithOrders>[];
   }, [customers]);
 
   return (
