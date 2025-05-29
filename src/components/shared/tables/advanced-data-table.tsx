@@ -187,7 +187,7 @@ export function AdvancedDataTable<TData, TValue>({
   }, [rowSelection]);
 
   return (
-    <div className="w-full space-y-4 transition-all duration-300 ease-in-out">
+    <div className="w-full space-y-4 py-4 transition-all duration-300 ease-in-out">
       <div className={cn("w-full", handleToolbarChange && "hidden")}>
         <DataTableToolbar
           table={table}

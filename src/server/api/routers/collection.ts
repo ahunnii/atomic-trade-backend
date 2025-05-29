@@ -1,3 +1,4 @@
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 import {
   adminProcedure,
   createTRPCRouter,
@@ -61,13 +62,18 @@ export const collectionsRouter = createTRPCRouter({
       });
     }),
 
-  getAll: adminProcedure.input(z.string()).query(({ ctx, input: storeId }) => {
-    return ctx.db.collection.findMany({
-      where: { storeId },
-      include: { products: true },
-      orderBy: { createdAt: "desc" },
-    });
-  }),
+  getAll: adminProcedure
+    .input(z.string())
+    .query(async ({ ctx, input: storeSlug }) => {
+      const storeId = await getStoreIdViaTRPC(storeSlug);
+
+      const collections = await ctx.db.collection.findMany({
+        where: { storeId },
+        include: { products: true },
+        orderBy: { createdAt: "desc" },
+      });
+      return collections;
+    }),
   search: publicProcedure
     .input(z.object({ queryString: z.string(), storeId: z.string() }))
     .query(async ({ ctx, input }) => {

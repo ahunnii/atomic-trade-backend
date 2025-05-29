@@ -6,31 +6,30 @@ import { useRouter } from "next/navigation";
 import { uniqueId } from "lodash";
 import { useForm } from "react-hook-form";
 
+import type { BlogPost } from "@prisma/client";
 import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { ImageFormFieldRef } from "~/components/input/image-form-field";
 import type { LargeMarkdownFormFieldRef } from "~/components/input/large-markdown-form-field";
 import type { BlogPostFormData } from "~/lib/validators/blog";
-import type { BlogPost } from "~/types/blog";
 import { env } from "~/env";
 import { blogPostFormValidator } from "~/lib/validators/blog";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
-import { Badge } from "~/components/ui/badge";
 import { Form } from "~/components/ui/form";
 import { ImageFormField } from "~/components/input/image-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
 import { LargeMarkdownFormField } from "~/components/input/large-markdown-form-field";
 import { TagFormField } from "~/components/input/tag-form-field";
 import { FormAdditionalOptionsButton } from "~/components/shared/form-additional-options-button";
+import { FormDiscardButton } from "~/components/shared/form-discard-button";
 import { FormHeader } from "~/components/shared/form-header";
 import { FormSaveOptionsButton } from "~/components/shared/form-save-options-button";
-import { FormSection } from "~/components/shared/form-section";
+import { FormStatusTitle } from "~/components/shared/form-status-title";
 
 type Props = {
   initialData: BlogPost | null;
-
   storeSlug: string;
   storeId: string;
 };
@@ -38,34 +37,21 @@ type Props = {
 export const BlogPostForm = ({ initialData, storeSlug, storeId }: Props) => {
   const router = useRouter();
 
+  const parentPath = `/${storeSlug}/blog`;
+
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["blog"],
-    redirectPath: `/${storeSlug}/blog`,
+    redirectPath: parentPath,
   });
 
   const editorRef = useRef<LargeMarkdownFormFieldRef>(null);
 
-  const title = initialData ? (
-    initialData?.status === "PUBLISHED" ? (
-      <div className="flex items-center gap-2">
-        <span>Edit blog post</span>
-        <Badge
-          variant="outline"
-          className="bg-green-100 text-xs font-bold text-green-800 dark:bg-green-900 dark:text-green-100"
-        >
-          Published
-        </Badge>
-      </div>
-    ) : (
-      <span className="flex items-center gap-2">
-        <span>Edit blog post</span>
-        <Badge variant="outline" className="text-xs">
-          Draft
-        </Badge>
-      </span>
-    )
-  ) : (
-    "Create blog post"
+  const title = (
+    <FormStatusTitle
+      hasInitialData={!!initialData}
+      title="Blog Post"
+      status={initialData?.status ?? "DRAFT"}
+    />
   );
 
   const updateBlogPost = api.blog.update.useMutation(defaultActions);
@@ -105,13 +91,9 @@ export const BlogPostForm = ({ initialData, storeSlug, storeId }: Props) => {
     },
   });
 
-  const onSubmit = (data: BlogPostFormData) => {
-    console.log(data);
-  };
-
   const featuredImageRef = useRef<ImageFormFieldRef>(null);
 
-  const onSave = async (data: BlogPostFormData, publish = false) => {
+  const onSave = async (data: BlogPostFormData, publish?: boolean) => {
     const featuredImage = await featuredImageRef.current?.upload();
 
     if (initialData) {
@@ -131,6 +113,10 @@ export const BlogPostForm = ({ initialData, storeSlug, storeId }: Props) => {
         tags: data.tags.map((tag) => tag.text),
       });
     }
+  };
+
+  const onSubmit = (data: BlogPostFormData) => {
+    void onSave(data, data?.status === "PUBLISHED");
   };
 
   const onDelete = () => deleteBlogPost.mutate(initialData?.id ?? "");
@@ -173,13 +159,18 @@ export const BlogPostForm = ({ initialData, storeSlug, storeId }: Props) => {
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title={title} link={`/${storeSlug}/collections`}>
+          <FormHeader title={title} link={parentPath}>
             {initialData && (
               <FormAdditionalOptionsButton
                 onDelete={onDelete}
                 onDuplicate={onSaveAndDuplicate}
               />
             )}
+
+            <FormDiscardButton
+              isLoading={isLoading}
+              redirectPath={parentPath}
+            />
 
             <FormSaveOptionsButton
               onSave={async () => {
@@ -194,38 +185,37 @@ export const BlogPostForm = ({ initialData, storeSlug, storeId }: Props) => {
             />
           </FormHeader>
 
-          <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
+          <section className="form-body">
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-8">
-              <FormSection
-                title="Details"
-                description="Basic information on the Collection"
-                bodyClassName="space-y-4"
-              >
-                <InputFormField
-                  form={form}
-                  disabled={isLoading}
-                  name="title"
-                  label="Title"
-                  placeholder="e.g. The Summer Collection"
-                />
-
+              <div className="form-card">
                 <LargeMarkdownFormField
                   form={form}
                   ref={editorRef}
                   contentFieldName="content"
                   className="col-span-full w-full"
+                  description="Write your blog post here..."
+                  label="Content"
                 />
-              </FormSection>
+              </div>
             </div>
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-4">
               <div className="sticky top-20 space-y-4">
-                <div className="border-border bg-background/50 w-full rounded-md border p-4">
+                <div className="form-card">
+                  <InputFormField
+                    form={form}
+                    disabled={isLoading}
+                    name="title"
+                    label="Title"
+                    placeholder="e.g. Top 10 Summer Outfits"
+                  />
+                </div>
+                <div className="form-card">
                   <ImageFormField
                     form={form}
                     ref={featuredImageRef}
                     label="Cover Image (optional)"
                     disabled={isLoading}
-                    isRequired={true}
+                    isRequired={false}
                     route="misc"
                     apiUrl="/api/upload-misc"
                     name="cover"
@@ -234,7 +224,7 @@ export const BlogPostForm = ({ initialData, storeSlug, storeId }: Props) => {
                     description="Used to represent your blog on social media and other places."
                   />
                 </div>
-                <div className="border-border bg-background/50 w-full rounded-md border p-4">
+                <div className="form-card">
                   <TagFormField
                     form={form}
                     label="Tags (optional)"

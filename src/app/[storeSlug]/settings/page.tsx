@@ -5,73 +5,65 @@ type Props = {
 };
 
 export const metadata = {
-  title: "Update Policies",
+  title: "Store Settings",
 };
 
-export default async function EditPoliciesPage({ params }: Props) {
+export default async function SettingsPage({ params }: Props) {
   const { storeSlug } = await params;
 
   return (
-    <ContentLayout
-      title="Update Policies"
-      breadcrumbs={[
-        {
-          href: `/${storeSlug}/settings`,
-          label: "Settings",
-        },
-      ]}
-      currentPage="Policies"
-    >
+    <ContentLayout title="Store Settings" currentPage="Settings">
       <div className="grid grid-cols-1 gap-4 py-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-lg border p-4 shadow-sm">
-          <h3 className="mb-2 text-lg font-semibold">Privacy Policy</h3>
+          <h3 className="mb-2 text-lg font-semibold">Branding</h3>
           <p className="text-muted-foreground mb-4 text-sm">
-            Manage your store&apos;s privacy policy and data handling practices
+            Customize your store&apos;s name, logo, and visual identity
           </p>
           <a
-            href={`/${storeSlug}/settings/policies/privacy-policy`}
+            href={`/${storeSlug}/settings/customization/branding`}
             className="text-primary text-sm font-medium hover:underline"
           >
-            Edit Privacy Policy →
+            Edit Branding →
           </a>
         </div>
 
         <div className="rounded-lg border p-4 shadow-sm">
-          <h3 className="mb-2 text-lg font-semibold">Terms of Service</h3>
+          <h3 className="mb-2 text-lg font-semibold">Homepage</h3>
           <p className="text-muted-foreground mb-4 text-sm">
-            Set the terms and conditions for using your store
+            Configure your store&apos;s homepage layout and featured content
           </p>
           <a
-            href={`/${storeSlug}/settings/policies/terms-policy`}
+            href={`/${storeSlug}/settings/customization/homepage`}
             className="text-primary text-sm font-medium hover:underline"
           >
-            Edit Terms of Service →
+            Edit Homepage →
           </a>
         </div>
 
         <div className="rounded-lg border p-4 shadow-sm">
-          <h3 className="mb-2 text-lg font-semibold">Refund Policy</h3>
+          <h3 className="mb-2 text-lg font-semibold">Policies</h3>
           <p className="text-muted-foreground mb-4 text-sm">
-            Define your store&apos;s refund and return policies
+            Manage your store&apos;s policies including privacy, terms, and
+            refunds
           </p>
           <a
-            href={`/${storeSlug}/settings/policies/refund-policy`}
+            href={`/${storeSlug}/settings/policies`}
             className="text-primary text-sm font-medium hover:underline"
           >
-            Edit Refund Policy →
+            Edit Policies →
           </a>
         </div>
 
         <div className="rounded-lg border p-4 shadow-sm">
-          <h3 className="mb-2 text-lg font-semibold">Shipping Policy</h3>
+          <h3 className="mb-2 text-lg font-semibold">Shipping</h3>
           <p className="text-muted-foreground mb-4 text-sm">
-            Outline your shipping methods, costs, and delivery times
+            Configure shipping methods, rates, and delivery options
           </p>
           <a
-            href={`/${storeSlug}/settings/policies/shipping-policy`}
+            href={`/${storeSlug}/settings/shipping`}
             className="text-primary text-sm font-medium hover:underline"
           >
-            Edit Shipping Policy →
+            Edit Shipping →
           </a>
         </div>
       </div>

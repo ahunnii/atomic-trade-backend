@@ -1,10 +1,7 @@
-import type { DiscountType } from "@prisma/client";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 
-import type { Collection } from "~/types/collection";
-import type { Discount } from "~/types/discount";
-import type { Product } from "~/types/product";
+import type { DiscountWithProducts } from "~/types/discount";
 import { api } from "~/trpc/server";
-import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { DiscountForm } from "../../_components/discount-form";
@@ -14,24 +11,15 @@ type Props = {
   searchParams: Promise<{ type: string }>;
 };
 
-export const metadata = {
-  title: "Edit Discount",
-};
+export const metadata = { title: "Edit Discount" };
 
-export default async function EditDiscountPage({
-  params,
-  searchParams,
-}: Props) {
+export default async function EditDiscountPage({ params }: Props) {
   const { storeSlug, discountId } = await params;
-  const { type } = await searchParams;
-  const store = await api.store.getBySlug(storeSlug);
-  const discount = await api.discount.get(discountId);
-  const collections = await api.collection.getAll(store!.id);
-  const products = await api.product.getAll({ storeId: store!.id });
+  const storeId = await getStoreIdViaTRPC(storeSlug);
 
-  if (!store) {
-    return <DataFetchErrorMessage message="This store does not exist." />;
-  }
+  const discount = await api.discount.get(discountId);
+  const collections = await api.collection.getAll(storeSlug);
+  const products = await api.product.getAll(storeSlug);
 
   return (
     <ContentLayout
@@ -43,13 +31,17 @@ export default async function EditDiscountPage({
         },
       ]}
       currentPage="Update Discount"
+      displayError={!discount}
+      displayErrorText="This discount does not exist."
+      displayErrorActionHref={`/${storeSlug}/discounts`}
+      displayErrorActionLabel="Back to Discounts"
     >
       <DiscountForm
-        initialData={discount as Discount | null}
-        products={(products as unknown as Product[]) ?? []}
-        storeId={store.id}
+        initialData={discount as DiscountWithProducts | null}
+        products={products ?? []}
+        storeId={storeId}
         storeSlug={storeSlug}
-        collections={collections as Collection[]}
+        collections={collections}
         type={discount!.type}
       />
     </ContentLayout>

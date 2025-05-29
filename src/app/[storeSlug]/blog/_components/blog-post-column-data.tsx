@@ -6,7 +6,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { CellActions } from "~/components/shared/cell-actions";
 import { PrimaryCellLink } from "~/components/shared/primary-cell-link";
 
-export type CollectionColumn = {
+export type BlogPostColumnData = {
   id: string;
   storeId: string;
   storeSlug: string;
@@ -18,7 +18,7 @@ export type CollectionColumn = {
   isLoading: boolean;
 };
 
-export const blogPostColumnData: ColumnDef<CollectionColumn>[] = [
+export const blogPostColumnData: ColumnDef<BlogPostColumnData>[] = [
   {
     accessorKey: "title",
     header: "Title",
@@ -33,7 +33,6 @@ export const blogPostColumnData: ColumnDef<CollectionColumn>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => <>{row.original.status}</>,
   },
   {
     accessorKey: "updatedAt",
@@ -47,7 +46,6 @@ export const blogPostColumnData: ColumnDef<CollectionColumn>[] = [
         handleOnDelete={row.original.onDelete}
         handleOnDuplicate={row.original.onDuplicate}
         id={row.original.id}
-        copyText="Blog Post ID"
         isLoading={row.original.isLoading}
       />
     ),

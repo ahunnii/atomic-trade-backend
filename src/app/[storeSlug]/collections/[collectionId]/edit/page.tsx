@@ -1,7 +1,6 @@
-import type { Collection } from "~/types/collection";
-import type { Product } from "~/types/product";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
 import { api } from "~/trpc/server";
-import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { CollectionForm } from "../../_components/collection-form";
@@ -10,15 +9,14 @@ type Props = {
   params: Promise<{ storeSlug: string; collectionId: string }>;
 };
 
-export default async function EditCollectionPage({ params }: Props) {
-  const { storeSlug, collectionId } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  const collection = await api.collection.get(collectionId);
-  const products = await api.product.getAll({ storeId: store!.id });
+export const metadata = { title: "Edit Collection" };
 
-  if (!store) {
-    return <DataFetchErrorMessage message="This store does not exist." />;
-  }
+export default async function EditCollectionPage({ params }: Props) {
+  const { collectionId, storeSlug } = await params;
+  const storeId = await getStoreIdViaTRPC(storeSlug);
+
+  const collection = await api.collection.get(collectionId);
+  const products = await api.product.getAll(storeSlug);
 
   return (
     <ContentLayout
@@ -30,12 +28,15 @@ export default async function EditCollectionPage({ params }: Props) {
         },
       ]}
       currentPage="Update Collection"
-      // breadcrumbClassName="bg-background shadow p-4"
+      displayError={!collection}
+      displayErrorText="This collection does not exist."
+      displayErrorActionHref={`/${storeSlug}/collections`}
+      displayErrorActionLabel="Back to Collections"
     >
       <CollectionForm
-        initialData={collection as Collection | null}
-        products={(products as unknown as Product[]) ?? []}
-        storeId={store.id}
+        initialData={collection}
+        products={products}
+        storeId={storeId}
         storeSlug={storeSlug}
       />
     </ContentLayout>

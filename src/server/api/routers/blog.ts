@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { z } from "zod";
 
@@ -14,12 +15,16 @@ export const blogRouter = createTRPCRouter({
     });
   }),
 
-  getAll: adminProcedure.input(z.string()).query(({ ctx, input: storeId }) => {
-    return ctx.db.blogPost.findMany({
-      where: { storeId },
-      orderBy: { createdAt: "desc" },
-    });
-  }),
+  getAll: adminProcedure
+    .input(z.string())
+    .query(async ({ ctx, input: storeSlug }) => {
+      const storeId = await getStoreIdViaTRPC(storeSlug);
+
+      return ctx.db.blogPost.findMany({
+        where: { storeId },
+        orderBy: { createdAt: "desc" },
+      });
+    }),
 
   create: adminProcedure
     .input(
@@ -29,7 +34,12 @@ export const blogRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      let slug = input.title.toLowerCase().replace(/ /g, "-");
+      let slug = input.title
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-");
+
       const checkForUniqueSlug = await ctx.db.blogPost.count({
         where: { slug },
       });
@@ -74,7 +84,12 @@ export const blogRouter = createTRPCRouter({
       let slug = currentBlogPost.slug;
 
       if (currentBlogPost.title !== input.title) {
-        slug = input.title.toLowerCase().replace(/ /g, "-");
+        slug = input.title
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-");
+
         const checkForUniqueSlug = await ctx.db.product.count({
           where: { slug },
         });

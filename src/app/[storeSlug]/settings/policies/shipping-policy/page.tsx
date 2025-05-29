@@ -1,5 +1,6 @@
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
 import { api } from "~/trpc/server";
-import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { ShippingPolicyForm } from "../_components/shipping-policy-form";
@@ -14,12 +15,8 @@ export const metadata = {
 
 export default async function EditShippingPolicyPage({ params }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  const policies = await api.policy.get(store?.id ?? "");
-
-  if (!store) {
-    return <DataFetchErrorMessage message="This store does not exist." />;
-  }
+  const storeId = await getStoreIdViaTRPC(storeSlug);
+  const policies = await api.policy.get(storeSlug);
 
   return (
     <ContentLayout
@@ -31,10 +28,14 @@ export default async function EditShippingPolicyPage({ params }: Props) {
         },
       ]}
       currentPage="Shipping Policy"
+      displayError={!policies}
+      displayErrorText="This store does not have a shipping policy."
+      displayErrorActionHref={`/${storeSlug}/settings/policies`}
+      displayErrorActionLabel="Back to Policies"
     >
       <ShippingPolicyForm
         initialData={policies?.sitePolicies ?? null}
-        storeId={store.id}
+        storeId={storeId}
         storeSlug={storeSlug}
       />
     </ContentLayout>

@@ -1,14 +1,12 @@
 import type { UseFormReturn } from "react-hook-form";
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import { format } from "date-fns";
 import { PencilIcon } from "lucide-react";
 
 import { type ColumnDef } from "@tanstack/react-table";
 
 import type { CollectionFormData } from "~/lib/validators/collection";
-import type { ProductFormData } from "~/lib/validators/product";
-import type { Product, Variation } from "~/types/product";
+import type { ProductWithVariations } from "~/types/product";
 import { env } from "~/env";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -95,7 +93,7 @@ export const ProductSelection = ({
 }: {
   form: UseFormReturn<CollectionFormData>;
   isLoading: boolean;
-  products: Product[];
+  products: ProductWithVariations[];
   storeSlug: string;
 }) => {
   const [selectedProducts, setSelectedProducts] = useState<

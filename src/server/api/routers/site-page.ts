@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { z } from "zod";
 
@@ -14,12 +15,16 @@ export const sitePageRouter = createTRPCRouter({
     });
   }),
 
-  getAll: adminProcedure.input(z.string()).query(({ ctx, input: storeId }) => {
-    return ctx.db.sitePage.findMany({
-      where: { storeId },
-      orderBy: { createdAt: "desc" },
-    });
-  }),
+  getAll: adminProcedure
+    .input(z.string())
+    .query(async ({ ctx, input: storeSlug }) => {
+      const storeId = await getStoreIdViaTRPC(storeSlug);
+
+      return ctx.db.sitePage.findMany({
+        where: { storeId },
+        orderBy: { createdAt: "desc" },
+      });
+    }),
 
   create: adminProcedure
     .input(

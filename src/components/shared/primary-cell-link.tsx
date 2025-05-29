@@ -42,7 +42,10 @@ export const PrimaryCellLink = ({ name, image, subheader, link }: Props) => {
 
   if (link) {
     return (
-      <Link href={link} className={`${sharedClasses} hover:underline-offset-4`}>
+      <Link
+        href={link}
+        className={`${sharedClasses} after:bg-primary relative after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:transition-all after:duration-300 hover:after:w-full`}
+      >
         {content}
       </Link>
     );

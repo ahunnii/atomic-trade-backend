@@ -1,34 +1,25 @@
 "use client";
 
-import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
+import type { Collection } from "@prisma/client";
 import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DiscountAmountType, DiscountType } from "@prisma/client";
 
-import type { ImageFormFieldRef } from "~/components/input/image-form-field";
-import type { CollectionFormData } from "~/lib/validators/collection";
 import type { DiscountFormData } from "~/lib/validators/discount";
-import type { Collection } from "~/types/collection";
-import type { Discount } from "~/types/discount";
-import type { Product } from "~/types/product";
-import { env } from "~/env";
-import { collectionFormValidator } from "~/lib/validators/collection";
+import type { DiscountWithProducts } from "~/types/discount";
+import type { ProductWithVariations } from "~/types/product";
 import { discountFormValidator } from "~/lib/validators/discount";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
-import { Badge } from "~/components/ui/badge";
 import { Form } from "~/components/ui/form";
-import { ImageFormField } from "~/components/input/image-form-field";
-import { InputFormField } from "~/components/input/input-form-field";
-import { SingleCheckboxFormField } from "~/components/input/single-checkbox-form-field";
-import { TextareaFormField } from "~/components/input/textarea-form-field";
 import { FormAdditionalOptionsButton } from "~/components/shared/form-additional-options-button";
+import { FormDiscardButton } from "~/components/shared/form-discard-button";
 import { FormHeader } from "~/components/shared/form-header";
 import { FormSaveOptionsButton } from "~/components/shared/form-save-options-button";
-import { FormSection } from "~/components/shared/form-section";
+import { FormStatusTitle } from "~/components/shared/form-status-title";
 
 import { DiscountActiveSection } from "./discount-active-section";
 import { DiscountAmountSection } from "./discount-amount-section";
@@ -40,9 +31,9 @@ import { DiscountOverviewSection } from "./discount-overview-section";
 import { DiscountValueSection } from "./discount-value-section";
 
 type Props = {
-  initialData: Discount | null;
+  initialData: DiscountWithProducts | null;
   collections: Collection[];
-  products: Product[];
+  products: ProductWithVariations[];
   storeSlug: string;
   storeId: string;
   type: DiscountType;
@@ -58,32 +49,19 @@ export const DiscountForm = ({
 }: Props) => {
   const router = useRouter();
 
+  const parentPath = `/${storeSlug}/discounts`;
+
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["discount"],
-    redirectPath: `/${storeSlug}/discounts`,
+    redirectPath: parentPath,
   });
 
-  const title = initialData ? (
-    initialData?.isActive ? (
-      <div className="flex items-center gap-2">
-        <span>Edit discount</span>
-        <Badge
-          variant="outline"
-          className="bg-green-100 text-xs font-bold text-green-800 dark:bg-green-900 dark:text-green-100"
-        >
-          Active
-        </Badge>
-      </div>
-    ) : (
-      <span className="flex items-center gap-2">
-        <span>Edit discount</span>
-        <Badge variant="outline" className="text-xs">
-          Inactive
-        </Badge>
-      </span>
-    )
-  ) : (
-    "Create discount"
+  const title = (
+    <FormStatusTitle
+      hasInitialData={!!initialData}
+      title="Discount"
+      status={initialData?.isActive ? "ACTIVE" : "INACTIVE"}
+    />
   );
 
   const updateDiscount = api.discount.update.useMutation(defaultActions);
@@ -157,11 +135,7 @@ export const DiscountForm = ({
     },
   });
 
-  const onSubmit = (data: DiscountFormData) => {
-    console.log(data);
-  };
-
-  const onSave = async (data: DiscountFormData, publish = false) => {
+  const onSave = async (data: DiscountFormData, publish?: boolean) => {
     if (initialData) {
       updateDiscount.mutate({
         ...data,
@@ -171,7 +145,7 @@ export const DiscountForm = ({
           data.type === DiscountType.SHIPPING
             ? DiscountAmountType.PERCENTAGE
             : data.amountType,
-        isActive: publish,
+        isActive: publish ?? false,
       });
     } else {
       createDiscount.mutate({
@@ -182,9 +156,13 @@ export const DiscountForm = ({
           data.type === DiscountType.SHIPPING
             ? DiscountAmountType.PERCENTAGE
             : data.amountType,
-        isActive: publish,
+        isActive: publish ?? false,
       });
     }
+  };
+
+  const onSubmit = (data: DiscountFormData) => {
+    void onSave(data, data?.isActive);
   };
 
   const onDelete = () => deleteDiscount.mutate(initialData?.id ?? "");
@@ -214,20 +192,22 @@ export const DiscountForm = ({
       <Form {...form}>
         <form
           onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
-          onChange={(e) => {
-            console.log(form.watch());
-          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title={title} link={`/${storeSlug}/discounts`}>
+          <FormHeader title={title} link={parentPath}>
             {initialData && (
               <FormAdditionalOptionsButton
                 onDelete={onDelete}
                 onDuplicate={onSaveAndDuplicate}
               />
             )}
+
+            <FormDiscardButton
+              isLoading={isLoading}
+              redirectPath={parentPath}
+            />
 
             <FormSaveOptionsButton
               onSave={() => onSave(form.getValues(), false)}
@@ -236,7 +216,7 @@ export const DiscountForm = ({
             />
           </FormHeader>
 
-          <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
+          <section className="form-body">
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-7">
               <DiscountAmountSection form={form} />
               {form.watch("type") !== DiscountType.SHIPPING && (

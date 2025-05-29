@@ -2,12 +2,11 @@ import { format } from "date-fns";
 
 import { type ColumnDef } from "@tanstack/react-table";
 
-import { env } from "~/env";
 import { Badge } from "~/components/ui/badge";
 import { CellActions } from "~/components/shared/cell-actions";
 import { PrimaryCellLink } from "~/components/shared/primary-cell-link";
 
-export type DiscountColumn = {
+export type DiscountColumnData = {
   id: string;
   storeId: string;
   storeSlug: string;
@@ -26,7 +25,7 @@ export type DiscountColumn = {
   isLoading: boolean;
 };
 
-export const discountColumnData: ColumnDef<DiscountColumn>[] = [
+export const discountColumnData: ColumnDef<DiscountColumnData>[] = [
   {
     accessorKey: "code",
     header: "Title",
@@ -97,7 +96,6 @@ export const discountColumnData: ColumnDef<DiscountColumn>[] = [
         handleOnDelete={row.original.onDelete}
         handleOnDuplicate={row.original.onDuplicate}
         id={row.original.code}
-        copyText="Discount Code"
         isLoading={row.original.isLoading}
       />
     ),

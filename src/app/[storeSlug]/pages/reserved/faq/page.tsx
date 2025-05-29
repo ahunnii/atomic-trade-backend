@@ -1,5 +1,6 @@
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
 import { api } from "~/trpc/server";
-import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { FrequentlyAskedQuestionsPageForm } from "../_components/faq-page-form";
@@ -16,12 +17,10 @@ export default async function EditFrequentlyAskedQuestionsPage({
   params,
 }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  const reservedPages = await api.reservedPage.get(store?.id ?? "");
 
-  if (!store) {
-    return <DataFetchErrorMessage message="This store does not exist." />;
-  }
+  const storeId = await getStoreIdViaTRPC(storeSlug);
+
+  const reservedPages = await api.reservedPage.get(storeSlug);
 
   return (
     <ContentLayout
@@ -33,10 +32,14 @@ export default async function EditFrequentlyAskedQuestionsPage({
         },
       ]}
       currentPage="Frequently Asked Questions Page"
+      displayError={!reservedPages}
+      displayErrorText="This reserved page does not exist."
+      displayErrorActionHref={`/${storeSlug}/pages/reserved`}
+      displayErrorActionLabel="Back to Reserved Pages"
     >
       <FrequentlyAskedQuestionsPageForm
         initialData={reservedPages?.reservedSitePages ?? null}
-        storeId={store.id}
+        storeId={storeId}
         storeSlug={storeSlug}
       />
     </ContentLayout>

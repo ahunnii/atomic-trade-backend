@@ -30,9 +30,11 @@ export const ShippingPolicyForm = ({
   storeSlug,
   storeId,
 }: Props) => {
+  const parentPath = `/${storeSlug}/settings/policies`;
+
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["policy"],
-    redirectPath: `/${storeSlug}/settings/policies`,
+    redirectPath: parentPath,
   });
 
   const editorRef2 = useRef<LargeMarkdownFormFieldRef>(null);
@@ -69,17 +71,17 @@ export const ShippingPolicyForm = ({
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title={title} link={`/${storeSlug}/settings/policies`}>
+          <FormHeader title={title} link={parentPath}>
             <FormDiscardButton
               isLoading={isLoading}
-              redirectPath={`/${storeSlug}/settings/policies`}
+              redirectPath={parentPath}
             />
             <LoadButton isLoading={isLoading} type="submit">
               Save changes
             </LoadButton>
           </FormHeader>
 
-          <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
+          <section className="form-body">
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-7">
               <FormSection
                 title="Shipping Policy"
@@ -90,7 +92,6 @@ export const ShippingPolicyForm = ({
                   form={form}
                   ref={editorRef2}
                   contentFieldName="shippingPolicy"
-                  // label="Shipping Policy"
                   className="col-span-full w-full"
                 />
               </FormSection>

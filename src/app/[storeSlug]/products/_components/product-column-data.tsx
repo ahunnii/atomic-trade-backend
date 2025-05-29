@@ -11,7 +11,7 @@ import { env } from "~/env";
 import { CellActions } from "~/components/shared/cell-actions";
 import { PrimaryCellLink } from "~/components/shared/primary-cell-link";
 
-export type ProductColumn = {
+export type ProductColumnData = {
   id: string;
   storeId: string;
   name: string;
@@ -33,7 +33,7 @@ export type ProductColumn = {
   isLoading: boolean;
 };
 
-export const productColumnData: ColumnDef<ProductColumn>[] = [
+export const productColumnData: ColumnDef<ProductColumnData>[] = [
   {
     accessorKey: "name",
     header: "Product",
@@ -92,7 +92,6 @@ export const productColumnData: ColumnDef<ProductColumn>[] = [
       <CellActions
         handleOnDelete={row.original.onDelete}
         id={row.original.id}
-        copyText="Product ID"
         isLoading={row.original.isLoading}
         handleOnDuplicate={row.original.onDuplicate}
       />

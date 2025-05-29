@@ -30,9 +30,11 @@ export const SpecialRequestPageForm = ({
   storeSlug,
   storeId,
 }: Props) => {
+  const parentPath = `/${storeSlug}/pages/reserved`;
+
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["reservedPage"],
-    redirectPath: `/${storeSlug}/pages/reserved`,
+    redirectPath: parentPath,
   });
 
   const editorRef = useRef<LargeMarkdownFormFieldRef>(null);
@@ -70,22 +72,19 @@ export const SpecialRequestPageForm = ({
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader
-            title={"Update Special Request Page"}
-            link={`/${storeSlug}/pages/reserved`}
-          >
+          <FormHeader title={"Update Special Request Page"} link={parentPath}>
             <FormDiscardButton
               isLoading={isLoading}
-              redirectPath={`/${storeSlug}/pages/reserved`}
+              redirectPath={parentPath}
             />
             <LoadButton isLoading={isLoading} type="submit" size="sm">
               Save changes
             </LoadButton>
           </FormHeader>
 
-          <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
+          <section className="form-body">
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-9">
-              <div className="border-border bg-background/50 w-full space-y-4 rounded-md border p-4">
+              <div className="form-card">
                 <LargeMarkdownFormField
                   form={form}
                   ref={editorRef}
@@ -97,7 +96,7 @@ export const SpecialRequestPageForm = ({
               </div>
             </div>
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-3">
-              <div className="border-border bg-background/50 sticky top-20 w-full space-y-4 rounded-md border p-4">
+              <div className="form-card sticky top-20">
                 <SwitchFormField
                   form={form}
                   name="enableSpecialOrderPage"

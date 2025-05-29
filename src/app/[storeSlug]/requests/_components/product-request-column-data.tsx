@@ -5,7 +5,7 @@ import { Badge } from "~/components/ui/badge";
 import { CellActions } from "~/components/shared/cell-actions";
 import { PrimaryCellLink } from "~/components/shared/primary-cell-link";
 
-export type ProductRequestColumn = {
+export type ProductRequestColumnData = {
   id: string;
   firstName: string;
   lastName: string;
@@ -18,7 +18,7 @@ export type ProductRequestColumn = {
   onDelete: (id: string) => void;
 };
 
-export const productRequestColumnData: ColumnDef<ProductRequestColumn>[] = [
+export const productRequestColumnData: ColumnDef<ProductRequestColumnData>[] = [
   {
     id: "name",
     header: "Name",
@@ -53,7 +53,6 @@ export const productRequestColumnData: ColumnDef<ProductRequestColumn>[] = [
     cell: ({ row }) => (
       <CellActions
         id={row.original.id}
-        copyText="Request ID"
         isLoading={row.original.isLoading}
         hasUpdate={false}
         handleOnDelete={row.original.onDelete}

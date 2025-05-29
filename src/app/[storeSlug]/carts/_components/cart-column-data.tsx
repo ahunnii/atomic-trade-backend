@@ -3,7 +3,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { CellActions } from "~/components/shared/cell-actions";
 import { PrimaryCellLink } from "~/components/shared/primary-cell-link";
 
-export type CartColumn = {
+export type CartColumnData = {
   id: string;
   customerId?: string;
   email?: string;
@@ -13,7 +13,7 @@ export type CartColumn = {
   onDelete: (id: string) => void;
 };
 
-export const cartColumnData: ColumnDef<CartColumn>[] = [
+export const cartColumnData: ColumnDef<CartColumnData>[] = [
   {
     accessorKey: "email",
     header: "Email",
@@ -32,7 +32,6 @@ export const cartColumnData: ColumnDef<CartColumn>[] = [
   {
     accessorKey: "cartItemCount",
     header: "Cart Items",
-    cell: ({ row }) => <span>{row.original.cartItemCount}</span>,
   },
 
   {
@@ -40,7 +39,6 @@ export const cartColumnData: ColumnDef<CartColumn>[] = [
     cell: ({ row }) => (
       <CellActions
         id={row.original.id}
-        copyText="Cart ID"
         isLoading={row.original.isLoading}
         hasUpdate={false}
         handleOnDelete={row.original.onDelete}

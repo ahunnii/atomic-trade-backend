@@ -1,3 +1,4 @@
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 import {
   adminProcedure,
   createTRPCRouter,
@@ -10,18 +11,21 @@ import { createId } from "@paralleldrive/cuid2";
 import { DiscountAmountType } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
-import type { Collection } from "~/types/collection";
-import type { Discount } from "~/types/discount";
-import { collectionFormValidator } from "~/lib/validators/collection";
 import { discountFormValidator } from "~/lib/validators/discount";
 
 export const discountRouter = createTRPCRouter({
-  getAll: adminProcedure.input(z.string()).query(({ ctx, input: storeId }) => {
-    return ctx.db.discount.findMany({
-      where: { storeId },
-      orderBy: { createdAt: "desc" },
-    });
-  }),
+  getAll: adminProcedure
+    .input(z.string())
+    .query(async ({ ctx, input: storeSlug }) => {
+      const storeId = await getStoreIdViaTRPC(storeSlug);
+
+      const discounts = await ctx.db.discount.findMany({
+        where: { storeId },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return discounts;
+    }),
 
   get: adminProcedure.input(z.string()).query(({ ctx, input: discountId }) => {
     return ctx.db.discount.findUnique({

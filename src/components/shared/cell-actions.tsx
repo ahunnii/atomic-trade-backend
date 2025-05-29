@@ -2,7 +2,7 @@
 
 import { forwardRef } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Archive,
   Check,
@@ -13,8 +13,6 @@ import {
   Trash,
   X,
 } from "lucide-react";
-
-import { toastService } from "@dreamwalker-studios/toasts";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -38,7 +36,7 @@ type Props = {
   isActive?: boolean;
   id: string;
   slug?: string;
-  copyText?: string;
+
   storeLink?: string;
 } & React.HTMLAttributes<HTMLDivElement>;
 
@@ -50,7 +48,6 @@ export const CellActions = forwardRef<HTMLDivElement, Props>(
       id,
       slug,
       isActive,
-      copyText,
       children,
       handleOnDuplicate,
       handleOnArchive,
@@ -60,21 +57,9 @@ export const CellActions = forwardRef<HTMLDivElement, Props>(
     },
     ref,
   ) => {
-    const router = useRouter();
     const currentPath = usePathname();
 
     const baseUrl = `${currentPath}/${slug ?? id}`;
-
-    const onCopySelection = () => {
-      navigator.clipboard
-        .writeText(slug ?? id)
-        .then(() =>
-          toastService.success(`${copyText ?? "ID"} copied to clipboard`),
-        )
-        .catch(() =>
-          toastService.error(`Failed to copy ${copyText ?? "ID"} to clipboard`),
-        );
-    };
 
     const onDuplicate = () => {
       handleOnDuplicate?.(slug ?? id);
@@ -97,12 +82,6 @@ export const CellActions = forwardRef<HTMLDivElement, Props>(
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" ref={ref}>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={onCopySelection}
-              className="cursor-pointer"
-            >
-              <Copy className="mr-2 h-4 w-4" /> Copy Id
-            </DropdownMenuItem>
 
             {storeLink && (
               <Link href={`${storeLink}`} target="_blank">

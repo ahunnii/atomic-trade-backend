@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { ShippingFormData } from "~/lib/validators/store";
-import type { Store } from "~/types/store";
+import type { StoreWithShipping } from "~/types/store";
 import { cn } from "~/lib/utils";
 import { shippingSettingsValidator } from "~/lib/validators/store";
 import { api } from "~/trpc/react";
@@ -36,11 +36,13 @@ import { FormSection } from "~/components/shared/form-section";
 import { LoadButton } from "~/components/shared/load-button";
 
 type Props = {
-  initialData: Store;
+  initialData: StoreWithShipping;
   slug: string;
 };
 
 export const StoreShippingForm = ({ initialData, slug }: Props) => {
+  const parentPath = `/${slug}/settings`;
+
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["store"],
   });
@@ -136,18 +138,15 @@ export const StoreShippingForm = ({ initialData, slug }: Props) => {
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title="Shipping Settings" link={`/${slug}/dashboard`}>
-            <FormDiscardButton
-              isLoading={loading}
-              redirectPath={`/${slug}/dashboard`}
-            />
+          <FormHeader title="Shipping Settings" link={parentPath}>
+            <FormDiscardButton isLoading={loading} redirectPath={parentPath} />
             <LoadButton isLoading={loading} type="submit">
               Save changes
             </LoadButton>
           </FormHeader>
 
           <section className="form-body">
-            <div className={cn("flex w-full flex-col space-y-4")}>
+            <div className={cn("flex w-full flex-col space-y-4 xl:col-span-7")}>
               <FormSection
                 title="Business Address"
                 hasError={highlightErrors}

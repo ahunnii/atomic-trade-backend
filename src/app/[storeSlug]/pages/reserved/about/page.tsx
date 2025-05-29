@@ -1,5 +1,6 @@
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
 import { api } from "~/trpc/server";
-import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { AboutPageForm } from "../_components/about-page-form";
@@ -8,18 +9,14 @@ type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
-export const metadata = {
-  title: "Update About Page",
-};
+export const metadata = { title: "Update About Page" };
 
-export default async function EditPrivacyPolicyPage({ params }: Props) {
+export default async function EditAboutPage({ params }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  const reservedPages = await api.reservedPage.get(store?.id ?? "");
 
-  if (!store) {
-    return <DataFetchErrorMessage message="This store does not exist." />;
-  }
+  const storeId = await getStoreIdViaTRPC(storeSlug);
+
+  const reservedPages = await api.reservedPage.get(storeSlug);
 
   return (
     <ContentLayout
@@ -31,10 +28,14 @@ export default async function EditPrivacyPolicyPage({ params }: Props) {
         },
       ]}
       currentPage="About Page"
+      displayError={!reservedPages}
+      displayErrorText="This reserved page does not exist."
+      displayErrorActionHref={`/${storeSlug}/pages/reserved`}
+      displayErrorActionLabel="Back to Reserved Pages"
     >
       <AboutPageForm
         initialData={reservedPages?.reservedSitePages ?? null}
-        storeId={store.id}
+        storeId={storeId}
         storeSlug={storeSlug}
       />
     </ContentLayout>

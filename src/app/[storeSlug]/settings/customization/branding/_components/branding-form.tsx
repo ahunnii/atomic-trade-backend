@@ -3,12 +3,12 @@
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
 
+import type { Store } from "@prisma/client";
 import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { ImageFormFieldRef } from "~/components/input/image-form-field";
 import type { BrandingFormData } from "~/lib/validators/store";
-import type { Store } from "~/types/store";
 import { env } from "~/env";
 import { cn } from "~/lib/utils";
 import { brandingSettingsValidator } from "~/lib/validators/store";
@@ -26,6 +26,7 @@ import { LoadButton } from "~/components/shared/load-button";
 type Props = { initialData: Store; slug: string };
 
 export const BrandingForm = ({ initialData, slug }: Props) => {
+  const parentPath = `/${slug}/settings`;
   const businessLogoRef = useRef<ImageFormFieldRef>(null);
 
   const { defaultActions } = useDefaultMutationActions({
@@ -36,8 +37,8 @@ export const BrandingForm = ({ initialData, slug }: Props) => {
     resolver: zodResolver(brandingSettingsValidator),
     defaultValues: {
       businessName: initialData?.name ?? "",
-      businessEmail: initialData?.contactEmail ?? "",
-      businessPhone: initialData?.contactPhone ?? "",
+      businessEmail: initialData?.publicEmail ?? "",
+      businessPhone: initialData?.publicPhone ?? "",
       businessLogo: initialData?.logo ?? "",
       tempBusinessLogo: null,
     },
@@ -80,22 +81,16 @@ export const BrandingForm = ({ initialData, slug }: Props) => {
           onKeyDown={(e) => {
             if (e.key === "Enter") e.preventDefault();
           }}
-          onChange={(e) => {
-            console.log(form.formState.errors);
-          }}
         >
-          <FormHeader title="Branding Settings" link={`/${slug}/dashboard`}>
-            <FormDiscardButton
-              isLoading={loading}
-              redirectPath={`/${slug}/dashboard`}
-            />
+          <FormHeader title="Branding Settings" link={parentPath}>
+            <FormDiscardButton isLoading={loading} redirectPath={parentPath} />
             <LoadButton isLoading={loading} type="submit">
               Save changes
             </LoadButton>
           </FormHeader>
 
           <section className="form-body">
-            <div className={cn("flex w-full flex-col space-y-4")}>
+            <div className={cn("flex w-full flex-col space-y-4 xl:col-span-7")}>
               <FormSection
                 title="Public Information"
                 description="Set up your store's name and contact information."
@@ -111,14 +106,14 @@ export const BrandingForm = ({ initialData, slug }: Props) => {
                 <InputFormField
                   form={form}
                   name="businessEmail"
-                  label="Email (Optional)"
+                  label="Public Email (Optional)"
                   placeholder="e.g business@email.com"
-                  description="This email will used for all email communications from your store. We do abstract this email so that users only see it as support@yourstore.com"
+                  description="Setting this will allow customers to contact you via email. This will be displayed on your store's contact page. If not set, customers would still be able to contact you via the support email."
                 />
                 <PhoneFormField
                   form={form}
                   name="businessPhone"
-                  label="Phone (Optional)"
+                  label="Public Phone (Optional)"
                   placeholder="e.g (123) 456-7890"
                   description="Setting this will allow customers to contact you via phone. This will be displayed on your store's contact page."
                 />

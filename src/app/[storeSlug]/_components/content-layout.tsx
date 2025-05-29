@@ -11,6 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { Navbar } from "~/components/layout/navbar";
+import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 
 type Props = {
   title: string;
@@ -22,6 +23,10 @@ type Props = {
   }>;
   currentPage?: string;
   breadcrumbClassName?: string;
+  displayError?: boolean;
+  displayErrorText?: string;
+  displayErrorActionHref?: string;
+  displayErrorActionLabel?: string;
 };
 
 export function ContentLayout({
@@ -31,9 +36,25 @@ export function ContentLayout({
   breadcrumbs,
   currentPage,
   breadcrumbClassName,
+  displayError,
+  displayErrorText,
+  displayErrorActionHref,
+  displayErrorActionLabel,
 }: Props) {
+  if (displayError) {
+    return (
+      <DataFetchErrorMessage
+        message={
+          displayErrorText ?? "An error occurred while loading the page."
+        }
+        actionHref={displayErrorActionHref}
+        actionLabel={displayErrorActionLabel}
+      />
+    );
+  }
+
   return (
-    <div>
+    <>
       <Navbar title={title} />
       <div
         className={cn(
@@ -69,6 +90,6 @@ export function ContentLayout({
         )}
         {children}
       </div>
-    </div>
+    </>
   );
 }

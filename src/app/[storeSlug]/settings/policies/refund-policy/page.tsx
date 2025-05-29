@@ -1,5 +1,6 @@
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
 import { api } from "~/trpc/server";
-import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { RefundPolicyForm } from "../_components/refund-policy-form";
@@ -8,18 +9,12 @@ type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
-export const metadata = {
-  title: "Update Refund Policy",
-};
+export const metadata = { title: "Update Refund Policy" };
 
 export default async function EditRefundPolicyPage({ params }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  const policies = await api.policy.get(store?.id ?? "");
-
-  if (!store) {
-    return <DataFetchErrorMessage message="This store does not exist." />;
-  }
+  const storeId = await getStoreIdViaTRPC(storeSlug);
+  const policies = await api.policy.get(storeSlug);
 
   return (
     <ContentLayout
@@ -31,10 +26,14 @@ export default async function EditRefundPolicyPage({ params }: Props) {
         },
       ]}
       currentPage="Refund Policy"
+      displayError={!policies}
+      displayErrorText="This store does not have a refund policy."
+      displayErrorActionHref={`/${storeSlug}/settings/policies`}
+      displayErrorActionLabel="Back to Policies"
     >
       <RefundPolicyForm
         initialData={policies?.sitePolicies ?? null}
-        storeId={store.id}
+        storeId={storeId}
         storeSlug={storeSlug}
       />
     </ContentLayout>

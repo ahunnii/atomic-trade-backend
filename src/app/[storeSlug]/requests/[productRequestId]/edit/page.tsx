@@ -1,7 +1,7 @@
-import type { Customer } from "~/types/customer";
-import type { ProductRequest } from "~/types/product-request";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
+import type { ProductRequestWithCustomer } from "~/types/product-request";
 import { api } from "~/trpc/server";
-import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { ProductRequestForm } from "../../_components/product-request-form";
@@ -16,13 +16,9 @@ export const metadata = {
 
 export default async function EditProductRequestPage({ params }: Props) {
   const { storeSlug, productRequestId } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  const customers = await api.customer.getAll(store!.id);
+  const storeId = await getStoreIdViaTRPC(storeSlug);
+  const customers = await api.customer.getAll(storeSlug);
   const productRequest = await api.productRequest.get(productRequestId);
-
-  if (!store) {
-    return <DataFetchErrorMessage message="This store does not exist." />;
-  }
 
   return (
     <ContentLayout
@@ -34,12 +30,16 @@ export default async function EditProductRequestPage({ params }: Props) {
         },
       ]}
       currentPage="Update Product Request"
+      displayError={!productRequest}
+      displayErrorText="This product request does not exist."
+      displayErrorActionHref={`/${storeSlug}/requests`}
+      displayErrorActionLabel="Back to Product Requests"
     >
       <ProductRequestForm
-        initialData={productRequest as ProductRequest | null}
-        storeId={store.id}
+        initialData={productRequest as ProductRequestWithCustomer}
+        storeId={storeId}
         storeSlug={storeSlug}
-        customers={customers as Customer[]}
+        customers={customers}
       />
     </ContentLayout>
   );

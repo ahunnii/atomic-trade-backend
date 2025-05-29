@@ -1,5 +1,3 @@
-import { api } from "~/trpc/server";
-import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 type Props = {
@@ -12,11 +10,6 @@ export const metadata = {
 
 export default async function PagesPage({ params }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-
-  if (!store) {
-    return <DataFetchErrorMessage message="This store does not exist." />;
-  }
 
   return (
     <ContentLayout title="Pages" currentPage="Pages">

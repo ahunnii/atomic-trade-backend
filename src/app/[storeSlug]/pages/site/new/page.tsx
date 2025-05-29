@@ -1,4 +1,5 @@
-import type { SitePage } from "~/types/site-page";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
 import { api } from "~/trpc/server";
 
 import { SitePageForm } from "../_components/site-page-form";
@@ -8,14 +9,12 @@ type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
+export const metadata = { title: "New Site Page" };
+
 export default async function NewSitePageAdminPage({ params }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  const sitePages = await api.sitePage.getAll(store?.id ?? "");
-
-  if (!store) {
-    return <div>Store not found</div>;
-  }
+  const storeId = await getStoreIdViaTRPC(storeSlug);
+  const sitePages = await api.sitePage.getAll(storeSlug);
 
   return (
     <ContentLayout
@@ -30,9 +29,9 @@ export default async function NewSitePageAdminPage({ params }: Props) {
     >
       <SitePageForm
         initialData={null}
-        storeId={store.id}
+        storeId={storeId}
         storeSlug={storeSlug}
-        sitePages={sitePages as SitePage[]}
+        sitePages={sitePages}
       />
     </ContentLayout>
   );

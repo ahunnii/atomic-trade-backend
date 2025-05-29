@@ -3,24 +3,24 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 
+import type { Discount } from "@prisma/client";
+
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { AdvancedDataTable } from "~/components/shared/tables/advanced-data-table";
 
-import { ContentLayout } from "../../_components/content-layout";
 import { CreateDiscountDialog } from "./create-discount-dialog";
 import { discountColumnData } from "./discount-column-data";
 
-type Props = { storeId: string; storeSlug: string };
+type Props = { storeSlug: string; discounts: Discount[] };
 
-export const DiscountClient = ({ storeId, storeSlug }: Props) => {
+export const DiscountClient = ({ storeSlug, discounts }: Props) => {
   const router = useRouter();
 
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["discount"],
   });
 
-  const storeDiscounts = api.discount.getAll.useQuery(storeId);
   const deleteDiscount = api.discount.delete.useMutation(defaultActions);
   const duplicateDiscount = api.discount.duplicate.useMutation({
     ...defaultActions,
@@ -32,7 +32,7 @@ export const DiscountClient = ({ storeId, storeSlug }: Props) => {
 
   const columnData = useMemo(() => {
     return (
-      storeDiscounts?.data?.map((discount) => ({
+      discounts?.map((discount) => ({
         ...discount,
         storeSlug,
         uses: discount?.uses ?? 0,
@@ -41,18 +41,14 @@ export const DiscountClient = ({ storeId, storeSlug }: Props) => {
         onDuplicate: (id: string) => duplicateDiscount.mutate(id),
       })) ?? []
     );
-  }, [storeDiscounts?.data, deleteDiscount, duplicateDiscount, storeSlug]);
+  }, [discounts, deleteDiscount, duplicateDiscount, storeSlug]);
 
   return (
-    <ContentLayout title={`Discounts (${storeDiscounts?.data?.length ?? 0})`}>
-      <div className="py-4">
-        <AdvancedDataTable
-          searchKey="code"
-          columns={discountColumnData}
-          data={columnData}
-          addButton={<CreateDiscountDialog storeSlug={storeSlug} />}
-        />
-      </div>
-    </ContentLayout>
+    <AdvancedDataTable
+      searchKey="code"
+      columns={discountColumnData}
+      data={columnData}
+      addButton={<CreateDiscountDialog storeSlug={storeSlug} />}
+    />
   );
 };

@@ -1,35 +1,16 @@
-import { api } from "~/trpc/server";
-import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
-export const metadata = {
-  title: "Reserved Pages",
-};
+export const metadata = { title: "Reserved Pages" };
 
 export default async function ReservedPagesPage({ params }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-
-  if (!store) {
-    return <DataFetchErrorMessage message="This store does not exist." />;
-  }
 
   return (
-    <ContentLayout
-      title="Reserved Pages"
-      // breadcrumbs={[
-      //   {
-      //     href: `/${storeSlug}/pages/reserved`,
-      //     label: "Reserved Pages",
-      //   },
-      // ]}
-      currentPage="Reserved Pages"
-      // breadcrumbClassName="bg-background shadow p-4"
-    >
+    <ContentLayout title="Reserved Pages" currentPage="Reserved Pages">
       <div className="mt-4 mb-8 space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">
           Reserved Pages

@@ -1,17 +1,14 @@
 import type { UseFormReturn } from "react-hook-form";
 
-import { init } from "@paralleldrive/cuid2";
+import type { Collection } from "@prisma/client";
 import { DiscountAmountType, DiscountType } from "@prisma/client";
 
 import type { DiscountFormData } from "~/lib/validators/discount";
-import type { Collection } from "~/types/collection";
-import type { Product } from "~/types/product";
+import type { ProductWithVariations } from "~/types/product";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
-import { Label } from "~/components/ui/label";
 import { CurrencyFormField } from "~/components/input/currency-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
-import { RadioGroupFormField } from "~/components/input/radio-group-form-field";
 import { SingleCheckboxFormField } from "~/components/input/single-checkbox-form-field";
 import { FormCardSection } from "~/components/shared/form-card-section";
 
@@ -20,7 +17,7 @@ import { ProductVariantSelection } from "./product-variant-selection";
 
 type Props = {
   form: UseFormReturn<DiscountFormData>;
-  products: Product[];
+  products: ProductWithVariations[];
   collections: Collection[];
   isLoading: boolean;
 };

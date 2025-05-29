@@ -3,7 +3,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { CellActions } from "~/components/shared/cell-actions";
 import { PrimaryCellLink } from "~/components/shared/primary-cell-link";
 
-export type CustomerColumn = {
+export type CustomerColumnData = {
   id: string;
   name: string;
   storeSlug: string;
@@ -15,7 +15,7 @@ export type CustomerColumn = {
   onDelete: (id: string) => void;
 };
 
-export const customerColumnData: ColumnDef<CustomerColumn>[] = [
+export const customerColumnData: ColumnDef<CustomerColumnData>[] = [
   {
     accessorKey: "name",
     header: "Name",
@@ -37,7 +37,6 @@ export const customerColumnData: ColumnDef<CustomerColumn>[] = [
   {
     accessorKey: "orderCount",
     header: "Orders",
-    cell: ({ row }) => <span>{row.original.orderCount}</span>,
   },
   {
     accessorKey: "totalSpentInCents",
@@ -56,7 +55,6 @@ export const customerColumnData: ColumnDef<CustomerColumn>[] = [
     cell: ({ row }) => (
       <CellActions
         id={row.original.id}
-        copyText="Customer ID"
         isLoading={row.original.isLoading}
         hasUpdate={false}
         handleOnDelete={row.original.onDelete}

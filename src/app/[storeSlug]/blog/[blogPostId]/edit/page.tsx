@@ -1,6 +1,6 @@
-import type { BlogPost } from "~/types/blog";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
 import { api } from "~/trpc/server";
-import { DataFetchErrorMessage } from "~/components/shared/data-fetch-error-message";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
 import { BlogPostForm } from "../../_components/blog-post-form";
@@ -9,18 +9,13 @@ type Props = {
   params: Promise<{ storeSlug: string; blogPostId: string }>;
 };
 
-export const metadata = {
-  title: "Edit Blog Post",
-};
+export const metadata = { title: "Edit Blog Post" };
 
 export default async function EditCollectionPage({ params }: Props) {
-  const { storeSlug, blogPostId } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  const blogPost = await api.blog.get(blogPostId);
+  const { blogPostId, storeSlug } = await params;
 
-  if (!store) {
-    return <DataFetchErrorMessage message="This store does not exist." />;
-  }
+  const storeId = await getStoreIdViaTRPC(storeSlug);
+  const blogPost = await api.blog.get(blogPostId);
 
   return (
     <ContentLayout
@@ -32,11 +27,14 @@ export default async function EditCollectionPage({ params }: Props) {
         },
       ]}
       currentPage="Update Blog Post"
-      // breadcrumbClassName="bg-background shadow p-4"
+      displayError={!blogPost}
+      displayErrorText="This blog post does not exist."
+      displayErrorActionHref={`/${storeSlug}/blog`}
+      displayErrorActionLabel="Back to Blog Posts"
     >
       <BlogPostForm
-        initialData={blogPost as BlogPost | null}
-        storeId={store.id}
+        initialData={blogPost}
+        storeId={storeId}
         storeSlug={storeSlug}
       />
     </ContentLayout>

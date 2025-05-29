@@ -51,6 +51,7 @@ export const useDefaultMutationActions = ({
 
     if (redirectPath && !props.cancelRedirect) {
       void router.push(redirectPath);
+      void router.refresh();
     }
   };
 

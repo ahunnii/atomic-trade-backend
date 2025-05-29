@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { CustomerFormData } from "~/lib/validators/customer";
 import type { Address } from "~/lib/validators/geocoding";
-import type { Customer } from "~/types/customer";
+import type { CustomerWithOrders } from "~/types/customer";
 import { customerValidator } from "~/lib/validators/customer";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
@@ -19,12 +19,13 @@ import { PhoneFormField } from "~/components/input/phone-form-field";
 import { TagFormField } from "~/components/input/tag-form-field";
 import { TextareaFormField } from "~/components/input/textarea-form-field";
 import { FormAdditionalOptionsButton } from "~/components/shared/form-additional-options-button";
+import { FormDiscardButton } from "~/components/shared/form-discard-button";
 import { FormHeader } from "~/components/shared/form-header";
 import { FormSection } from "~/components/shared/form-section";
 import { LoadButton } from "~/components/shared/load-button";
 
 type Props = {
-  initialData: Customer | null;
+  initialData: CustomerWithOrders | null;
   storeSlug: string;
   storeId: string;
   defaultAddress: Address | null;
@@ -36,9 +37,11 @@ export const CustomerForm = ({
   storeId,
   defaultAddress,
 }: Props) => {
+  const parentPath = `/${storeSlug}/customers`;
+
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["customer"],
-    redirectPath: `/${storeSlug}/customers`,
+    redirectPath: parentPath,
   });
 
   const title = initialData ? "Edit customer" : "Create customer";
@@ -79,10 +82,6 @@ export const CustomerForm = ({
   });
 
   const onSubmit = (data: CustomerFormData) => {
-    void onSave(data);
-  };
-
-  const onSave = async (data: CustomerFormData) => {
     if (initialData)
       updateCustomer.mutate({ ...data, customerId: initialData.id });
     else createCustomer.mutate({ ...data, storeId });
@@ -104,15 +103,19 @@ export const CustomerForm = ({
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title={title} link={`/${storeSlug}/customers`}>
+          <FormHeader title={title} link={parentPath}>
             {initialData && <FormAdditionalOptionsButton onDelete={onDelete} />}
 
+            <FormDiscardButton
+              isLoading={isLoading}
+              redirectPath={parentPath}
+            />
             <LoadButton isLoading={isLoading} type="submit">
               Save
             </LoadButton>
           </FormHeader>
 
-          <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
+          <section className="form-body">
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-7">
               <FormSection
                 title="Customer Details"
@@ -214,7 +217,7 @@ export const CustomerForm = ({
                   disabled={isLoading}
                   name="notes"
                   label="Notes (optional)"
-                  placeholder="e.g. Summer is here! Get your summer essentials now!"
+                  placeholder="e.g. This customer prefers to pick up their orders in store."
                 />
                 <TagFormField
                   form={form}

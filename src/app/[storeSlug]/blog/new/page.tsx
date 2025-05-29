@@ -1,4 +1,4 @@
-import { api } from "~/trpc/server";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 
 import { BlogPostForm } from "../_components/blog-post-form";
 import { ContentLayout } from "../../_components/content-layout";
@@ -7,13 +7,11 @@ type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
-export default async function NewCollectionAdminPage({ params }: Props) {
-  const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
+export const metadata = { title: "New Blog Post" };
 
-  if (!store) {
-    return <div>Store not found</div>;
-  }
+export default async function NewBlogPostAdminPage({ params }: Props) {
+  const { storeSlug } = await params;
+  const storeId = await getStoreIdViaTRPC(storeSlug);
 
   return (
     <ContentLayout
@@ -28,7 +26,7 @@ export default async function NewCollectionAdminPage({ params }: Props) {
     >
       <BlogPostForm
         initialData={null}
-        storeId={store.id}
+        storeId={storeId}
         storeSlug={storeSlug}
       />
     </ContentLayout>

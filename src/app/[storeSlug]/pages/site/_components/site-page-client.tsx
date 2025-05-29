@@ -3,23 +3,23 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 
+import type { SitePage } from "@prisma/client";
+
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { AdvancedDataTable } from "~/components/shared/tables/advanced-data-table";
 
-import { ContentLayout } from "../../../_components/content-layout";
 import { sitePageColumnData } from "./site-page-column-data";
 
-type Props = { storeId: string; storeSlug: string };
+type Props = { sitePages: SitePage[]; storeSlug: string };
 
-export const SitePageClient = ({ storeId, storeSlug }: Props) => {
+export const SitePageClient = ({ sitePages, storeSlug }: Props) => {
   const router = useRouter();
 
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["sitePage"],
   });
 
-  const sitePages = api.sitePage.getAll.useQuery(storeId);
   const deleteSitePage = api.sitePage.delete.useMutation(defaultActions);
   const duplicateSitePage = api.sitePage.duplicate.useMutation({
     ...defaultActions,
@@ -31,7 +31,7 @@ export const SitePageClient = ({ storeId, storeSlug }: Props) => {
 
   const columnData = useMemo(() => {
     return (
-      sitePages?.data?.map((blogPost) => ({
+      sitePages?.map((blogPost) => ({
         ...blogPost,
         storeSlug,
         onDelete: (id: string) => deleteSitePage.mutate(id),
@@ -39,19 +39,15 @@ export const SitePageClient = ({ storeId, storeSlug }: Props) => {
         onDuplicate: (id: string) => duplicateSitePage.mutate(id),
       })) ?? []
     );
-  }, [sitePages?.data, deleteSitePage, duplicateSitePage, storeSlug]);
+  }, [sitePages, deleteSitePage, duplicateSitePage, storeSlug]);
 
   return (
-    <ContentLayout title={`Site Pages (${sitePages?.data?.length ?? 0})`}>
-      <div className="py-4">
-        <AdvancedDataTable
-          searchKey="title"
-          columns={sitePageColumnData}
-          data={columnData}
-          addButtonLabel="Add Site Page"
-          handleAdd={() => router.push(`/${storeSlug}/site-pages/new`)}
-        />
-      </div>
-    </ContentLayout>
+    <AdvancedDataTable
+      searchKey="title"
+      columns={sitePageColumnData}
+      data={columnData}
+      addButtonLabel="Add Site Page"
+      handleAdd={() => router.push(`/${storeSlug}/site-pages/new`)}
+    />
   );
 };

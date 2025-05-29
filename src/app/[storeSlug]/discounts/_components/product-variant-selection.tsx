@@ -3,8 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { ChevronDownIcon, ChevronRightIcon, PencilIcon } from "lucide-react";
 
+import type { Variation } from "@prisma/client";
+
 import type { DiscountFormData } from "~/lib/validators/discount";
-import type { Product, Variation } from "~/types/product";
+import type { ProductWithVariations } from "~/types/product";
 import { env } from "~/env";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -22,7 +24,7 @@ type VariantWithSelection = Variation & {
   isSelected: boolean;
 };
 
-type ProductWithSelection = Omit<Product, "variants"> & {
+type ProductWithSelection = Omit<ProductWithVariations, "variants"> & {
   isSelected: boolean;
   variants: VariantWithSelection[];
 };
@@ -34,7 +36,7 @@ export const ProductVariantSelection = ({
 }: {
   form: UseFormReturn<DiscountFormData>;
   isLoading: boolean;
-  products: Product[];
+  products: ProductWithVariations[];
 }) => {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(
     new Set(),

@@ -4,7 +4,6 @@ import { init } from "@paralleldrive/cuid2";
 
 import type { DiscountFormData } from "~/lib/validators/discount";
 import { Button } from "~/components/ui/button";
-import { Label } from "~/components/ui/label";
 import { InputFormField } from "~/components/input/input-form-field";
 import { RadioGroupFormField } from "~/components/input/radio-group-form-field";
 import { FormCardSection } from "~/components/shared/form-card-section";

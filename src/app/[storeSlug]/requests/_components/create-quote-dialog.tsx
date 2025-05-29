@@ -1,14 +1,11 @@
 "use client";
 
-import type { FieldArrayWithId, UseFormReturn } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 import { useEffect, useMemo, useState } from "react";
 import { XIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 
 import type { ProductRequestFormData } from "~/lib/validators/product-request";
-import { api } from "~/trpc/react";
-import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -17,13 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { CurrencyFormField } from "~/components/input/currency-form-field";

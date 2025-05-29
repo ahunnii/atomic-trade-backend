@@ -3,23 +3,23 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 
+import type { BlogPost } from "@prisma/client";
+
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { AdvancedDataTable } from "~/components/shared/tables/advanced-data-table";
 
-import { ContentLayout } from "../../_components/content-layout";
 import { blogPostColumnData } from "./blog-post-column-data";
 
-type Props = { storeId: string; storeSlug: string };
+type Props = { storeSlug: string; blogPosts: BlogPost[] };
 
-export const BlogPostClient = ({ storeId, storeSlug }: Props) => {
+export const BlogPostClient = ({ storeSlug, blogPosts }: Props) => {
   const router = useRouter();
 
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["blog"],
   });
 
-  const storeBlogPosts = api.blog.getAll.useQuery(storeId);
   const deleteBlogPost = api.blog.delete.useMutation(defaultActions);
   const duplicateBlogPost = api.blog.duplicate.useMutation({
     ...defaultActions,
@@ -31,7 +31,7 @@ export const BlogPostClient = ({ storeId, storeSlug }: Props) => {
 
   const columnData = useMemo(() => {
     return (
-      storeBlogPosts?.data?.map((blogPost) => ({
+      blogPosts?.map((blogPost) => ({
         ...blogPost,
         storeSlug,
         onDelete: (id: string) => deleteBlogPost.mutate(id),
@@ -39,19 +39,15 @@ export const BlogPostClient = ({ storeId, storeSlug }: Props) => {
         onDuplicate: (id: string) => duplicateBlogPost.mutate(id),
       })) ?? []
     );
-  }, [storeBlogPosts?.data, deleteBlogPost, duplicateBlogPost, storeSlug]);
+  }, [blogPosts, deleteBlogPost, duplicateBlogPost, storeSlug]);
 
   return (
-    <ContentLayout title={`Blog Posts (${storeBlogPosts?.data?.length ?? 0})`}>
-      <div className="py-4">
-        <AdvancedDataTable
-          searchKey="title"
-          columns={blogPostColumnData}
-          data={columnData}
-          addButtonLabel="Add Blog Post"
-          handleAdd={() => router.push(`/${storeSlug}/blog/new`)}
-        />
-      </div>
-    </ContentLayout>
+    <AdvancedDataTable
+      searchKey="title"
+      columns={blogPostColumnData}
+      data={columnData}
+      addButtonLabel="Add Blog Post"
+      handleAdd={() => router.push(`/${storeSlug}/blog/new`)}
+    />
   );
 };

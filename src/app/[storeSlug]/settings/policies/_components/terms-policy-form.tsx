@@ -26,9 +26,11 @@ type Props = {
 };
 
 export const TermsPolicyForm = ({ initialData, storeSlug, storeId }: Props) => {
+  const parentPath = `/${storeSlug}/settings/policies`;
+
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["policy"],
-    redirectPath: `/${storeSlug}/settings/policies`,
+    redirectPath: parentPath,
   });
 
   const editorRef3 = useRef<LargeMarkdownFormFieldRef>(null);
@@ -69,17 +71,17 @@ export const TermsPolicyForm = ({ initialData, storeSlug, storeId }: Props) => {
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title={title} link={`/${storeSlug}/settings/policies`}>
+          <FormHeader title={title} link={parentPath}>
             <FormDiscardButton
               isLoading={isLoading}
-              redirectPath={`/${storeSlug}/settings/policies`}
+              redirectPath={parentPath}
             />
             <LoadButton isLoading={isLoading} type="submit">
               Save changes
             </LoadButton>
           </FormHeader>
 
-          <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
+          <section className="form-body">
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-7">
               <FormSection
                 title="Terms of Service"
@@ -90,7 +92,6 @@ export const TermsPolicyForm = ({ initialData, storeSlug, storeId }: Props) => {
                   form={form}
                   ref={editorRef3}
                   contentFieldName="termsOfService"
-                  label="Terms of Service"
                   className="col-span-full w-full"
                 />
               </FormSection>

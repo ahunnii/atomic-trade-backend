@@ -3,9 +3,8 @@ import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 
 import type { Option } from "~/components/ui/custom/autocomplete-input";
-import type { DraftOrderFormData } from "~/lib/validators/order";
 import type { ProductRequestFormData } from "~/lib/validators/product-request";
-import type { Customer } from "~/types/customer";
+import type { CustomerWithOrders } from "~/types/customer";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { AutoComplete } from "~/components/ui/custom/autocomplete-input";
@@ -29,8 +28,8 @@ type Props = {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   inputId?: string;
   inputClassName?: string;
-  customers: Customer[];
-  initialData?: Customer;
+  customers: CustomerWithOrders[];
+  initialData?: CustomerWithOrders;
 };
 
 export function SimplifiedCustomerFormField({
@@ -42,7 +41,7 @@ export function SimplifiedCustomerFormField({
   disabled,
   initialData,
 }: Props) {
-  const [value, setValue] = useState<Option<Customer | string>>();
+  const [value, setValue] = useState<Option<CustomerWithOrders | string>>();
 
   const formattedCustomers = useMemo(() => {
     return customers.map((customer) => ({
@@ -50,7 +49,7 @@ export function SimplifiedCustomerFormField({
       label: `${customer.firstName} ${customer.lastName}`,
       sublabel: customer.email,
       data: customer,
-    })) as Option<Customer>[];
+    })) as Option<CustomerWithOrders>[];
   }, [customers]);
 
   const customer = form.watch("customer");
@@ -70,7 +69,7 @@ export function SimplifiedCustomerFormField({
                   emptyMessage="No results."
                   placeholder="Search for a customer..."
                   isLoading={false}
-                  onValueChange={(value: Option<Customer>) => {
+                  onValueChange={(value: Option<CustomerWithOrders>) => {
                     setValue(value);
                     form.setValue("customerId", value.data.id);
 
@@ -114,7 +113,7 @@ export function SimplifiedCustomerFormField({
                           : value.data.lastName),
                     );
                   }}
-                  value={value as Option<Customer>}
+                  value={value as Option<CustomerWithOrders>}
                   disabled={disabled}
                   createButtonLabel="Create new"
                 />

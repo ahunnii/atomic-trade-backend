@@ -4,26 +4,21 @@ import { useRef } from "react";
 import { useForm } from "react-hook-form";
 
 import type { HomePageSettings } from "@prisma/client";
-import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HeroType } from "@prisma/client";
 
 import type { ImageFormFieldRef } from "~/components/input/image-form-field";
 import type { MultiImageFormFieldRef } from "~/components/input/multi-image-form-field";
 import type { HomepageSettingsFormData } from "~/lib/validators/settings";
-import type { BrandingFormData } from "~/lib/validators/store";
-import type { Store } from "~/types/store";
 import { env } from "~/env";
 import { cn } from "~/lib/utils";
 import { homepageSettingsValidator } from "~/lib/validators/settings";
-import { brandingSettingsValidator } from "~/lib/validators/store";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { Form } from "~/components/ui/form";
 import { ImageFormField } from "~/components/input/image-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
 import { MultiImageFormField } from "~/components/input/multi-image-form-field";
-import { PhoneFormField } from "~/components/input/phone-form-field";
 import { SingleCheckboxFormField } from "~/components/input/single-checkbox-form-field";
 import { FormDiscardButton } from "~/components/shared/form-discard-button";
 import { FormHeader } from "~/components/shared/form-header";
@@ -41,6 +36,7 @@ export const HomepageCustomizationForm = ({
   storeId,
   slug,
 }: Props) => {
+  const parentPath = `/${slug}/settings`;
   const mediaRef = useRef<MultiImageFormFieldRef>(null);
   const featuredImageRef = useRef<ImageFormFieldRef>(null);
 
@@ -111,21 +107,15 @@ export const HomepageCustomizationForm = ({
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader
-            title="Homepage Customization"
-            link={`/${slug}/dashboard`}
-          >
-            <FormDiscardButton
-              isLoading={loading}
-              redirectPath={`/${slug}/dashboard`}
-            />
+          <FormHeader title="Homepage Customization" link={parentPath}>
+            <FormDiscardButton isLoading={loading} redirectPath={parentPath} />
             <LoadButton isLoading={loading} type="submit">
               Save changes
             </LoadButton>
           </FormHeader>
 
           <section className="form-body">
-            <div className={cn("flex w-full flex-col space-y-4")}>
+            <div className={cn("flex w-full flex-col space-y-4 xl:col-span-7")}>
               <FormSection
                 title="Hero Section"
                 description="Set up your store's hero section."

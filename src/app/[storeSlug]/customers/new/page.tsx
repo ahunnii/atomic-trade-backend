@@ -1,4 +1,4 @@
-import { api } from "~/trpc/server";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 
 import { CustomerForm } from "../_components/customer-form";
 import { ContentLayout } from "../../_components/content-layout";
@@ -7,17 +7,11 @@ type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
-export const metadata = {
-  title: "New Customer",
-};
+export const metadata = { title: "New Customer" };
 
 export default async function NewCustomerAdminPage({ params }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-
-  if (!store) {
-    return <div>Store not found</div>;
-  }
+  const storeId = await getStoreIdViaTRPC(storeSlug);
 
   return (
     <ContentLayout
@@ -32,7 +26,7 @@ export default async function NewCustomerAdminPage({ params }: Props) {
     >
       <CustomerForm
         initialData={null}
-        storeId={store.id}
+        storeId={storeId}
         storeSlug={storeSlug}
         defaultAddress={null}
       />

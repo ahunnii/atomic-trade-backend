@@ -3,28 +3,30 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 
+import type { ProductRequestWithQuotes } from "~/types/product-request";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { AdvancedDataTable } from "~/components/shared/tables/advanced-data-table";
 
-import { ContentLayout } from "../../_components/content-layout";
 import { productRequestColumnData } from "./product-request-column-data";
 
-type Props = { storeId: string; storeSlug: string };
+type Props = {
+  storeSlug: string;
+  requests: ProductRequestWithQuotes[];
+};
 
-export const ProductRequestClient = ({ storeId, storeSlug }: Props) => {
+export const ProductRequestClient = ({ storeSlug, requests }: Props) => {
   const router = useRouter();
 
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["productRequest"],
   });
 
-  const storeRequests = api.productRequest.getAll.useQuery(storeId);
   const deleteRequest = api.productRequest.delete.useMutation(defaultActions);
 
   const columnData = useMemo(() => {
     return (
-      storeRequests?.data?.map((request) => ({
+      requests?.map((request) => ({
         ...request,
         storeSlug,
         name: request.firstName + " " + request.lastName,
@@ -33,21 +35,15 @@ export const ProductRequestClient = ({ storeId, storeSlug }: Props) => {
         isLoading: deleteRequest.isPending,
       })) ?? []
     );
-  }, [storeRequests?.data, deleteRequest, storeSlug]);
+  }, [requests, deleteRequest, storeSlug]);
 
   return (
-    <ContentLayout
-      title={`Product Requests (${storeRequests?.data?.length ?? 0})`}
-    >
-      <div className="py-4">
-        <AdvancedDataTable
-          searchKey="name"
-          columns={productRequestColumnData}
-          data={columnData}
-          addButtonLabel="Add Request"
-          handleAdd={() => router.push(`/${storeSlug}/requests/new`)}
-        />
-      </div>
-    </ContentLayout>
+    <AdvancedDataTable
+      searchKey="name"
+      columns={productRequestColumnData}
+      data={columnData}
+      addButtonLabel="Add Request"
+      handleAdd={() => router.push(`/${storeSlug}/requests/new`)}
+    />
   );
 };

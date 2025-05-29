@@ -9,28 +9,29 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { ImageFormFieldRef } from "~/components/input/image-form-field";
 import type { CollectionFormData } from "~/lib/validators/collection";
-import type { Collection } from "~/types/collection";
-import type { Product } from "~/types/product";
+import type { CollectionWithProducts } from "~/types/collection";
+import type { ProductWithVariations } from "~/types/product";
 import { env } from "~/env";
 import { collectionFormValidator } from "~/lib/validators/collection";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
-import { Badge } from "~/components/ui/badge";
 import { Form } from "~/components/ui/form";
 import { ImageFormField } from "~/components/input/image-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
 import { SingleCheckboxFormField } from "~/components/input/single-checkbox-form-field";
 import { TextareaFormField } from "~/components/input/textarea-form-field";
 import { FormAdditionalOptionsButton } from "~/components/shared/form-additional-options-button";
+import { FormDiscardButton } from "~/components/shared/form-discard-button";
 import { FormHeader } from "~/components/shared/form-header";
 import { FormSaveOptionsButton } from "~/components/shared/form-save-options-button";
 import { FormSection } from "~/components/shared/form-section";
+import { FormStatusTitle } from "~/components/shared/form-status-title";
 
 import { ProductSelection } from "./product-selection";
 
 type Props = {
-  initialData: Collection | null;
-  products: Product[];
+  initialData: CollectionWithProducts | null;
+  products: ProductWithVariations[];
   storeSlug: string;
   storeId: string;
 };
@@ -43,54 +44,20 @@ export const CollectionForm = ({
 }: Props) => {
   const router = useRouter();
 
+  const parentPath = `/${storeSlug}/collections`;
+
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["collection"],
-    redirectPath: `/${storeSlug}/collections`,
+    redirectPath: parentPath,
   });
 
-  const title = initialData ? (
-    initialData?.status === "ACTIVE" ? (
-      <div className="flex items-center gap-2">
-        <span>Edit collection</span>
-        <Badge
-          variant="outline"
-          className="bg-green-100 text-xs font-bold text-green-800 dark:bg-green-900 dark:text-green-100"
-        >
-          Active
-        </Badge>
-      </div>
-    ) : (
-      <span className="flex items-center gap-2">
-        <span>Edit collection</span>
-        <Badge variant="outline" className="text-xs">
-          Draft
-        </Badge>
-      </span>
-    )
-  ) : (
-    "Create collection"
+  const title = (
+    <FormStatusTitle
+      hasInitialData={!!initialData}
+      title="Collection"
+      status={initialData?.status ?? "DRAFT"}
+    />
   );
-
-  // const description = initialData
-  //   ? "Edit a collection."
-  //   : "Add a new collection";
-
-  // const action = initialData ? "Save changes" : "Create";
-
-  // const filteredProducts = useMemo(
-  //   () => products.map(formatProductForSearchSelect),
-  //   [products],
-  // );
-
-  // const initialFilteredProducts = useMemo(
-  //   () =>
-  //     initialData?.products && initialData?.products?.length > 0
-  //       ? initialData.products.map((product) =>
-  //           formatProductForSearchSelect(product as Product),
-  //         )
-  //       : [],
-  //   [initialData?.products],
-  // );
 
   const updateCollection = api.collection.update.useMutation(defaultActions);
   const createCollection = api.collection.create.useMutation(defaultActions);
@@ -107,7 +74,7 @@ export const CollectionForm = ({
     ...defaultActions,
     onSuccess: ({ data, message }) => {
       defaultActions.onSuccess({ message, cancelRedirect: true });
-      void router.push(`/${storeSlug}/collections/${data.id}/edit`);
+      void router.push(`${parentPath}/${data.id}/edit`);
     },
   });
 
@@ -124,16 +91,9 @@ export const CollectionForm = ({
     },
   });
 
-  const onSubmit = (data: CollectionFormData) => {
-    console.log(data);
-    // if (initialData)
-    //   updateCollection.mutate({ ...data, collectionId: initialData.id });
-    // else createCollection.mutate({ ...data, storeId });
-  };
-
   const featuredImageRef = useRef<ImageFormFieldRef>(null);
 
-  const onSave = async (data: CollectionFormData, publish = false) => {
+  const onSave = async (data: CollectionFormData, publish?: boolean) => {
     const featuredImage = await featuredImageRef.current?.upload();
 
     if (
@@ -159,6 +119,10 @@ export const CollectionForm = ({
         imageUrl: featuredImage!,
       });
     }
+  };
+
+  const onSubmit = (data: CollectionFormData) => {
+    void onSave(data, data?.status === "ACTIVE");
   };
 
   const onDelete = () => deleteCollection.mutate(initialData?.id ?? "");
@@ -196,20 +160,22 @@ export const CollectionForm = ({
       <Form {...form}>
         <form
           onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
-          onChange={(e) => {
-            console.log(form.watch());
-          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title={title} link={`/${storeSlug}/collections`}>
+          <FormHeader title={title} link={parentPath}>
             {initialData && (
               <FormAdditionalOptionsButton
                 onDelete={onDelete}
                 onDuplicate={onSaveAndDuplicate}
               />
             )}
+
+            <FormDiscardButton
+              isLoading={isLoading}
+              redirectPath={parentPath}
+            />
 
             <FormSaveOptionsButton
               onSave={() => onSave(form.getValues(), false)}
@@ -218,7 +184,7 @@ export const CollectionForm = ({
             />
           </FormHeader>
 
-          <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
+          <section className="form-body">
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-7">
               <FormSection
                 title="Details"
@@ -258,22 +224,22 @@ export const CollectionForm = ({
                 form={form}
                 name="isFeatured"
                 label="Featured"
-                description="This collection will be featured on the homepage. It is recommended to have 3 to 4 featured collections at any one given time."
+                description="This collection will be given more of a spotlight on the homepage, and throughout the site."
               />
 
-              <div className="border-border bg-background/50 w-full rounded-md border p-4">
+              <div className="form-card">
                 <ImageFormField
                   form={form}
                   ref={featuredImageRef}
                   label="Thumbnail (optional)"
                   disabled={isLoading}
-                  isRequired={true}
+                  isRequired={false}
                   route="misc"
                   apiUrl="/api/upload-misc"
                   name="imageUrl"
                   tempName="tempImageUrl"
                   currentImageUrl={currentFeaturedImage}
-                  description="Used to represent your blog on social media and other"
+                  description="Shown on the collection page to represent the collection"
                 />
               </div>
             </div>

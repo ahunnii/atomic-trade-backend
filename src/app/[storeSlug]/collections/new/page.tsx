@@ -1,4 +1,6 @@
-import type { Product } from "~/types/product";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
+import type { ProductWithVariations } from "~/types/product";
 import { api } from "~/trpc/server";
 
 import { CollectionForm } from "../_components/collection-form";
@@ -8,14 +10,14 @@ type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
+export const metadata = { title: "New Collection" };
+
 export default async function NewCollectionAdminPage({ params }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  const products = await api.product.getAll({ storeId: store!.id });
 
-  if (!store) {
-    return <div>Store not found</div>;
-  }
+  const storeId = await getStoreIdViaTRPC(storeSlug);
+
+  const products = await api.product.getAll(storeSlug);
 
   return (
     <ContentLayout
@@ -30,8 +32,8 @@ export default async function NewCollectionAdminPage({ params }: Props) {
     >
       <CollectionForm
         initialData={null}
-        products={(products as unknown as Product[]) ?? []}
-        storeId={store.id}
+        products={products as ProductWithVariations[]}
+        storeId={storeId}
         storeSlug={storeSlug}
       />
     </ContentLayout>

@@ -1,21 +1,26 @@
+import type { CustomerWithOrders } from "~/types/customer";
 import { api } from "~/trpc/server";
 
+import { ContentLayout } from "../_components/content-layout";
 import { CustomerClient } from "./_components/customer-client";
 
 type Props = {
   params: Promise<{ storeSlug: string }>;
 };
 
-export const metadata = {
-  title: "Customers",
-};
+export const metadata = { title: "Customers" };
 
 export default async function CustomersAdminPage({ params }: Props) {
   const { storeSlug } = await params;
-  const store = await api.store.getBySlug(storeSlug);
-  if (!store) {
-    return <div>Store not found</div>;
-  }
 
-  return <CustomerClient storeId={store.id} storeSlug={storeSlug} />;
+  const storeCustomers = await api.customer.getAll(storeSlug);
+
+  return (
+    <ContentLayout title={`Customers (${storeCustomers?.length ?? 0})`}>
+      <CustomerClient
+        storeSlug={storeSlug}
+        customers={storeCustomers as CustomerWithOrders[]}
+      />
+    </ContentLayout>
+  );
 }

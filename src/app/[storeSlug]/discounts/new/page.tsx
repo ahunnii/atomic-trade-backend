@@ -1,7 +1,7 @@
+import { getStoreIdViaTRPC } from "~/server/actions/store";
+
 import type { DiscountType } from "@prisma/client";
 
-import type { Collection } from "~/types/collection";
-import type { Product } from "~/types/product";
 import { api } from "~/trpc/server";
 import { ContentLayout } from "~/app/[storeSlug]/_components/content-layout";
 
@@ -12,10 +12,7 @@ type Props = {
   searchParams: Promise<{ type: string }>;
 };
 
-export const metadata = {
-  title: "New Discount",
-  description: "Create a new discount",
-};
+export const metadata = { title: "New Discount" };
 
 export default async function NewDiscountAdminPage({
   params,
@@ -23,13 +20,10 @@ export default async function NewDiscountAdminPage({
 }: Props) {
   const { storeSlug } = await params;
   const { type } = await searchParams;
-  const store = await api.store.getBySlug(storeSlug);
-  const products = await api.product.getAll({ storeId: store!.id });
-  const collections = await api.collection.getAll(store!.id);
+  const storeId = await getStoreIdViaTRPC(storeSlug);
 
-  if (!store) {
-    return <div>Store not found</div>;
-  }
+  const products = await api.product.getAll(storeSlug);
+  const collections = await api.collection.getAll(storeSlug);
 
   return (
     <ContentLayout
@@ -44,11 +38,11 @@ export default async function NewDiscountAdminPage({
     >
       <DiscountForm
         initialData={null}
-        products={(products as unknown as Product[]) ?? []}
-        storeId={store.id}
+        products={products ?? []}
+        storeId={storeId}
         storeSlug={storeSlug}
         type={type as DiscountType}
-        collections={(collections as unknown as Collection[]) ?? []}
+        collections={collections ?? []}
       />
     </ContentLayout>
   );

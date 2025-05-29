@@ -144,4 +144,12 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .form-card {
+    @apply border-border bg-background/50 w-full rounded-md border p-4;
+  }
+
+  .form-body {
+    @apply grid w-full grid-cols-1 gap-4 xl:grid-cols-12;
+  }
 }

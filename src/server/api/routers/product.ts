@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 import {
   adminProcedure,
   createTRPCRouter,
@@ -151,25 +152,12 @@ export const productsRouter = createTRPCRouter({
 
   // Queries for the admin
   getAll: adminProcedure
-    .input(
-      z.object({
-        storeId: z.string(),
-        isFeatured: z.boolean().optional(),
-        collectionId: z.string().optional(),
-        isArchived: z.boolean().optional(),
-        includeCustom: z.boolean().optional(),
-      }),
-    )
-    .query(({ ctx, input }) => {
-      return ctx.db.product.findMany({
-        where: {
-          storeId: input.storeId,
-          isFeatured: input.isFeatured ?? undefined,
-          NOT: { status: "CUSTOM" },
-          collections: input.collectionId
-            ? { some: { id: input.collectionId ?? undefined } }
-            : {},
-        },
+    .input(z.string())
+    .query(async ({ ctx, input: storeSlug }) => {
+      const storeId = await getStoreIdViaTRPC(storeSlug);
+
+      const products = await ctx.db.product.findMany({
+        where: { storeId },
         include: {
           collections: true,
           attributes: true,
@@ -188,9 +176,14 @@ export const productsRouter = createTRPCRouter({
               images: true,
             },
           },
+          _count: {
+            select: { variants: true },
+          },
         },
         orderBy: { createdAt: "desc" },
       });
+
+      return products;
     }),
 
   get: publicProcedure

@@ -1,4 +1,5 @@
 // import { paymentProcessor } from "~/lib/payment";
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 import {
   adminProcedure,
   createTRPCRouter,
@@ -13,8 +14,10 @@ import { customerValidator } from "~/lib/validators/customer";
 export const customersRouter = createTRPCRouter({
   getAll: adminProcedure
     .input(z.string())
-    .query(async ({ ctx, input: storeId }) => {
-      return ctx.db.customer.findMany({
+    .query(async ({ ctx, input: storeSlug }) => {
+      const storeId = await getStoreIdViaTRPC(storeSlug);
+
+      const customers = await ctx.db.customer.findMany({
         where: { storeId },
         include: {
           orders: true,
@@ -24,6 +27,8 @@ export const customersRouter = createTRPCRouter({
           },
         },
       });
+
+      return customers;
     }),
 
   get: protectedProcedure

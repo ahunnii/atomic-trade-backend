@@ -4,12 +4,12 @@ import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
+import type { SitePage } from "@prisma/client";
 import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { LargeMarkdownFormFieldRef } from "~/components/input/large-markdown-form-field";
 import type { SitePageFormData } from "~/lib/validators/site-page";
-import type { SitePage } from "~/types/site-page";
 import { sitePageFormValidator } from "~/lib/validators/site-page";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
@@ -17,6 +17,7 @@ import { Form } from "~/components/ui/form";
 import { InputFormField } from "~/components/input/input-form-field";
 import { LargeMarkdownFormField } from "~/components/input/large-markdown-form-field";
 import { FormAdditionalOptionsButton } from "~/components/shared/form-additional-options-button";
+import { FormDiscardButton } from "~/components/shared/form-discard-button";
 import { FormHeader } from "~/components/shared/form-header";
 import { FormSaveOptionsButton } from "~/components/shared/form-save-options-button";
 import { FormStatusTitle } from "~/components/shared/form-status-title";
@@ -31,9 +32,11 @@ type Props = {
 export const SitePageForm = ({ initialData, storeSlug, storeId }: Props) => {
   const router = useRouter();
 
+  const parentPath = `/${storeSlug}/pages/site`;
+
   const { defaultActions } = useDefaultMutationActions({
     invalidateEntities: ["sitePage"],
-    redirectPath: `/${storeSlug}/pages/site`,
+    redirectPath: parentPath,
   });
 
   const editorRef = useRef<LargeMarkdownFormFieldRef>(null);
@@ -128,13 +131,17 @@ export const SitePageForm = ({ initialData, storeSlug, storeId }: Props) => {
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <FormHeader title={title} link={`/${storeSlug}/pages/site`}>
+          <FormHeader title={title} link={parentPath}>
             {initialData && (
               <FormAdditionalOptionsButton
                 onDelete={onDelete}
                 onDuplicate={onSaveAndDuplicate}
               />
             )}
+            <FormDiscardButton
+              isLoading={isLoading}
+              redirectPath={parentPath}
+            />
 
             <FormSaveOptionsButton
               onSave={async () => {
@@ -149,9 +156,9 @@ export const SitePageForm = ({ initialData, storeSlug, storeId }: Props) => {
             />
           </FormHeader>
 
-          <section className="form-body grid w-full grid-cols-1 gap-4 xl:grid-cols-12">
+          <section className="form-body">
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-9">
-              <div className="border-border bg-background/50 w-full space-y-4 rounded-md border p-4">
+              <div className="form-card">
                 <LargeMarkdownFormField
                   form={form}
                   ref={editorRef}
@@ -163,7 +170,7 @@ export const SitePageForm = ({ initialData, storeSlug, storeId }: Props) => {
               </div>
             </div>
             <div className="col-span-12 flex w-full flex-col space-y-4 xl:col-span-3">
-              <div className="border-border bg-background/50 sticky top-20 w-full space-y-4 rounded-md border p-4">
+              <div className="form-card sticky top-20">
                 <InputFormField
                   form={form}
                   disabled={isLoading}

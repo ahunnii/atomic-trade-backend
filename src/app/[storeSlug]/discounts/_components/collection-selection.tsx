@@ -3,8 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { PencilIcon } from "lucide-react";
 
+import type { Collection } from "@prisma/client";
+
 import type { DiscountFormData } from "~/lib/validators/discount";
-import type { Collection } from "~/types/collection";
 import { env } from "~/env";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -22,20 +23,20 @@ type CollectionWithSelection = Collection & {
   isSelected: boolean;
 };
 
+type Props = {
+  form: UseFormReturn<DiscountFormData>;
+  isLoading: boolean;
+  collections: Collection[];
+};
 export const CollectionSelection = ({
   form,
   isLoading,
   collections,
-}: {
-  form: UseFormReturn<DiscountFormData>;
-  isLoading: boolean;
-  collections: Collection[];
-}) => {
+}: Props) => {
   const [selectedCollections, setSelectedCollections] = useState<
     CollectionWithSelection[]
   >([]);
 
-  // Initialize selection state from form data
   useEffect(() => {
     const selectedCollectionIds = new Set(
       form.getValues("collections").map((c) => c.id),
@@ -76,7 +77,6 @@ export const CollectionSelection = ({
   };
 
   const handleCancel = () => {
-    // Reset to form values
     const selectedCollectionIds = new Set(
       form.getValues("collections").map((c) => c.id),
     );

@@ -1,47 +1,38 @@
 "use client";
 
-import type { Tag } from "emblor";
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
-import { uniqueId } from "lodash";
 import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { MultiImageFormFieldRef } from "~/components/input/multi-image-form-field";
-import type { CustomerFormData } from "~/lib/validators/customer";
-import type { Address } from "~/lib/validators/geocoding";
 import type { ProductRequestFormData } from "~/lib/validators/product-request";
-import type { Customer } from "~/types/customer";
-import type { ProductRequest } from "~/types/product-request";
+import type { CustomerWithOrders } from "~/types/customer";
+import type { ProductRequestWithCustomer } from "~/types/product-request";
 import { env } from "~/env";
-import { customerValidator } from "~/lib/validators/customer";
 import { productRequestFormValidator } from "~/lib/validators/product-request";
 import { api } from "~/trpc/react";
 import { useDefaultMutationActions } from "~/hooks/use-default-mutation-actions";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { Form } from "~/components/ui/form";
-import { AutoCompleteAddressFormField } from "~/components/input/autocomplete-address-form-field";
 import { InputFormField } from "~/components/input/input-form-field";
 import { MultiImageFormField } from "~/components/input/multi-image-form-field";
 import { PhoneFormField } from "~/components/input/phone-form-field";
-import { TagFormField } from "~/components/input/tag-form-field";
 import { TextareaFormField } from "~/components/input/textarea-form-field";
 import { FormAdditionalOptionsButton } from "~/components/shared/form-additional-options-button";
 import { FormCardSection } from "~/components/shared/form-card-section";
 import { FormHeader } from "~/components/shared/form-header";
-import { FormSection } from "~/components/shared/form-section";
 import { LoadButton } from "~/components/shared/load-button";
 
 import { CreateQuoteDialog } from "./create-quote-dialog";
 import { SimplifiedCustomerFormField } from "./simplified-customer-form-field";
 
 type Props = {
-  initialData: ProductRequest | null;
+  initialData: ProductRequestWithCustomer | null;
   storeSlug: string;
   storeId: string;
-  customers: Customer[];
+  customers: CustomerWithOrders[];
 };
 
 export const ProductRequestForm = ({

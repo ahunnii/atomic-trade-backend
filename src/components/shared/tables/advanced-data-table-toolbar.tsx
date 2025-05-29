@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment } from "react";
-import { PlusCircleIcon, XCircleIcon } from "lucide-react";
+import { PlusCircleIcon, Search, XCircleIcon } from "lucide-react";
 
 import type { Table } from "@tanstack/react-table";
 
@@ -40,14 +40,19 @@ export function DataTableToolbar<TData>({
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <Input
-          placeholder={searchPlaceholder ?? `Filter by ${searchKey}...`}
-          value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn(searchKey)?.setFilterValue(event.target.value)
-          }
-          className="bg-background flex h-8 w-full lg:w-3/4"
-        />
+        <div className="relative flex w-full lg:w-3/4">
+          <Search className="text-muted-foreground absolute top-2 left-2 h-4 w-4" />
+          <Input
+            placeholder={searchPlaceholder ?? `Filter by ${searchKey}...`}
+            value={
+              (table.getColumn(searchKey)?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn(searchKey)?.setFilterValue(event.target.value)
+            }
+            className="bg-background h-8 w-full pl-8"
+          />
+        </div>
 
         <div className="flex gap-2">
           {handleAdd && (

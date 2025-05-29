@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Terminal } from "lucide-react";
 import { useForm } from "react-hook-form";
 
+import type { Collection } from "@prisma/client";
 import { toastService } from "@dreamwalker-studios/toasts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createId } from "@paralleldrive/cuid2";
@@ -13,8 +14,7 @@ import { ProductStatus } from "@prisma/client";
 import type { ImageFormFieldRef } from "~/components/input/image-form-field";
 import type { MultiImageFormFieldRef } from "~/components/input/multi-image-form-field";
 import type { ProductFormData } from "~/lib/validators/product";
-import type { Collection } from "~/types/collection";
-import type { Product } from "~/types/product";
+import type { ProductWithVariations } from "~/types/product";
 import { env } from "~/env";
 import { productFormValidator } from "~/lib/validators/product";
 import { api } from "~/trpc/react";
@@ -35,7 +35,7 @@ import { ProductInventorySection } from "./inventory-section";
 import { ProductDetailsSection } from "./product-details-section";
 
 type Props = {
-  initialData: (Product & { _count: { variants: number | null } }) | null;
+  initialData: ProductWithVariations | null;
   productId?: string;
   storeId: string;
   storeSlug: string;
@@ -105,7 +105,7 @@ export const ProductForm = ({
       isFeatured: initialData?.isFeatured ?? false,
       status: initialData?.status ?? ProductStatus.DRAFT,
       attributes:
-        initialData?.attributes.map((attribute) => ({
+        initialData?.attributes?.map((attribute) => ({
           id: attribute.id ?? createId(),
           name: attribute.name,
           values: attribute.values,

@@ -15,6 +15,17 @@ import {
 } from "~/lib/validators/store";
 
 export const storeRouter = createTRPCRouter({
+  getId: adminProcedure
+    .input(z.string())
+    .query(async ({ ctx, input: storeSlug }) => {
+      const store = await ctx.db.store.findUnique({
+        where: { slug: storeSlug },
+        select: { id: true, slug: true },
+      });
+
+      return store;
+    }),
+
   getBySlug: adminProcedure
     .input(z.string())
     .query(async ({ ctx, input: storeSlug }) => {

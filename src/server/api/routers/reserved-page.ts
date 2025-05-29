@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { z } from "zod";
 
@@ -8,12 +9,16 @@ import { policiesValidator } from "~/lib/validators/policy";
 import { reservedPageValidator } from "~/lib/validators/reserved-page";
 
 export const reservedPageRouter = createTRPCRouter({
-  get: adminProcedure.input(z.string()).query(({ ctx, input: storeId }) => {
-    return ctx.db.store.findUnique({
-      where: { id: storeId },
-      select: { reservedSitePages: true },
-    });
-  }),
+  get: adminProcedure
+    .input(z.string())
+    .query(async ({ ctx, input: storeSlug }) => {
+      const storeId = await getStoreIdViaTRPC(storeSlug);
+
+      return ctx.db.store.findUnique({
+        where: { id: storeId },
+        select: { reservedSitePages: true },
+      });
+    }),
 
   update: adminProcedure
     .input(

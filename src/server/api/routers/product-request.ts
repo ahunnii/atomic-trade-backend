@@ -1,3 +1,4 @@
+import { getStoreIdViaTRPC } from "~/server/actions/store";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { z } from "zod";
 
@@ -13,13 +14,16 @@ import {
 } from "~/lib/validators/product-request";
 
 export const productRequestRouter = createTRPCRouter({
-  getAll: adminProcedure.input(z.string()).query(({ ctx, input: storeId }) => {
-    return ctx.db.productRequest.findMany({
-      where: { storeId },
-      include: { quotes: true },
-      orderBy: { createdAt: "desc" },
-    });
-  }),
+  getAll: adminProcedure
+    .input(z.string())
+    .query(async ({ ctx, input: storeSlug }) => {
+      const storeId = await getStoreIdViaTRPC(storeSlug);
+      return ctx.db.productRequest.findMany({
+        where: { storeId },
+        include: { quotes: true },
+        orderBy: { createdAt: "desc" },
+      });
+    }),
 
   get: adminProcedure.input(z.string()).query(({ ctx, input: requestId }) => {
     return ctx.db.productRequest.findUnique({
@@ -27,7 +31,11 @@ export const productRequestRouter = createTRPCRouter({
       include: {
         quotes: true,
         customer: {
-          include: { addresses: true, _count: { select: { orders: true } } },
+          include: {
+            addresses: true,
+            orders: true,
+            _count: { select: { orders: true } },
+          },
         },
         order: true,
       },

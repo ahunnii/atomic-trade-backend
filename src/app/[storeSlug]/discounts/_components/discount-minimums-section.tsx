@@ -1,15 +1,10 @@
 import type { UseFormReturn } from "react-hook-form";
 import { useMemo } from "react";
 
-import { init } from "@paralleldrive/cuid2";
-import { DiscountAmountType, DiscountType } from "@prisma/client";
+import { DiscountType } from "@prisma/client";
 
 import type { DiscountFormData } from "~/lib/validators/discount";
-import { cn } from "~/lib/utils";
-import { Button } from "~/components/ui/button";
-import { Label } from "~/components/ui/label";
 import { CurrencyFormField } from "~/components/input/currency-form-field";
-import { InputFormField } from "~/components/input/input-form-field";
 import { RadioGroupFormField } from "~/components/input/radio-group-form-field";
 import { TestNumberFormField } from "~/components/input/test-number-form-field";
 import { FormCardSection } from "~/components/shared/form-card-section";

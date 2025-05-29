@@ -3,10 +3,10 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { PencilIcon } from "lucide-react";
 
+import type { Collection } from "@prisma/client";
 import { type ColumnDef } from "@tanstack/react-table";
 
 import type { ProductFormData } from "~/lib/validators/product";
-import type { Collection } from "~/types/collection";
 import { env } from "~/env";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
