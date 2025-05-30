@@ -180,7 +180,7 @@ export const AutoComplete = <Tmp,>({
                   return (
                     <CommandItem
                       key={option.value}
-                      value={option.label}
+                      value={option.label + " " + option.value}
                       onMouseDown={(event) => {
                         event.preventDefault();
                         event.stopPropagation();

@@ -69,6 +69,9 @@ export const DraftOrderForm = ({
   const updateDraftOrder = api.order.updateDraft.useMutation(defaultActions);
   const deleteOrder = api.order.delete.useMutation(defaultActions);
 
+  const createCheckoutSession =
+    api.payment.createCheckoutSession.useMutation(defaultActions);
+
   const collectDraftPayment = api.order.collectDraftPayment.useMutation({
     ...defaultActions,
     onSuccess: ({ data, message }) => {
@@ -228,11 +231,19 @@ export const DraftOrderForm = ({
     await collectDraftPayment.mutateAsync(initialData?.id ?? "");
   };
 
+  const onSendPaymentLink = async () => {
+    if (!initialData) toastService.inform("Order not found");
+    await createCheckoutSession.mutateAsync(initialData?.id ?? "");
+  };
+
   return (
     <>
       <Form {...form}>
         <form
           onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
+          onClick={(e) => {
+            console.log(form.formState.errors);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") e.preventDefault();
           }}
@@ -345,11 +356,27 @@ export const DraftOrderForm = ({
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button>Collect Payment</Button>
+                        <LoadButton
+                          type="button"
+                          isLoading={createCheckoutSession.isPending}
+                        >
+                          Collect Payment
+                        </LoadButton>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56">
                         <DropdownMenuLabel>Payment Methods</DropdownMenuLabel>
                         <DropdownMenuSeparator />
+
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              void onSendPaymentLink();
+                            }}
+                          >
+                            Email payment link to customer
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
                         <DropdownMenuGroup>
                           <DropdownMenuItem
                             onClick={(e) => {

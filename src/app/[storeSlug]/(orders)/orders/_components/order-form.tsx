@@ -221,7 +221,7 @@ export const OrderForm = ({
   //       tags: data.tags.map((tag) => tag.text),
   //     });
   // };
-
+  console.log(initialData);
   return (
     <>
       <Form {...form}>

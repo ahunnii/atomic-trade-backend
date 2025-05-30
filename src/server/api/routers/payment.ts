@@ -8,10 +8,12 @@ import { calculateCartDiscounts } from "~/utils/calculate-cart-discounts";
 import { z } from "zod";
 
 import type { Stripe } from "@atomic-trade/payments";
+import { emailService } from "@atomic-trade/email";
 import { paymentService, stripeClient } from "@atomic-trade/payments";
 import { TRPCError } from "@trpc/server";
 
 import { env } from "~/env";
+import { CheckoutSessionEmail } from "~/lib/email-templates/checkout-session-email";
 
 export const paymentRouter = createTRPCRouter({
   checkout: publicProcedure
@@ -86,8 +88,15 @@ export const paymentRouter = createTRPCRouter({
         where: { id: orderId },
         include: {
           store: true,
-          orderItems: true,
+          orderItems: {
+            include: {
+              variant: {
+                include: { product: true },
+              },
+            },
+          },
           customer: true,
+          payments: true,
         },
       });
 
@@ -100,24 +109,41 @@ export const paymentRouter = createTRPCRouter({
 
       const paymentSession =
         await paymentService.checkout.createCheckoutSession({
-          returnUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?canceled=true`,
-          successUrl: `${env.NEXT_PUBLIC_HOSTNAME}/dreamwalker-studios/settings/payments/checkout?session_id={CHECKOUT_SESSION_ID}`,
+          returnUrl: `${env.NODE_ENV === "development" ? "http://localhost:3000" : env.NEXT_PUBLIC_HOSTNAME}/?canceled=true`,
+          successUrl: `${env.NODE_ENV === "development" ? "http://localhost:3000" : env.NEXT_PUBLIC_HOSTNAME}/success?session_id={CHECKOUT_SESSION_ID}`,
           orderId,
           storeId: order?.storeId,
           customerId: order?.customerId ?? undefined,
-          order: {
-            id: order.id,
-            discountInCents: order.discountInCents,
-            orderItems: order.orderItems.map((item) => ({
-              id: item.id,
-              name: item.name,
-              unitPriceInCents: item.unitPriceInCents,
-              quantity: item.quantity,
-              variantId: item.variantId,
-              totalPriceInCents: item.totalPriceInCents,
-            })),
+          order,
+          customer: {
+            id: order.customerId ?? "",
+            email: order.customer?.email ?? "",
+            name:
+              (order.customer?.firstName ?? "") +
+              " " +
+              (order.customer?.lastName ?? ""),
+          },
+          storeFlatRateAmount: order.store?.flatRateAmount ?? 0,
+        });
+
+      // You passed an empty string for 'line_items[0][price_data][product_data][description]'. We assume empty values are an attempt to unset a parameter; however 'line_items[0][price_data][product_data][description]' cannot be unset. You should remove 'line_items[0][price_data][product_data][description]' from your request or supply a non-empty value.
+
+      const noReply = `${order.store.name} <no-reply@${env.NEXT_PUBLIC_HOSTNAME.replace("https://", "").replace("admin.", "")}>`;
+
+      if (order.customer) {
+        await emailService.sendEmail({
+          to: order.customer.email,
+          subject: `Complete your payment for ${order.store.name}`,
+          template: CheckoutSessionEmail,
+          from: noReply,
+          data: {
+            email: order.customer.email,
+            storeName: order.store.name,
+            checkoutUrl: paymentSession.sessionUrl,
+            logo: order.store.logo ?? "",
           },
         });
+      }
 
       return {
         data: paymentSession,

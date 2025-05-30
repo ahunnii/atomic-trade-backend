@@ -6,11 +6,17 @@ type Props = {
   title: string;
   children: React.ReactNode;
   ManageButton?: React.ReactNode;
+  className?: string;
 };
 
-export const FormCardSection = ({ children, title, ManageButton }: Props) => {
+export const FormCardSection = ({
+  children,
+  title,
+  ManageButton,
+  className,
+}: Props) => {
   return (
-    <Card className="px-6">
+    <Card className={cn("px-6", className)}>
       <div className="space-y-6">
         <div className="space-y-4">
           <div

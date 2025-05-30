@@ -23,6 +23,7 @@ type Props = {
 };
 
 export const SingleOrderClient = ({ order, storeSlug, customers }: Props) => {
+  console.log(order);
   return (
     <section className="form-body grid w-full grid-cols-1 gap-4 lg:grid-cols-12">
       <div className="col-span-12 flex w-full flex-col space-y-4 lg:col-span-8">

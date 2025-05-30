@@ -72,7 +72,12 @@ export const DraftOrderItemSection = ({ form, loading, products }: Props) => {
             loading={loading}
             append={append}
           />{" "}
-          <Button onClick={() => setIsDialogOpen(true)} type="button">
+          <Button
+            onClick={() => setIsDialogOpen(true)}
+            type="button"
+            size="sm"
+            className="h-8 text-xs"
+          >
             Add Products
           </Button>
         </div>

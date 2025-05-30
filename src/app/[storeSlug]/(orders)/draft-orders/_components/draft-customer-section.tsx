@@ -2,10 +2,12 @@
 
 import type { UseFormReturn } from "react-hook-form";
 import Link from "next/link";
+import { checkAndHighlightErrors } from "~/utils/highlight-errors";
 import { MoreHorizontal } from "lucide-react";
 
 import type { DraftOrderFormData } from "~/lib/validators/order";
 import type { CustomerWithOrders } from "~/types/customer";
+import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -29,6 +31,11 @@ type Props = {
 };
 
 export const DraftCustomerSection = ({ form, customers, storeSlug }: Props) => {
+  const hasErrors = checkAndHighlightErrors({
+    form,
+    keys: ["customer.email", "email", "customer"],
+  });
+
   const shippingAddress = form.watch("shippingAddress");
   const billingAddress = form.watch("billingAddress");
   const customer = form.watch("customer");
@@ -126,7 +133,11 @@ export const DraftCustomerSection = ({ form, customers, storeSlug }: Props) => {
     </>
   );
   return (
-    <FormCardSection title="Customer" ManageButton={ManageButton}>
+    <FormCardSection
+      title="Customer"
+      ManageButton={ManageButton}
+      className={cn(hasErrors && "border-red-500 shadow-red-500/20")}
+    >
       {form.watch("customer.id") ? (
         <div className="mt-4 space-y-4">
           <div>

@@ -51,8 +51,8 @@ export function CustomerFormField({
   return (
     <FormField
       control={form.control}
-      name="customer"
-      render={({}) => (
+      name="customer.email"
+      render={({ field }) => (
         <FormItem className={cn("col-span-full", className)}>
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
@@ -62,6 +62,8 @@ export function CustomerFormField({
               placeholder="Search for a customer..."
               isLoading={false}
               onValueChange={(value) => {
+                form.clearErrors("customer.email");
+                form.clearErrors("email");
                 setValue(value);
 
                 const address =
@@ -86,9 +88,6 @@ export function CustomerFormField({
               value={value}
               disabled={disabled}
               createButtonLabel="Create new"
-              // createIfNotFound={() => {
-              //   toastService.inform("Not currently available yet. ");
-              // }}
             />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}

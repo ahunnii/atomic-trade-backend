@@ -176,7 +176,9 @@ export const draftOrderFormValidator = z.object({
     id: z.string(),
     firstName: z.string(),
     lastName: z.string(),
-    email: z.string().email(),
+    email: z
+      .string()
+      .email({ message: "You must attach a customer to this order" }),
     phone: z.string().optional(),
     addresses: z.array(addressValidator),
     ordersCount: z.number().optional(),

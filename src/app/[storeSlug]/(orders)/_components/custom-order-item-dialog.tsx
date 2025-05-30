@@ -107,12 +107,12 @@ export const CustomOrderItemDialog = ({
         <Button
           variant="outline"
           type="button"
+          size="sm"
           className={cn(
+            "h-8 text-xs",
             field &&
               buttonVariants({
                 variant: "secondary",
-                size: "sm",
-                className: "h-8 text-xs",
               }),
           )}
         >
@@ -182,15 +182,6 @@ export const CustomOrderItemDialog = ({
                 name="isPhysical"
                 className="space-x-2 border-none px-0 py-0"
               />
-              {/* </div> */}
-              {/* <div className="flex items-center space-x-2">
-                <Checkbox id="taxable" />
-                <Label htmlFor="taxable">Charge tax on this product</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="physical" defaultChecked />
-                <Label htmlFor="physical">This is a physical product</Label>
-              </div> */}
             </div>
 
             <div className="space-y-2">
